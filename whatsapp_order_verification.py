@@ -14,12 +14,6 @@ def read_excel_data(file_path):
         df = pd.read_excel(file_path)
         # Clean column names (remove extra spaces and make lowercase)
         df.columns = df.columns.str.strip().str.lower()
-        
-        # Show available columns
-        print("\nAvailable columns in your Excel file:")
-        for i, col in enumerate(df.columns, 1):
-            print(f"{i}. {col}")
-            
         return df
     except Exception as e:
         print(f"Error reading Excel file: {e}")
@@ -30,40 +24,8 @@ def process_orders(df):
     if df is None or df.empty:
         return {}
     
-    # Map expected columns to actual column names
-    column_mapping = {}
-    
-    # Ask user to map columns if they don't match exactly
-    for expected_col in ['phone', 'name', 'product', 'sku', 'size', 'quantity', 'price', 'address']:
-        if expected_col not in df.columns:
-            print(f"\nCould not find column: {expected_col}")
-            print("Please select the corresponding column from your Excel file:")
-            for i, col in enumerate(df.columns, 1):
-                print(f"{i}. {col}")
-            
-            while True:
-                try:
-                    choice = int(input(f"Enter the number for '{expected_col}': "))
-                    if 1 <= choice <= len(df.columns):
-                        column_mapping[expected_col] = df.columns[choice-1]
-                        break
-                    else:
-                        print(f"Please enter a number between 1 and {len(df.columns)}")
-                except ValueError:
-                    print("Please enter a valid number")
-    
-    # Update column names based on mapping
-    df = df.rename(columns={v: k for k, v in column_mapping.items() if v in df.columns})
-    
-    # Check if we have all required columns
-    required_columns = ['phone', 'product']
-    missing_columns = [col for col in required_columns if col not in df.columns]
-    
-    if missing_columns:
-        print(f"\nError: Could not find required columns: {', '.join(missing_columns)}")
-        return {}
-    
-    # Group by phone number
+    # Group by phone number (assuming there's a 'phone' column)
+    # You might need to adjust the column names based on your Excel file
     grouped = df.groupby('phone')
     
     messages = {}
@@ -168,18 +130,12 @@ if __name__ == "__main__":
     # Path to your Excel file
     excel_file = "Sample.xlsx"
     
-    # Check if file exists
-    if not os.path.exists(excel_file):
-        print(f"Error: File '{excel_file}' not found.")
-        print("Please make sure the Excel file is in the same directory as this script.")
-        exit(1)
-    
     # Read and process the data
     print(f"Reading data from {excel_file}...")
     df = read_excel_data(excel_file)
     
-    if df is not None and not df.empty:
-        print("\nProcessing orders...")
+    if df is not None:
+        print("Processing orders...")
         messages = process_orders(df)
         
         if messages:
