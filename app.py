@@ -65,7 +65,7 @@ def main():
                     'order_id_col': ['order id', 'order no', 'invoice', '#'],
                     'product_col': ['product', 'item', 'goods'],
                     'quantity_col': ['qty', 'quantity', 'count'],
-                    'price_col': ['price', 'amount', 'rate'],
+                    'price_col': ['price', 'amount', 'rate', 'cost', 'subtotal'],
                     'order_total_col': ['total', 'payable', 'amount to pay'],
                 },
                 'optional': {

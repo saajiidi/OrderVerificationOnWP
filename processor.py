@@ -185,8 +185,8 @@ class WhatsAppOrderProcessor:
                 lines.append(item_line)
 
             # Totals & Payment Logic
-           
-            collectable_amount = order_total_amount
+            total_amount = float(row[self.config['order_total_col']])
+            collectable_amount = total_amount
             
             payment_col = self.config.get('payment_method_col')
             if payment_col and payment_col in row and pd.notna(row[payment_col]):
