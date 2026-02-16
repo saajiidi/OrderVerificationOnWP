@@ -60,19 +60,19 @@ def main():
             # Intelligent Defaults
             mapping = {
                 'required': {
-                    'phone_col': ['phone', 'mobile', 'contact', 'cell'],
-                    'name_col': ['name', 'customer', 'receiver'],
+                    'phone_col': ['phone (billing)', 'mobile', 'contact', 'cell', 'phone'],
+                    'name_col': ['full name (billing)', 'customer name', 'receiver', 'full name', 'name'],
                     'order_id_col': ['order id', 'order no', 'invoice', '#'],
-                    'product_col': ['product', 'item', 'goods'],
-                    'quantity_col': ['qty', 'quantity', 'count'],
-                    'price_col': ['price', 'amount', 'rate', 'cost', 'subtotal'],
-                    'order_total_col': ['total', 'payable', 'amount to pay'],
+                    'product_col': ['product name (main)', 'product', 'item', 'goods'],
+                    'quantity_col': ['quantity', 'qty', 'count'],
+                    'price_col': ['item cost', 'order line subtotal', 'price', 'amount', 'rate', 'cost'],
+                    'order_total_col': ['order total amount', 'total', 'payable', 'amount to pay'],
                 },
                 'optional': {
-                    'address_col': ['address', 'shipping', 'street'],
+                    'address_col': ['address 1&2 (billing)', 'address', 'shipping', 'street'],
                     'sku_col': ['sku', 'code'],
-                    'payment_method_col': ['payment', 'method', 'gateway'],
-                    'city_col': ['city', 'town', 'district']
+                    'payment_method_col': ['payment method title', 'payment', 'method', 'gateway'],
+                    'city_col': ['city, state, zip (billing)', 'city', 'town', 'district']
                 }
             }
 
