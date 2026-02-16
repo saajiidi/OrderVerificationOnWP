@@ -87,8 +87,6 @@ def main():
                 'optional': {
                     'sku_col': {'default': 'SKU', 'keywords': ['sku', 'code', 'product code']},
                     'payment_method_col': {'default': 'Payment Method Title', 'keywords': ['payment', 'method', 'gateway', 'pay']},
-                    'size_col': {'default': 'Product Variation', 'keywords': ['size', 'variation', 'variant']},
-                    'postcode_col': {'default': 'Postcode (Billing)', 'keywords': ['postcode', 'zip', 'postal']},
                     'city_col': {'default': 'City, State, Zip (Billing)', 'keywords': ['city', 'town', 'district', 'state']}
                 }
             }

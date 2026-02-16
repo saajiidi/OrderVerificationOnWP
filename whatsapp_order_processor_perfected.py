@@ -20,13 +20,11 @@ class WhatsAppOrderProcessor:
             'order_id_col': 'Order ID',
             'product_col': 'Product Name (main)',
             'sku_col': 'SKU',
-            'size_col': 'Product Variation',
             'quantity_col': 'Quantity',
             'price_col': 'Order Line Subtotal',
             'payment_method_col': 'Payment Method Title',
             'address_col': 'Address 1&2 (Billing)',
             'order_total_col': 'Order Total Amount',
-            'postcode_col': 'Postcode (Billing)',
             'city_col': 'City, State, Zip (Billing)'
         }
         self.column_map = {}
@@ -206,7 +204,7 @@ class WhatsAppOrderProcessor:
             df[address_col] = df[address_col].apply(lambda x: self.format_text(str(x)) if pd.notna(x) else "")
         
         # Format other address components if they exist
-        for key in ['postcode_col', 'city_col']:
+        for key in ['city_col']:
             col = self.config.get(key)
             if col and col in df.columns:
                 df[col] = df[col].apply(lambda x: self.format_text(str(x)) if pd.notna(x) else "")
@@ -217,14 +215,13 @@ class WhatsAppOrderProcessor:
             address_col: 'first',
             self.config['order_id_col']: lambda x: ', '.join(map(str, x.unique())),
             self.config['product_col']: lambda x: '\n- '.join(x),
-            self.config['size_col']: lambda x: '\n- '.join(map(str, x)),
             self.config['quantity_col']: lambda x: '\n- '.join(map(str, x)),
             self.config['price_col']: lambda x: '\n- '.join(map(str, x)),
             self.config['order_total_col']: 'sum'
         }
         
         # Add any additional address columns to aggregation
-        for key in ['postcode_col', 'city_col', 'payment_method_col']:
+        for key in ['city_col', 'payment_method_col']:
             col = self.config.get(key)
             if col and col in df.columns:
                 agg_funcs[col] = 'first'
@@ -272,7 +269,6 @@ class WhatsAppOrderProcessor:
             name = self.format_name(row[self.config['name_col']])
             formatted_address = self.format_address(
                 row.get(self.config['address_col'], ''),
-                row.get(self.config.get('postcode_col', 'Postcode (Billing)'), ''),
                 row.get(self.config.get('city_col', 'City, State, Zip (Billing)'), '')
             )
             
