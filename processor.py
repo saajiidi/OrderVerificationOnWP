@@ -16,7 +16,7 @@ class WhatsAppOrderProcessor:
             'product_col': 'Product Name (main)',
             'sku_col': 'SKU',
             'quantity_col': 'Quantity',
-            'price_col': 'Order Line Subtotal',
+            'price_col': 'Item cost',
             'payment_method_col': 'Payment Method Title',
             'address_col': 'Address 1&2 (Billing)',
             'order_total_col': 'Order Total Amount',
@@ -185,8 +185,8 @@ class WhatsAppOrderProcessor:
                 lines.append(item_line)
 
             # Totals & Payment Logic
-            total_amount = float(row[self.config['order_total_col']])
-            collectable_amount = total_amount
+           
+            collectable_amount = order_total_amount
             
             payment_col = self.config.get('payment_method_col')
             if payment_col and payment_col in row and pd.notna(row[payment_col]):
@@ -206,12 +206,12 @@ class WhatsAppOrderProcessor:
                 "*Shipping Address:*",
                 formatted_address,
                 "",
-                "Please reply with *'YES'* to confirm your order or *'NO'* if there's any mistake.",
+                "Please confirm the order and address.",
                 "If any correction is needed, please let us know the possible adjustment.",
                 "",
                 "*Delivery fees apply for returns.*",
                 "",
-                "Thank you for shopping with DEEN Commerce! https://deencommerce.com/products/sale/"
+                "Thank you for shopping with DEEN Commerce! Grab our latest discounted collection on: https://deencommerce.com/products/sale/"
             ])
 
             message = "\n".join(lines)
