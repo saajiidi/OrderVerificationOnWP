@@ -5,7 +5,7 @@ import io
 
 # Page Configuration
 st.set_page_config(
-    page_title="DEEN Commerce - WhatsApp Order Verification",
+    page_title="WhatsApp Order Verification",
     page_icon="📱",
     layout="wide"
 )
