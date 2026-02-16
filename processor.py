@@ -211,7 +211,7 @@ class WhatsAppOrderProcessor:
                 "",
                 "*Delivery fees apply for returns.*",
                 "",
-                "Thank you for shopping with DEEN Commerce! Grab our latest discounted collection on: https://deencommerce.com/products/sale/"
+                "Thank you for shopping with DEEN Commerce! Grab our latest collection on: https://deencommerce.com/"
             ])
 
             message = "\n".join(lines)
