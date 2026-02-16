@@ -7,6 +7,7 @@ import os
 from typing import Dict, List, Optional
 import urllib.parse
 import re
+import io
 
 class WhatsAppOrderProcessor:
     def __init__(self, config: Optional[Dict] = None):
@@ -18,11 +19,15 @@ class WhatsAppOrderProcessor:
             'name_col': 'Full Name (Billing)',
             'order_id_col': 'Order ID',
             'product_col': 'Product Name (main)',
+            'sku_col': 'SKU',
             'size_col': 'Product Variation',
             'quantity_col': 'Quantity',
             'price_col': 'Order Line Subtotal',
+            'payment_method_col': 'Payment Method Title',
             'address_col': 'Address 1&2 (Billing)',
-            'order_total_col': 'Order Total Amount'
+            'order_total_col': 'Order Total Amount',
+            'postcode_col': 'Postcode (Billing)',
+            'city_col': 'City, State, Zip (Billing)'
         }
         self.column_map = {}
 
@@ -128,6 +133,33 @@ class WhatsAppOrderProcessor:
             
             return ' '.join(formatted_words)
 
+    def detect_gender_salutation(self, name: str) -> str:
+        """
+        Detect gender from name and return appropriate salutation.
+        Default to 'Sir'.
+        """
+        if not isinstance(name, str):
+            return "Sir"
+            
+        name_lower = name.lower()
+        
+        # Common female titles/names in BD/South Asian context
+        female_indicators = [
+            'ms', 'miss', 'mrs', 'mst', 'begum', 'khatun', 'akter', 'parvin', 
+            'sultana', 'jahan', 'bibi', 'rani', 'devi', 'nahar', 'ferdous', 
+            'ara', 'banu', 'fatema', 'aisha', 'khadija', 'nusrat', 'farhana', 
+            'sadia', 'jannatul', 'sumaiya', 'tanjina', 'fariha', 'sharmin',
+            'nasrin', 'salma', 'shirin', 'rumana', 'sabina'
+        ]
+        
+        # Check for exact matches or parts
+        parts = name_lower.replace('.', ' ').split()
+        for part in parts:
+            if part in female_indicators:
+                return "Madam"
+                
+        return "Sir"
+
     def format_name(self, name):
         """Format name with proper capitalization and spacing."""
         if pd.isna(name):
@@ -174,8 +206,9 @@ class WhatsAppOrderProcessor:
             df[address_col] = df[address_col].apply(lambda x: self.format_text(str(x)) if pd.notna(x) else "")
         
         # Format other address components if they exist
-        for col in ['Postcode (Billing)', 'City, State, Zip (Billing)']:
-            if col in df.columns:
+        for key in ['postcode_col', 'city_col']:
+            col = self.config.get(key)
+            if col and col in df.columns:
                 df[col] = df[col].apply(lambda x: self.format_text(str(x)) if pd.notna(x) else "")
         
         # Group by phone number and aggregate
@@ -191,10 +224,28 @@ class WhatsAppOrderProcessor:
         }
         
         # Add any additional address columns to aggregation
-        for col in ['Postcode (Billing)', 'City, State, Zip (Billing)']:
-            if col in df.columns:
+        for key in ['postcode_col', 'city_col', 'payment_method_col']:
+            col = self.config.get(key)
+            if col and col in df.columns:
                 agg_funcs[col] = 'first'
         
+        # Integrate SKU into Product Name if SKU column exists
+        product_col = self.config['product_col']
+        sku_col = self.config.get('sku_col')
+        
+        if sku_col and sku_col in df.columns:
+            # Create a combined column for aggregation "Item Name - SKU"
+            # We do this on the original df before groupby
+            def combine_product_sku(row):
+                p = str(row[product_col]) if pd.notna(row[product_col]) else ""
+                s = str(row[sku_col]) if pd.notna(row[sku_col]) else ""
+                
+                if s.strip() and s.lower() != 'nan':
+                    return f"{p} - {s}"
+                return p
+            
+            df[product_col] = df.apply(combine_product_sku, axis=1)
+
         result_df = df.groupby(phone_col, as_index=False).agg(agg_funcs)
         
         # Ensure all address components are properly formatted in the final output
@@ -221,16 +272,19 @@ class WhatsAppOrderProcessor:
             name = self.format_name(row[self.config['name_col']])
             formatted_address = self.format_address(
                 row.get(self.config['address_col'], ''),
-                row.get('Postcode (Billing)', ''),
-                row.get('City, State, Zip (Billing)', '')
+                row.get(self.config.get('postcode_col', 'Postcode (Billing)'), ''),
+                row.get(self.config.get('city_col', 'City, State, Zip (Billing)'), '')
             )
             
             # Format phone number for display
             phone_display = f"+880{row[phone_col][-10:]}" if len(str(row[phone_col])) >= 10 else f"+88{row[phone_col]}"
 
+            # Determine Salutation
+            salutation = self.detect_gender_salutation(row[self.config['name_col']])
+
             # Build message
             message = f"*Order Verification From DEEN Commerce*\n\n"
-            message += f"Assalamu Alaikum, Sir!\n\n"
+            message += f"Assalamu Alaikum, {salutation}!\n\n"
             message += f"Dear {name},\n\n"
             message += "Please verify your order details:\n\n"
             message += f"*Order ID:* {row[self.config['order_id_col']]}\n\n"
@@ -238,27 +292,44 @@ class WhatsAppOrderProcessor:
             # Add order items
             message += "*Your Order:*\n"
             products = str(row[self.config['product_col']]).split('\n- ')
-            sizes = str(row[self.config['size_col']]).split('\n- ')
+            # sizes = str(row[self.config['size_col']]).split('\n- ') # Size skipped as requested
             quantities = str(row[self.config['quantity_col']]).split('\n- ')
             prices = str(row[self.config['price_col']]).split('\n- ')
             
             for i in range(len(products)):
                 if i < len(products):
                     msg_line = f"- {products[i].strip()}"
-                    if i < len(sizes) and str(sizes[i]).strip() != 'nan':
-                        msg_line += f" (Size: {sizes[i].strip()})"
+                    # Size integration handled in product name or skipped
                     if i < len(quantities):
                         msg_line += f" - Qty: {quantities[i].strip()}"
                     if i < len(prices):
                         msg_line += f" - Price: {prices[i].strip()} BDT"
                     message += msg_line + "\n"
             
+            # Calculate Collectable Amount
+            total_amount = float(row[self.config['order_total_col']])
+            collectable_amount = total_amount
+            
+            payment_col = self.config.get('payment_method_col')
+            if payment_col and payment_col in row and pd.notna(row[payment_col]):
+                payment_method = str(row[payment_col]).lower()
+                if any(x in payment_method for x in ['bkash', 'online', 'ssl', 'paid']):
+                    collectable_amount = 0
+
             # Add total and address
-            message += f"\n*Total Amount:* {float(row[self.config['order_total_col']]):.2f} BDT\n\n"
+            if collectable_amount == 0:
+                 message += f"\n*Total Amount:* {total_amount:.2f} BDT (PAID)\n"
+                 message += f"*Collectable Amount:* 0 BDT\n\n"
+            else:
+                 message += f"\n*Total Amount:* {total_amount:.2f} BDT\n\n"
+
             message += f"*Shipping Address:*\n{formatted_address}\n\n"
-            message += f"*Contact Number:* {phone_display}\n\n"
-            message += "Please reply with 'YES' to confirm your order or 'NO' if there's any mistake.\n"
-            message += "Thank you for shopping with DEEN Commerce!"
+            # Contact Number skipped as requested
+            
+            message += "Please confirm your order.\n"
+            message += "If any correction needed, let us know the possible adjustment.\n\n"
+            message += "*Delivery fees apply for returns.*\n\n"
+            message += "Thank you for shopping with DEEN Commerce! https://deencommerce.com/products/sale/"
                         
             # Create WhatsApp URL
             encoded_message = urllib.parse.quote(message)
@@ -336,6 +407,58 @@ class WhatsAppOrderProcessor:
         except Exception as e:
             print(f"An error occurred: {e}")
             raise
+
+    def generate_excel_bytes(self, df: pd.DataFrame) -> bytes:
+        """
+        Generate Excel file bytes with formatting from the dataframe.
+        """
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='Orders')
+            
+            # Formatting
+            workbook = writer.book
+            worksheet = writer.sheets['Orders']
+            
+            # Style header
+            header_fill = PatternFill(
+                start_color="4F81BD",
+                end_color="4F81BD",
+                fill_type="solid"
+            )
+            header_font = Font(color="FFFFFF", bold=True)
+            
+            for col in range(1, len(df.columns) + 1):
+                cell = worksheet.cell(row=1, column=col)
+                cell.fill = header_fill
+                cell.font = header_font
+                cell.alignment = Alignment(horizontal='center')
+            
+            # Format WhatsApp links
+            if 'whatsapp_link' in df.columns:
+                whatsapp_col = df.columns.get_loc('whatsapp_link') + 1
+                for row in range(2, len(df) + 2):
+                    cell = worksheet.cell(row=row, column=whatsapp_col)
+                    cell.hyperlink = cell.value
+                    cell.value = 'Send WhatsApp'
+                    cell.font = Font(color='0000FF', underline='single')
+                    cell.alignment = Alignment(horizontal='center')
+            
+            # Auto-adjust column widths
+            for column in worksheet.columns:
+                max_length = 0
+                column_letter = get_column_letter(column[0].column)
+                for cell in column:
+                    try:
+                        cell_length = len(str(cell.value))
+                        if cell_length > max_length:
+                            max_length = cell_length
+                    except:
+                        pass
+                adjusted_width = (max_length + 2) * 1.2
+                worksheet.column_dimensions[column_letter].width = min(adjusted_width, 50)
+        
+        return output.getvalue()
 
 def main():
     import argparse
