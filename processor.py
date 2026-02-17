@@ -127,8 +127,7 @@ class WhatsAppOrderProcessor:
             self.config['order_id_col']: lambda x: ', '.join(map(str, x.unique())),
             self.config['product_col']: lambda x: '\n- '.join(x),
             self.config['quantity_col']: lambda x: '\n- '.join(map(str, x)),
-            self.config['price_col']: lambda x: '\n- '.join(map(str, x)),
-            self.config['order_total_col']: 'sum'
+            self.config['price_col']: lambda x: '\n- '.join(map(str, x))
         }
         
         # Add optional columns to aggregation
@@ -137,7 +136,23 @@ class WhatsAppOrderProcessor:
             if col and col in df.columns:
                 agg_funcs[col] = 'first'
 
-        return df.groupby(phone_col, as_index=False).agg(agg_funcs)
+        grouped_df = df.groupby(phone_col, as_index=False).agg(agg_funcs)
+
+        # Calculate correct total amount (sum of unique order totals per phone)
+        # This prevents summing the "Order Total" multiple times for multi-item orders
+        total_col = self.config['order_total_col']
+        if total_col in df.columns:
+            # Get one row per order to capture the Order Total once
+            # We use drop_duplicates on Order ID to ensure we only take the total once per order
+            unique_orders = df[[phone_col, self.config['order_id_col'], total_col]].drop_duplicates(
+                subset=[self.config['order_id_col']]
+            )
+            # Sum the unique order totals for each phone number
+            phone_totals = unique_orders.groupby(phone_col)[total_col].sum()
+            # Map the calculated totals back to the grouped dataframe
+            grouped_df[total_col] = grouped_df[phone_col].map(phone_totals)
+
+        return grouped_df
 
     def create_whatsapp_links(self, df: pd.DataFrame) -> pd.DataFrame:
         """Generate formatted WhatsApp messages and links."""
