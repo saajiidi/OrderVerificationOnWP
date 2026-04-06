@@ -601,11 +601,12 @@ def load_from_woocommerce():
             is_hold = df_full["Order Status"] == "on-hold"
             is_waiting = df_full["Order Status"] == "pending"
             
-            # SNAPSHOT 1: TODAY (Active Shift)
-            # Status: Processed/Shipped/Hold between YESTERDAY 5 PM and TONIGHT
+            # SNAPSHOT 1: TODAY (Active Shift - v9.6 Standard)
+            # Rule: ALL Waiting (Pending) & Confirmed (Processing) + Recent Shipped
             df_live = df_full[
-                ( (df_full["dt_parsed"] >= cutoff_prev.replace(tzinfo=None)) & (df_full["dt_parsed"] < cutoff_today.replace(tzinfo=None)) & (is_processing | is_shipped | is_hold) ) |
-                ( (df_full["dt_parsed"] >= cutoff_today.replace(tzinfo=None)) & (is_shipped) )
+                (is_waiting | is_processing) | # All Waiting/Confirmed
+                ( (df_full["dt_parsed"] >= cutoff_prev.replace(tzinfo=None)) & is_shipped ) | # Shipped in current window
+                ( (df_full["dt_parsed"] >= cutoff_today.replace(tzinfo=None)) & is_shipped ) # Shipped post-cutoff today
             ].copy()
             st.session_state.wc_curr_df = scrub_raw_dataframe(df_live)
             
@@ -618,11 +619,10 @@ def load_from_woocommerce():
             ].copy()
             st.session_state.wc_prev_df = scrub_raw_dataframe(df_prev)
 
-            # SNAPSHOT 3: BACKLOG (Tomorrow's Intake)
-            # Status: All Pending + Processing after 5 PM today
+            # SNAPSHOT 3: BACKLOG (Tomorrow's Intake - v9.6 Standard)
+            # Rule: ALL Hold orders exclusively
             df_backlog = df_full[
-                (is_waiting) |
-                ( (df_full["dt_parsed"] >= cutoff_today) & (is_processing | is_hold) )
+                is_hold
             ].copy()
             st.session_state.wc_backlog_df = scrub_raw_dataframe(df_backlog)
             
@@ -685,78 +685,100 @@ def render_dashboard_output(
     """Renders common dashboard widgets/charts/tables/export."""
     # Welcome Insights Popup removed as requested
 
-    # Cross-Slot Comparison Metrics Engine
-    if st.session_state.get("wc_sync_mode") == "Operational Cycle" and st.session_state.get("wc_curr_df") is not None and st.session_state.get("wc_prev_df") is not None:
-        v_mode = st.session_state.get("wc_view_historical", False)
-        c_df, p_df = st.session_state.wc_curr_df, st.session_state.wc_prev_df
+    # v9.6 Unified Metrics Intelligence Engine
+    if st.session_state.get("wc_sync_mode") == "Operational Cycle":
+        nav_mode = st.session_state.get("wc_nav_mode", "Today")
         
-        # 1. Quantity & Revenue
-        c_qty, c_rev = c_df["Quantity"].sum(), (c_df["Quantity"] * c_df["Item Cost"]).sum()
-        p_qty, p_rev = p_df["Quantity"].sum(), (p_df["Quantity"] * p_df["Item Cost"]).sum()
+        # Select active datasets
+        m_df = None
+        c_df = None
         
-        # 2. Orders & Basket
-        c_ord = c_df["Order ID"].nunique()
-        p_ord = p_df["Order ID"].nunique()
-        c_bv = (c_rev / c_ord) if c_ord > 0 else 0
-        p_bv = (p_rev / p_ord) if p_ord > 0 else 0
-        
-        # 3. Calculate Deltas (Always Today - Prev)
-        d_qty, d_rev = (c_qty - p_qty), (c_rev - p_rev)
-        d_ord, d_bv = (c_ord - p_ord), (c_bv - p_bv)
-        
-        # Select Active Display Values
-        main_q = p_qty if v_mode else c_qty
-        main_r = p_rev if v_mode else c_rev
-        main_o = p_ord if v_mode else c_ord
-        main_b = p_bv if v_mode else c_bv
-        
-        # 4. Contextual Delta Formatting
-        prefix = "Today " if v_mode else ""
-        suffix = "" if v_mode else " vs Prev"
-        
-        dq_str = f"{prefix}{d_qty:+,.0f}{suffix}"
-        dr_str = f"{prefix}{'+' if d_rev >= 0 else '-'}TK {abs(d_rev):,.0f}{suffix}"
-        do_str = f"{prefix}{d_ord:+,.0f}{suffix}"
-        db_str = f"{prefix}{'+' if d_bv >= 0 else '-'}TK {abs(d_bv):,.0f}{suffix}"
+        if nav_mode == "Prev":
+            m_df = st.session_state.get("wc_prev_df")
+            c_df = st.session_state.get("wc_curr_df")
+        elif nav_mode == "Backlog":
+            m_df = st.session_state.get("wc_backlog_df")
+            # No comparison for backlog
+        else: # Today
+            m_df = st.session_state.get("wc_curr_df")
+            c_df = st.session_state.get("wc_prev_df")
+            
+        if m_df is not None:
+            # 1. Main Metrics
+            m_qty = m_df["Quantity"].sum()
+            m_rev = (m_df["Quantity"] * m_df["Item Cost"]).sum()
+            m_ord = m_df["Order ID"].nunique()
+            m_bv = (m_rev / m_ord) if m_ord > 0 else 0
+            
+            # 2. Comparison Metrics
+            dq_str, dr_str, do_str, db_str = None, None, None, None
+            if c_df is not None and not c_df.empty:
+                co_q = c_df["Quantity"].sum()
+                co_r = (c_df["Quantity"] * c_df["Item Cost"]).sum()
+                co_o = c_df["Order ID"].nunique()
+                co_b = (co_r / co_o) if co_o > 0 else 0
+                
+                # Deltas
+                prefix = "Today " if nav_mode == "Prev" else ""
+                suffix = "" if nav_mode == "Prev" else " vs Prev"
+                
+                # Math: if today, Today-Yesterday. if Yesterday, Today-Yesterday.
+                # Actually, always compare current view to the alternative
+                dq, dr, d_o, db = (m_qty-co_q), (m_rev-co_r), (m_ord-co_o), (m_bv-co_b)
+                if nav_mode == "Prev": # Compare Yesterday to Today (invert for benchmarking)
+                    dq, dr, d_o, db = (co_q-m_qty), (co_r-m_rev), (co_o-m_ord), (co_b-m_bv)
+                
+                dq_str = f"{prefix}{dq:+,.0f}{suffix}"
+                dr_str = f"{prefix}{'+' if dr >= 0 else '-'}TK {abs(dr):,.0f}{suffix}"
+                do_str = f"{prefix}{d_o:+,.0f}{suffix}"
+                db_str = f"{prefix}{'+' if db >= 0 else '-'}TK {abs(db):,.0f}{suffix}"
 
-        with st.container():
-            st.markdown('<div id="snapshot-target-main"></div>', unsafe_allow_html=True)
-            col1, col2, col3, col4, col5 = st.columns([1, 1.3, 1, 1.2, 1.8])
-            
-            with col1:
-                u_label = "Items sold" if v_mode else "Item to be sold"
-                st.metric(u_label, f"{main_q:,.0f}", delta=dq_str, delta_color="normal")
-            
-            with col2:
-                st.metric("Revenue", f"TK {main_r:,.0f}", delta=dr_str, delta_color="normal")
-            
-            with col3:
-                st.metric("Orders", f"{main_o:,.0f}", delta=do_str, delta_color="normal")
-            
-            with col4:
-                st.metric("Basket (TK)", f"TK {main_b:,.0f}", delta=db_str, delta_color="normal")
-            
-            with col5:
-                curr_s, curr_e = st.session_state.wc_curr_slot
-                prev_s, prev_e = st.session_state.wc_prev_slot
-                if not v_mode:
-                    st.caption(f"📍 **ACTIVE: Today**")
-                    st.caption(f"{curr_s.strftime('%a %d %b, %I%p')} - {curr_e.strftime('%a %d %b, %I%p')}")
-                st.markdown('<div style="margin-top:2px;"></div>', unsafe_allow_html=True)
-                nav_mode = st.session_state.get("wc_nav_mode", "Today")
-                btn_prev, btn_curr, btn_back = st.columns(3)
-                with btn_prev:
-                    if st.button("⏪", help="Yesterday - Operational Recall", type="primary" if nav_mode == "Prev" else "secondary"):
-                        st.session_state.wc_nav_mode = "Prev"
-                        st.rerun()
-                with btn_curr:
-                    if st.button("🏠", help="Today - Active Shift", type="primary" if nav_mode == "Today" else "secondary"):
-                        st.session_state.wc_nav_mode = "Today"
-                        st.rerun()
-                with btn_back:
-                    if st.button("⏩", help="Next - Incoming Backlog", type="primary" if nav_mode == "Backlog" else "secondary"):
-                        st.session_state.wc_nav_mode = "Backlog"
-                        st.rerun()
+            # 3. Render
+            with st.container():
+                st.markdown('<div id="snapshot-target-main"></div>', unsafe_allow_html=True)
+                col1, col2, col3, col4, col5 = st.columns([1, 1.3, 1, 1.2, 1.8])
+                
+                with col1:
+                    l1 = "Incoming Items" if nav_mode == "Backlog" else "Items sold"
+                    st.metric(l1, f"{m_qty:,.0f}", delta=dq_str)
+                with col2:
+                    l2 = "Potential Rev" if nav_mode == "Backlog" else "Revenue"
+                    st.metric(l2, f"TK {m_rev:,.0f}", delta=dr_str)
+                with col3:
+                    l3 = "Queue Orders" if nav_mode == "Backlog" else "Orders"
+                    st.metric(l3, f"{m_ord:,.0f}", delta=do_str)
+                with col4:
+                    st.metric("Avg Basket", f"TK {m_bv:,.0f}", delta=db_str)
+                
+                with col5:
+                    curr_s, curr_e = st.session_state.wc_curr_slot
+                    prev_s, prev_e = st.session_state.wc_prev_slot
+                    # Labeling based on v9.5 nav_mode
+                    nav_mode = st.session_state.get("wc_nav_mode", "Today")
+                    if nav_mode == "Prev":
+                        st.caption(f"⏪ **ACTIVE: Yesterday**")
+                        st.caption(f"{prev_s.strftime('%a %d %b, %I%p')} - {prev_e.strftime('%a %d %b, %I%p')}")
+                    elif nav_mode == "Backlog":
+                        st.caption(f"⏩ **ACTIVE: Incoming Backlog**")
+                        st.caption(f"Waiting / On-Hold Stock")
+                    else:
+                        st.caption(f"📍 **ACTIVE: Today**")
+                        st.caption(f"{curr_s.strftime('%a %d %b, %I%p')} - {curr_e.strftime('%a %d %b, %I%p')}")
+                    st.markdown('<div style="margin-top:2px;"></div>', unsafe_allow_html=True)
+                    nav_mode = st.session_state.get("wc_nav_mode", "Today")
+                    btn_prev, btn_curr, btn_back = st.columns(3)
+                    with btn_prev:
+                        if st.button("⏪", help="Yesterday - Operational Recall", type="primary" if nav_mode == "Prev" else "secondary"):
+                            st.session_state.wc_nav_mode = "Prev"
+                            st.rerun()
+                    with btn_curr:
+                        if st.button("🏠", help="Today - Active Shift", type="primary" if nav_mode == "Today" else "secondary"):
+                            st.session_state.wc_nav_mode = "Today"
+                            st.rerun()
+                    with btn_back:
+                        if st.button("⏩", help="Next - Incoming Backlog", type="primary" if nav_mode == "Backlog" else "secondary"):
+                            st.session_state.wc_nav_mode = "Backlog"
+                            st.rerun()
             st.divider()
 
     else:
