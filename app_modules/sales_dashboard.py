@@ -163,58 +163,63 @@ def get_gcp_service_account_info():
 
 
 def get_category(name):
-    """Categorizes products based on detailed keywords and logic (merged from analytics)."""
+    """Categorizes products based on keywords in their names (v9.5 Expert Rules)."""
     name_str = str(name).lower()
 
-    # Detailed lambda-based rules for high-precision categorization
-    stock_rules = {
-        "Jeans Slim Fit": lambda n: "jeans" in n and "slim fit" in n,
-        "Jeans Regular Fit": lambda n: "jeans" in n and "regular fit" in n,
-        "Jeans Straight Fit": lambda n: "jeans" in n and "straight fit" in n,
-        "Panjabi": lambda n: "panjabi" in n,
-        "Active Wear": lambda n: "active wear" in n,
-        "T-shirt Basic Full": lambda n: "t-shirt" in n and "full sleeve" in n,
-        "T-shirt Drop-Shoulder": lambda n: "t-shirt" in n and ("drop-shoulder" in n or "drop shoulder" in n),
-        "T-shirt Basic Half": lambda n: "t-shirt" in n and not ("full sleeve" in n or "drop-shoulder" in n or "drop shoulder" in n),
-        "Sweatshirt": lambda n: "sweatshirt" in n,
-        "Turtle-Neck": lambda n: "turtle-neck" in n or "turtleneck" in n,
-        "Tank-Top": lambda n: "tank-top" in n or "tank top" in n,
-        "Trousers Cotton": lambda n: ("trouser" in n or "jogger" in n or "pant" in n) and ("twill" in n or "chino" in n or "cotton" in n),
-        "Trousers Terry": lambda n: ("trouser" in n or "jogger" in n or "pant" in n) and "terry" in n,
-        "Polo": lambda n: "polo" in n,
-        "Kaftan Shirt": lambda n: "kaftan" in n,
-        "Denim Shirt": lambda n: "denim" in n and "shirt" in n,
-        "Flannel Shirt": lambda n: "flannel" in n and "shirt" in n,
-        "Casual Shirt Full": lambda n: "shirt" in n and "full sleeve" in n and not any(k in n for k in ["denim", "flannel", "kaftan", "polo"]),
-        "Casual Shirt Half": lambda n: "shirt" in n and not any(k in n for k in ["full sleeve", "denim", "flannel", "kaftan", "polo", "t-shirt"]),
-        "Belt": lambda n: "belt" in n,
-        "Wallet": lambda n: "wallet" in n,
-        "Mask": lambda n: "mask" in n,
-        "Water Bottle": lambda n: "water bottle" in n,
-        "Boxer": lambda n: "boxer" in n,
-    }
-
-    # First try high-precision rules
-    for cat, rule in stock_rules.items():
-        if rule(name_str):
-            return cat
-
-    # Fallback to broader keyword matching
     def has_any(keywords, text):
-        return any(re.search(rf"\b{re.escape(kw.lower())}\b", text, re.IGNORECASE) for kw in keywords)
+        return any(
+            re.search(rf"\b{re.escape(kw.lower())}\b", text, re.IGNORECASE)
+            for kw in keywords
+        )
 
-    broader_cats = {
+    specific_cats = {
+        "Tank Top": ["tank top"],
+        "Boxer": ["boxer"],
+        "Jeans": ["jeans"],
+        "Denim Shirt": ["denim"],
+        "Flannel Shirt": ["flannel"],
+        "Polo Shirt": ["polo"],
+        "Panjabi": ["panjabi", "punjabi"],
+        "Trousers": [
+            "trousers",
+            "pant",
+            "cargo",
+            "trouser",
+            "joggers",
+            "track pant",
+            "jogger",
+        ],
+        "Twill Chino": ["twill chino"],
+        "Mask": ["mask"],
         "Leather Bag": ["bag", "backpack"],
+        "Water Bottle": ["water bottle"],
+        "Contrast Shirt": ["contrast"],
+        "Turtleneck": ["turtleneck", "mock neck"],
+        "Drop Shoulder": ["drop", "shoulder"],
+        "Wallet": ["wallet"],
+        "Kaftan Shirt": ["kaftan"],
+        "Active Wear": ["active wear"],
         "Jersy": ["jersy"],
+        "Sweatshirt": ["sweatshirt", "hoodie", "pullover"],
         "Jacket": ["jacket", "outerwear", "coat"],
+        "Belt": ["belt"],
         "Sweater": ["sweater", "cardigan", "knitwear"],
         "Passport Holder": ["passport holder"],
         "Cap": ["cap"],
     }
 
-    for cat, keywords in broader_cats.items():
+    for cat, keywords in specific_cats.items():
         if has_any(keywords, name_str):
             return cat
+
+    fs_keywords = ["full sleeve", "long sleeve", "fs", "l/s"]
+    if has_any(["t-shirt", "t shirt", "tee"], name_str):
+        return "FS T-Shirt" if has_any(fs_keywords, name_str) else "HS T-Shirt"
+
+    if has_any(["shirt"], name_str):
+        return "FS Shirt" if has_any(fs_keywords, name_str) else "HS Shirt"
+
+    return "Others"
 
     return "Others"
 
@@ -480,23 +485,18 @@ def load_from_woocommerce():
 
         def get_operational_sync_window(ref_time):
             # Thursday 5 PM to Saturday 5 PM is the weekend slot (Bangladesh)
-            # anchor_5pm is 17:00 of the reference day
             anchor_5pm = ref_time.replace(hour=17, minute=0, second=0, microsecond=0)
-            if ref_time >= anchor_5pm:
-                start = anchor_5pm
-            else:
-                start = anchor_5pm - timedelta(days=1)
+            
+            # RULE: Active shift starts yesterday 5 PM and stays active until MIDNIGHT TONIGHT
+            start = anchor_5pm - timedelta(days=1)
             
             # Weekend adjustment: Friday is covered by the Thu-Sat slot
             if start.weekday() == 4: # Friday
                 start -= timedelta(days=1) # Back to Thu 17:00
             
-            # Duration adjustment
-            if start.weekday() == 3: # Thu 17:00
-                end = start + timedelta(days=2) # To Sat 17:00
-            else:
-                end = start + timedelta(days=1)
-                
+            # The window for fetch needs to be broad enough to capture the entire active shift
+            # We set end to TONIGHT 23:59:59 to capture evening orders
+            end = ref_time.replace(hour=23, minute=59, second=59, microsecond=0)
             return start, end
 
         # Specialized Fetching Strategy for Operational Cycle
@@ -509,8 +509,10 @@ def load_from_woocommerce():
             
             # Request 1: All relevant statuses within the broad operational window
             # (since prev_start, to catch both current and previous slots)
+            # Request: Broad operational pool (From Previous Slot start until NOW)
+            # This ensures both yesterday's snapshot and today's active window stay populated.
             params["after"] = prev_start.isoformat()
-            params["before"] = curr_end.isoformat()
+            params["before"] = now_bd.replace(hour=23, minute=59, second=59).isoformat()
             params["status"] = "processing,completed,shipped,on-hold,pending"
             
             # Fetch Batch 1 (Window based)
@@ -583,40 +585,51 @@ def load_from_woocommerce():
         if df_full.empty:
             return pd.DataFrame(), "woocommerce_api", "N/A"
 
-        # Local partitioning for Operational Cycles
+        # Local partitioning for Operational Cycles (v9.5 Rule Set)
         if sync_mode == "Operational Cycle":
             df_full["dt_parsed"] = pd.to_datetime(df_full["Order Date"], errors="coerce").dt.tz_localize(None)
-            curr_start = st.session_state.wc_curr_slot[0].replace(tzinfo=None)
-            curr_end = st.session_state.wc_curr_slot[1].replace(tzinfo=None)
-            prev_start = st.session_state.wc_prev_slot[0].replace(tzinfo=None)
-            prev_end = st.session_state.wc_prev_slot[1].replace(tzinfo=None)
+            
+            # Classification based on 17:00 CUTOFF
+            now_dt = datetime.now()
+            cutoff_today = now_dt.replace(hour=17, minute=0, second=0, microsecond=0)
+            cutoff_prev = cutoff_today - timedelta(days=1)
+            cutoff_day_before = cutoff_prev - timedelta(days=1)
             
             # Define Status Categories
             is_shipped = df_full["Order Status"].isin(["completed", "shipped"])
             is_processing = df_full["Order Status"] == "processing"
             is_hold = df_full["Order Status"] == "on-hold"
             is_waiting = df_full["Order Status"] == "pending"
-
-            # 1. CURRENT SLOT:
-            # - processing/shipped order in CURRENT timeframe
-            # - hold order from ANY timeframe
-            in_curr_win = (df_full["dt_parsed"] >= curr_start) & (df_full["dt_parsed"] < curr_end)
+            
+            # SNAPSHOT 1: TODAY (Active Shift)
+            # Status: Processed/Shipped/Hold between YESTERDAY 5 PM and TONIGHT
             df_live = df_full[
-                (in_curr_win & (is_processing | is_shipped)) |
-                (is_hold)
+                ( (df_full["dt_parsed"] >= cutoff_prev.replace(tzinfo=None)) & (df_full["dt_parsed"] < cutoff_today.replace(tzinfo=None)) & (is_processing | is_shipped | is_hold) ) |
+                ( (df_full["dt_parsed"] >= cutoff_today.replace(tzinfo=None)) & (is_shipped) )
             ].copy()
             st.session_state.wc_curr_df = scrub_raw_dataframe(df_live)
             
-            # 2. PREVIOUS SLOT:
-            # - shipped from PREVIOUS timeframe
-            # - waiting orders (pending) from ANY timeframe
-            in_prev_win = (df_full["dt_parsed"] >= prev_start) & (df_full["dt_parsed"] < prev_end)
+            # SNAPSHOT 2: YESTERDAY (Historical Performance)
+            # Status: Shipped orders from Day-before-Yesterday 5 PM to Yesterday 5 PM
             df_prev = df_full[
-                (in_prev_win & is_shipped) |
-                (is_waiting)
+                (df_full["dt_parsed"] >= cutoff_day_before) & 
+                (df_full["dt_parsed"] < cutoff_prev) & 
+                is_shipped
             ].copy()
-            
             st.session_state.wc_prev_df = scrub_raw_dataframe(df_prev)
+
+            # SNAPSHOT 3: BACKLOG (Tomorrow's Intake)
+            # Status: All Pending + Processing after 5 PM today
+            df_backlog = df_full[
+                (is_waiting) |
+                ( (df_full["dt_parsed"] >= cutoff_today) & (is_processing | is_hold) )
+            ].copy()
+            st.session_state.wc_backlog_df = scrub_raw_dataframe(df_backlog)
+            
+            # Persist slots for label indexing
+            st.session_state.wc_curr_slot = (cutoff_prev, cutoff_today)
+            st.session_state.wc_prev_slot = (cutoff_day_before, cutoff_prev)
+            st.session_state.wc_backlog_slot = (cutoff_today, cutoff_today + timedelta(days=1))
         else:
             df_live = df_full
             st.session_state.wc_curr_df = None # Not used
@@ -729,14 +742,20 @@ def render_dashboard_output(
                 if not v_mode:
                     st.caption(f"📍 **ACTIVE: Today**")
                     st.caption(f"{curr_s.strftime('%a %d %b, %I%p')} - {curr_e.strftime('%a %d %b, %I%p')}")
-                    if st.button(f"⏮️ View Prev ({prev_s.strftime('%d %b')})", use_container_width=True):
-                        st.session_state.wc_view_historical = True
+                st.markdown('<div style="margin-top:2px;"></div>', unsafe_allow_html=True)
+                nav_mode = st.session_state.get("wc_nav_mode", "Today")
+                btn_prev, btn_curr, btn_back = st.columns(3)
+                with btn_prev:
+                    if st.button("⏪", help="Yesterday - Operational Recall", type="primary" if nav_mode == "Prev" else "secondary"):
+                        st.session_state.wc_nav_mode = "Prev"
                         st.rerun()
-                else:
-                    st.caption(f"⏮️ **ACTIVE: Previous Window**")
-                    st.caption(f"{prev_s.strftime('%a %d %b, %I%p')} → {prev_e.strftime('%a %d %b, %I%p')}")
-                    if st.button("📍 Return to Today", use_container_width=True, type="primary"):
-                        st.session_state.wc_view_historical = False
+                with btn_curr:
+                    if st.button("🏠", help="Today - Active Shift", type="primary" if nav_mode == "Today" else "secondary"):
+                        st.session_state.wc_nav_mode = "Today"
+                        st.rerun()
+                with btn_back:
+                    if st.button("⏩", help="Next - Incoming Backlog", type="primary" if nav_mode == "Backlog" else "secondary"):
+                        st.session_state.wc_nav_mode = "Backlog"
                         st.rerun()
             st.divider()
 
@@ -1149,17 +1168,28 @@ def render_live_tab():
     try:
         df_live, source_name, modified_at = load_live_source()
 
-        # Handle 'Time Travel' view mode
-        if st.session_state.get("wc_view_historical") and "wc_prev_df" in st.session_state:
-            prev_df = st.session_state.wc_prev_df
-            if prev_df is not None and not prev_df.empty:
-                df_live = prev_df
-                prev_s, prev_e = st.session_state.wc_prev_slot
-                source_name = f"PREV_SLOT_{prev_s.strftime('%a_%d%b')}"
-                modified_at = "HISTORICAL_SNAPSHOT"
-            else:
-                st.warning("No data found for the previous slot. Reverting to current.")
-                st.session_state.wc_view_historical = False
+        # Handle v9.5 Multi-Mode Shift Navigation
+        nav_mode = st.session_state.get("wc_nav_mode", "Today")
+        if nav_mode == "Prev" and "wc_prev_df" in st.session_state:
+            df_live = st.session_state.wc_prev_df
+            p_s, p_e = st.session_state.get("wc_prev_slot", (datetime.now(), datetime.now()))
+            source_name = f"PREV_SLOT_{p_s.strftime('%a_%d%b')}"
+            modified_at = "HISTORICAL_SNAPSHOT"
+        elif nav_mode == "Backlog" and "wc_backlog_df" in st.session_state:
+            df_live = st.session_state.wc_backlog_df
+            b_s, b_e = st.session_state.get("wc_backlog_slot", (datetime.now(), datetime.now()))
+            source_name = f"INCOMING_BATCH_{b_s.strftime('%H:%M')}"
+            modified_at = "BACKLOG_QUEUE"
+        elif nav_mode == "Today" and "wc_curr_df" in st.session_state:
+            df_live = st.session_state.wc_curr_df
+            # default df_live from load_live_source is already the current one
+            
+        if df_live is None or df_live.empty:
+            st.warning(f"No data found for the {nav_mode} slot.")
+            # Fallback to Today if we were in another mode
+            if nav_mode != "Today":
+                st.session_state.wc_nav_mode = "Today"
+                st.rerun()
 
         auto_cols = find_columns(df_live)
         missing_required = [k for k in ["name", "cost", "qty"] if k not in auto_cols]
@@ -1189,7 +1219,7 @@ def render_live_tab():
 
 
 def fetch_woocommerce_stock():
-    """Fetches real-time stock levels and maps categories from sum_quantities logic."""
+    """Fetches real-time stock levels for published items using Expert Rules."""
     wc_info = st.secrets.get("woocommerce", {})
     wc_url = wc_info.get("store_url") or os.environ.get("WC_URL")
     wc_key = wc_info.get("consumer_key") or os.environ.get("WC_KEY")
@@ -1199,54 +1229,21 @@ def fetch_woocommerce_stock():
         st.error("WooCommerce credentials missing.")
         return None
 
-    # Logic ported from sum_quantities.py
-    cat_rules = {
-        "Jeans Slim Fit": lambda n: "jeans" in n and "slim fit" in n,
-        "Jeans Regular Fit": lambda n: "jeans" in n and "regular fit" in n,
-        "Jeans Straight Fit": lambda n: "jeans" in n and "straight fit" in n,
-        "Panjabi": lambda n: "panjabi" in n,
-        "T-shirt Basic Full": lambda n: "t-shirt" in n and "full sleeve" in n,
-        "T-shirt Drop-Shoulder": lambda n: "t-shirt" in n and ("drop-shoulder" in n or "drop shoulder" in n),
-        "T-shirt Basic Half": lambda n: "t-shirt" in n and not ("full sleeve" in n or "drop-shoulder" in n or "drop shoulder" in n),
-        "Sweatshirt": lambda n: "sweatshirt" in n,
-        "Turtle-Neck": lambda n: "turtle-neck" in n or "turtleneck" in n,
-        "Tank-Top": lambda n: "tank-top" in n or "tank top" in n,
-        "Trousers Terry Fabric": lambda n: (("trouser" in n or "jogger" in n or "pant" in n) and "terry" in n),
-        "Trousers Cotton Fabric": lambda n: ("trouser" in n or "jogger" in n or "pant" in n) and ("twill" in n or "chino" in n or "cotton" in n),
-        "Polo": lambda n: "polo" in n,
-        "Kaftan Shirt": lambda n: "kaftan" in n,
-        "Contrast Stich": lambda n: "contrast stitch" in n or "contrast stich" in n,
-        "Denim Shirt": lambda n: "denim" in n and "shirt" in n,
-        "Flannel Shirt": lambda n: "flannel" in n and "shirt" in n,
-        "Casual Shirt Full": lambda n: "shirt" in n and "full sleeve" in n and not any(k in n for k in ["denim", "flannel", "kaftan", "contrast", "stitch", "stich", "polo", "sweatshirt"]),
-        "Casual Shirt Half": lambda n: "shirt" in n and not any(k in n for k in ["full sleeve", "denim", "flannel", "kaftan", "contrast", "stitch", "stich", "polo", "t-shirt", "sweatshirt"]),
-        "Belt": lambda n: "belt" in n,
-        "Wallet Bifold": lambda n: "wallet" in n and "bifold" in n,
-        "Wallet Trifold": lambda n: "wallet" in n and "trifold" in n,
-        "Wallet Long": lambda n: "wallet" in n and "long" in n,
-        "Passport Holder": lambda n: "passport holder" in n,
-        "Mask": lambda n: "mask" in n,
-        "Card Holder": lambda n: "card holder" in n,
-        "Water Bottle": lambda n: "water bottle" in n,
-        "Boxer": lambda n: "boxer" in n,
-    }
-
-    def map_category(name):
-        n = name.lower()
-        for cat, func in cat_rules.items():
-            if func(n): return cat
-        return "Uncategorized"
-
     endpoint = f"{wc_url.rstrip('/')}/wp-json/wc/v3/products"
     stock_data = []
     
     try:
         page = 1
-        with st.spinner("📦 Fetching live inventory and mapping categories..."):
+        with st.spinner("📦 Fetching live inventory (~Published & In-Stock)..."):
             while True:
                 r = requests.get(
                     endpoint,
-                    params={"per_page": 100, "page": page},
+                    params={
+                        "per_page": 100, 
+                        "page": page, 
+                        "status": "publish",
+                        "stock_status": "instock" # Native in-stock only filter
+                    },
                     auth=HTTPBasicAuth(wc_key, wc_secret),
                     timeout=25
                 )
@@ -1264,7 +1261,7 @@ def fetch_woocommerce_stock():
                             for v in v_r.json():
                                 full_name = f"{p_name} - {v.get('attributes',[{}])[0].get('option','N/A')}"
                                 stock_data.append({
-                                    "Category": map_category(p_name), # Map by base product name for broad categorization
+                                    "Category": get_category(p_name), # Map by base product name for broad categorization
                                     "Product": full_name,
                                     "SKU": v.get("sku") or f"P{p_id}-V{v.get('id')}",
                                     "Stock": v.get("stock_quantity") if v.get("manage_stock") else 0,
@@ -1273,7 +1270,7 @@ def fetch_woocommerce_stock():
                                 })
                     else:
                         stock_data.append({
-                            "Category": map_category(p_name),
+                            "Category": get_category(p_name),
                             "Product": p_name,
                             "SKU": p.get("sku") or f"P{p_id}",
                             "Stock": p.get("stock_quantity") if p.get("manage_stock") else 0,
