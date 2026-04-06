@@ -1,295 +1,153 @@
 import streamlit as st
-import pandas as pd
-from processor import WhatsAppOrderProcessor  # Updated import
 
-# Configuration
+_original_dataframe = st.dataframe
+
+
+def _numbered_dataframe(data, *args, **kwargs):
+    try:
+        import pandas as pd
+
+        if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
+            d = data.copy()
+            if len(d) > 0:
+                d.index = range(1, len(d) + 1)
+            return _original_dataframe(d, *args, **kwargs)
+    except Exception:
+        pass
+    return _original_dataframe(data, *args, **kwargs)
+
+
+st.dataframe = _numbered_dataframe
+
 st.set_page_config(
-    page_title="WhatsApp Order Verification",
-    page_icon="✅",
-    layout="wide"
+    page_title="Automation Hub Pro",
+    page_icon="AH",
+    layout="wide",
+    initial_sidebar_state="expanded",
 )
 
-# Custom Styles for WhatsApp Vibe
-st.markdown("""
-<style>
-    /* WhatsApp Background */
-    .stApp {
-        background-color: #ECE5DD;
-        background-image: url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png");
-        background-size: 300px;
-        background-repeat: repeat; 
-        background-blend-mode: overlay;
-    }
-    
-    /* Header Style */
-    .main-header {
-        background-color: #075E54;
-        padding: 1.5rem;
-        color: white;
-        border-radius: 0px 0px 10px 10px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        text-align: center;
-        margin-bottom: 2rem;
-    }
-    
-    /* Chat Bubble Container */
-    .chat-bubble {
-        background-color: white;
-        border-radius: 10px;
-        padding: 20px;
-        box-shadow: 0 1px 1px rgba(0,0,0,0.1);
-        margin-bottom: 20px;
-        border-left: 5px solid #25D366;
-    }
-    
-    /* Button Styling */
-    .stButton>button {
-        background-color: #25D366;
-        color: white;
-        border: none;
-        border-radius: 20px;
-        padding: 10px 24px;
-        font-weight: bold;
-        box-shadow: 0 2px 2px rgba(0,0,0,0.1);
-        transition: all 0.2s;
-    }
-    .stButton>button:hover {
-        background-color: #128C7E;
-        box-shadow: 0 4px 4px rgba(0,0,0,0.15);
-        color: white;
-    }
 
-    /* Input/Select Styling */
-    .stSelectbox > div > div {
-        background-color: white !important;
-        border-radius: 8px;
-    }
-    
-    /* Headings */
-    h1, h2, h3, h5 {
-        color: #075E54 !important;
-    }
-</style>
-""", unsafe_allow_html=True)
+def run_app():
+    # Lazy imports keep bootstrap resilient on cloud when a module has runtime incompatibilities.
+    from app_modules.bike_animation import render_bike_animation
+    from app_modules.distribution_tab import render_distribution_tab
+    from app_modules.error_handler import get_logs, log_error
+    from app_modules.fuzzy_parser_tab import render_fuzzy_parser_tab
+    from app_modules.pathao_tab import render_pathao_tab
+    from app_modules.persistence import init_state, save_state
+    from app_modules.sales_dashboard import render_live_tab, render_manual_tab
+    from app_modules.ui_components import (
+        inject_base_styles,
+        render_header,
+        render_footer,
+        render_sidebar_branding,
+        section_card,
+    )
+    from app_modules.ui_config import PRIMARY_NAV
+    from app_modules.error_handler import ERROR_LOG_FILE
+    import os
+    from app_modules.wp_tab import render_wp_tab
 
-def main():
-    st.markdown('<div class="main-header"><h1>WhatsApp Order Verification Tool 💬</h1></div>', unsafe_allow_html=True)
-    
-    # Instructions in a "Chat Bubble"
-    st.markdown("""
-    <div class="chat-bubble">
-        <h5>👋 Welcome! Follow these steps:</h5>
-        <ol>
-            <li><b>Upload</b> your order Excel file 📂</li>
-            <li><b>Verify Columns</b> (we've auto-detected them for you) 🔍</li>
-            <li><b>Process</b> to generate verification links 🚀</li>
-            <li><b>Download</b> the result and start messaging! 📥</li>
-        </ol>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    uploaded_file = st.file_uploader("Upload Excel File", type=['xlsx', 'xls'])
-    
-    if uploaded_file:
-        try:
-            df = pd.read_excel(uploaded_file)
-            df.columns = [str(col).strip() for col in df.columns]
-            
-            # Data Preview
-            with st.expander("👀 View Uploaded Data"):
-                st.dataframe(df.head(3), use_container_width=True)
-            
-            st.markdown("### ⚙️ Column Mapping")
-            
-            # Expanded Intelligent Defaults
-            mapping = {
-                'required': {
-                    'phone_col': [
-                        'phone (billing)', 'billing phone', 'phone', 'mobile', 'contact', 'cell', 'whatsapp', 
-                        'tel', 'mobile no', 'phone number'
-                    ],
-                    'name_col': [
-                        'first name (shipping)', 'shipping name', 'full name (billing)', 'billing name', 
-                        'customer name', 'receiver', 'full name', 'name', 'customer', 'client'
-                    ],
-                    'order_id_col': [
-                        'order id', 'order no', 'invoice', 'invoice no', 'id', 'order number', '#'
-                    ],
-                    'product_col': [
-                        'product name (main)', 'product name', 'product', 'item', 'item name', 'goods', 
-                        'description', 'particulars'
-                    ],
-                    'quantity_col': [
-                        'quantity', 'qty', 'count', 'units', 'pieces', 'amount'
-                    ],
-                    'price_col': [
-                        'item cost', 'unit price', 'rate', 'price', 'cost', 'amount', 'value', 
-                        'order line subtotal'
-                    ],
-                    'order_total_col': [
-                        'order total amount', 'grand total', 'total amount', 'total', 'net total', 
-                        'payable', 'bill amount'
-                    ],
-                },
-                'optional': {
-                    'address_col': [
-                        'address 1&2 (billing)', 'billing address', 'address', 'shipping address', 
-                        'street', 'location', 'delivery address'
-                    ],
-                    'sku_col': [
-                        'sku', 'product code', 'item code', 'code', 'stock keeping unit'
-                    ],
-                    'payment_method_col': [
-                        'payment method title', 'payment method', 'payment', 'gateway', 'method', 
-                        'transaction type'
-                    ],
-                    'city_col': [
-                        'city, state, zip (billing)', 'city', 'district', 'town', 'area', 'region', 
-                        'state'
-                    ]
-                }
-            }
+    init_state()
+    inject_base_styles()
 
-            config = {}
-            
-            # Improved detection logic
-            def find_best_match(options, keywords):
-                options_lower = [str(o).lower() for o in options]
-                
-                # 1. Exact match
-                for k in keywords:
-                    if k in options_lower:
-                        return options_lower.index(k)
-                
-                # 2. Starts with (e.g. "Phone Number" matches "phone")
-                for k in keywords:
-                    for i, opt in enumerate(options_lower):
-                        if opt.startswith(k):
-                            return i
-                            
-                # 3. Contains (e.g. "Billing Phone" matches "phone")
-                for k in keywords:
-                    for i, opt in enumerate(options_lower):
-                        if k in opt:
-                            return i
-                
-                return 0
+    with st.sidebar:
+        render_sidebar_branding()
+        st.subheader("Global Settings")
 
-            # 2-Column Layout for Mapping
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.markdown("##### 📌 Required Fields")
-                for key, keywords in mapping['required'].items():
-                    idx = find_best_match(df.columns, keywords)
-                    config[key] = st.selectbox(
-                        f"{key.replace('_col', '').replace('_', ' ').title()}",
-                        options=df.columns,
-                        index=idx,
-                        key=key,
-                        help=f"Select the column for {key.replace('_col', '')}"
-                    )
-            
-            with col2:
-                st.markdown("##### 🔧 Optional Fields")
-                opts = ["None"] + list(df.columns)
-                for key, keywords in mapping['optional'].items():
-                    # Adjust index for "None" being at 0
-                    match_idx = find_best_match(df.columns, keywords)
-                    # If match found in df.columns (which is 0+), in our opts list it is match_idx + 1
-                    # However, find_best_match returns 0 if no match. 
-                    # We need to check if it actually matched or just defaulted.
-                    
-                    # Let's perform a check to see if the default 0 was a real match or fallback
-                    # Check if finding 'None' is better? No.
-                    
-                    # Re-run logic for finding index in the options list which includes None
-                    # We need to match against df.columns, then map that index to opts
-                    
-                    # Simplification: Just use the smart finder on df.columns
-                    # If the smart finder returns a valid match, we select it (+1 because of None)
-                    # If it defaults to 0, we verify if 0 is a good match. If not, we might want to default to None.
-                    
-                    # For optional, we default to "None" if no strong match found? 
-                    # The previous logic just picked index 0. Let's stick to picking a calculated index.
-                    
-                    # Let's verify if the 0-th column is actually a match for optional
-                    best_idx = find_best_match(df.columns, keywords)
-                    
-                    # Check if the column at best_idx actually contains one of the keywords
-                    col_name = df.columns[best_idx].lower()
-                    is_match = any(k in col_name for k in keywords)
-                    
-                    if is_match:
-                        default_idx = best_idx + 1
-                    else:
-                        default_idx = 0 # "None"
-                        
-                    val = st.selectbox(
-                        f"{key.replace('_col', '').replace('_', ' ').title()}",
-                        options=opts,
-                        index=default_idx,
-                        key=key
-                    )
-                    if val != "None":
-                        config[key] = val
+        st.session_state.show_animation = st.toggle(
+            "Show motion effects",
+            value=st.session_state.get("show_animation", True),
+        )
 
-            st.write("") # Spacer
-            
-            if st.button("🚀 Process Orders", use_container_width=True):
-                with st.spinner("Generating WhatsApp links..."):
-                    processor = WhatsAppOrderProcessor(config=config)
-                    # Process
-                    processed_df = processor.process_orders(df)
-                    final_df = processor.create_whatsapp_links(processed_df)
-                    excel_data = processor.generate_excel_bytes(final_df)
-                    
-                    st.success(f"✅ Successfully processed {len(final_df)} orders!")
-                    
-                    st.markdown("### 📊 Processed Data Preview")
-                    
-                    # Reorder columns for better preview (WhatsApp link first)
-                    cols = final_df.columns.tolist()
-                    if 'whatsapp_link' in cols:
-                        cols.insert(0, cols.pop(cols.index('whatsapp_link')))
-                    
-                    # Display the final dataframe with link configuration
-                    st.dataframe(
-                        final_df[cols],
-                        column_config={
-                            "whatsapp_link": st.column_config.LinkColumn(
-                                "Quick Action",
-                                help="Click to open WhatsApp chat",
-                                validate="^https://wa\.me/.*",
-                                display_text="Send Message 💬"
-                            ),
-                            "whatsapp_link_raw": None, # Hide raw link if it exists
-                        },
-                        use_container_width=True,
-                        hide_index=True
-                    )
+        if st.button("Save session state", use_container_width=True):
+            save_state()
+            st.success("Session state saved.")
 
-                    # Message Preview
-                    if not final_df.empty and 'whatsapp_link' in final_df.columns:
-                        import urllib.parse
-                        first_link = final_df.iloc[0]['whatsapp_link']
-                        if 'text=' in first_link:
-                            msg_encoded = first_link.split('text=')[1]
-                            msg_decoded = urllib.parse.unquote(msg_encoded)
-                            with st.expander("💬 View Sample Message Content"):
-                                st.code(msg_decoded, language=None)
-                    
-                    st.write("") # Spacer
-                    st.download_button(
-                        label="📥 Download WhatsApp Verification File",
-                        data=excel_data,
-                        file_name="whatsapp_orders.xlsx",
-                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        use_container_width=True
-                    )
-                    
-        except Exception as e:
-            st.error(f"Error: {str(e)}")
+        # Unified Workspace Control Hub
+        st.divider()
+        st.subheader("Workspace Control")
+        with st.expander("Reset Active Tool Data", expanded=True):
+            registered = st.session_state.get("registered_resets", {})
+            if not registered:
+                st.info("No active tool data found.")
+            else:
+                tool_to_wipe = st.selectbox("Select tool", list(registered.keys()))
+                if st.button(
+                    "Reset Tool Now", use_container_width=True, type="primary"
+                ):
+                    registered[tool_to_wipe]["fn"]()
+                    st.session_state.confirm_tool_reset = False
+                    st.success("Cleaned!")
+                    st.rerun()
 
-if __name__ == "__main__":
-    main()
+        st.divider()
+        if st.button("Full System Reset", use_container_width=True, type="secondary"):
+            st.session_state.confirm_app_reset = True
+
+        if st.session_state.get("confirm_app_reset"):
+            st.warning("⚠️ Wipe EVERYTHING?")
+            c1, c2 = st.columns(2)
+            if c1.button("Yes", type="primary", use_container_width=True):
+                from app_modules.persistence import STATE_FILE
+
+                if os.path.exists(STATE_FILE):
+                    os.remove(STATE_FILE)
+                st.session_state.clear()
+                st.rerun()
+            if c2.button("No", use_container_width=True):
+                st.session_state.confirm_app_reset = False
+                st.rerun()
+
+        with st.expander("System Logs", expanded=False):
+            logs = get_logs()
+            if not logs:
+                st.info("No system events logged.")
+            else:
+                for log in reversed(logs[-20:]):
+                    st.caption(f"**{log.get('timestamp')}** | {log.get('context')}")
+                    st.text(log.get("error"))
+                    st.divider()
+                if st.button("Clear logs", use_container_width=True):
+                    if os.path.exists(ERROR_LOG_FILE):
+                        os.remove(ERROR_LOG_FILE)
+                    st.rerun()
+
+    render_header()
+    if st.session_state.get("show_animation"):
+        render_bike_animation()
+
+    nav_tabs = st.tabs(PRIMARY_NAV)
+
+    with nav_tabs[0]:
+        render_live_tab()
+
+    with nav_tabs[1]:
+        render_manual_tab()
+
+    with nav_tabs[2]:
+        render_pathao_tab()
+
+    with nav_tabs[3]:
+        render_distribution_tab(search_q=st.session_state.get("inv_matrix_search", ""))
+
+    with nav_tabs[4]:
+        render_wp_tab()
+
+    with nav_tabs[5]:
+        render_fuzzy_parser_tab()
+
+    render_footer()
+
+
+try:
+    run_app()
+except Exception as exc:
+    # Failsafe to prevent full redacted crash pages on Streamlit Cloud.
+    from app_modules.error_handler import log_error
+
+    log_error(exc, context="App Bootstrap")
+    st.error(
+        "Application failed to render. Check 'More Tools -> System Logs' for details."
+    )
+    st.code(str(exc))

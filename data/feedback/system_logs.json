@@ -1,0 +1,176 @@
+[
+    {
+        "timestamp": "2026-04-02 12:52:51",
+        "type": "LIVE_FILE_ERROR",
+        "details": "HTTP Error 400: Bad Request"
+    },
+    {
+        "timestamp": "2026-04-02 13:45:14",
+        "type": "LIVE_FILE_ERROR",
+        "details": "HTTP Error 401: Unauthorized"
+    },
+    {
+        "timestamp": "2026-04-02 13:47:06",
+        "type": "LIVE_FILE_ERROR",
+        "details": "HTTP Error 401: Unauthorized"
+    },
+    {
+        "timestamp": "2026-04-02 16:44:22",
+        "type": "LIVE_FILE_ERROR",
+        "details": "name 'render_reset_confirm' is not defined"
+    },
+    {
+        "timestamp": "2026-04-02 16:44:28",
+        "type": "LIVE_FILE_ERROR",
+        "details": "name 'render_reset_confirm' is not defined"
+    },
+    {
+        "timestamp": "2026-04-02 16:44:41",
+        "type": "LIVE_FILE_ERROR",
+        "details": "name 'render_reset_confirm' is not defined"
+    },
+    {
+        "timestamp": "2026-04-02 16:45:29",
+        "type": "LIVE_FILE_ERROR",
+        "details": "name 'render_reset_confirm' is not defined"
+    },
+    {
+        "timestamp": "2026-04-02 16:46:01",
+        "type": "LIVE_FILE_ERROR",
+        "details": "name 'render_reset_confirm' is not defined"
+    },
+    {
+        "timestamp": "2026-04-02 16:46:34",
+        "type": "LIVE_FILE_ERROR",
+        "details": "name 'render_reset_confirm' is not defined"
+    },
+    {
+        "timestamp": "2026-04-02 16:46:59",
+        "type": "LIVE_FILE_ERROR",
+        "details": "name 'render_reset_confirm' is not defined"
+    },
+    {
+        "timestamp": "2026-04-04 09:41:54",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 1,
+            "samples": [
+                "Unknown Product"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-04 09:41:56",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 1,
+            "samples": [
+                "Unknown Product"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-04 09:42:05",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 1,
+            "samples": [
+                "Unknown Product"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-04 12:46:24",
+        "type": "LIVE_FILE_ERROR",
+        "details": "cannot access local variable 'os' where it is not associated with a value"
+    },
+    {
+        "timestamp": "2026-04-04 13:56:32",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 5,
+            "samples": [
+                "105-0401-008",
+                "105-0401-002",
+                "103-0100-119",
+                "105-0301-003",
+                "105-0301-006"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-04 14:29:42",
+        "type": "LIVE_FILE_ERROR",
+        "details": "name 'tz_bd' is not defined"
+    },
+    {
+        "timestamp": "2026-04-05 16:19:03",
+        "type": "LIVE_FILE_ERROR",
+        "details": "HTTP Error 400: Bad Request"
+    },
+    {
+        "timestamp": "2026-04-05 16:22:40",
+        "type": "LIVE_FILE_ERROR",
+        "details": "HTTP Error 400: Bad Request"
+    },
+    {
+        "timestamp": "2026-04-06 10:53:33",
+        "type": "LIVE_FILE_ERROR",
+        "details": "No XLSX/CSV found in incoming folder."
+    },
+    {
+        "timestamp": "2026-04-06 10:53:38",
+        "type": "LIVE_FILE_ERROR",
+        "details": "WooCommerce integration requires WC_URL, WC_KEY, and WC_SECRET in secrets/environment."
+    },
+    {
+        "timestamp": "2026-04-06 10:57:06",
+        "type": "LIVE_FILE_ERROR",
+        "details": "WooCommerce integration requires WC_URL, WC_KEY, and WC_SECRET in secrets/environment."
+    },
+    {
+        "timestamp": "2026-04-06 10:57:40",
+        "type": "LIVE_FILE_ERROR",
+        "details": "HTTP Error 404: Not Found"
+    },
+    {
+        "timestamp": "2026-04-06 10:58:19",
+        "type": "LIVE_FILE_ERROR",
+        "details": "HTTP Error 404: Not Found"
+    },
+    {
+        "timestamp": "2026-04-06 10:58:23",
+        "type": "LIVE_FILE_ERROR",
+        "details": "HTTP Error 404: Not Found"
+    },
+    {
+        "timestamp": "2026-04-06 10:58:24",
+        "type": "LIVE_FILE_ERROR",
+        "details": "HTTP Error 404: Not Found"
+    },
+    {
+        "timestamp": "2026-04-06 10:58:31",
+        "type": "LIVE_FILE_ERROR",
+        "details": "WooCommerce integration requires WC_URL, WC_KEY, and WC_SECRET in secrets/environment."
+    },
+    {
+        "timestamp": "2026-04-06 10:59:20",
+        "type": "LIVE_FILE_ERROR",
+        "details": "HTTP Error 404: Not Found"
+    },
+    {
+        "timestamp": "2026-04-06 11:03:55",
+        "type": "LIVE_FILE_ERROR",
+        "details": "HTTP Error 404: Not Found"
+    },
+    {
+        "timestamp": "2026-04-06 11:05:02",
+        "type": "LIVE_FILE_ERROR",
+        "details": "HTTP Error 404: Not Found"
+    },
+    {
+        "timestamp": "2026-04-06 11:05:07",
+        "type": "LIVE_FILE_ERROR",
+        "details": "WooCommerce integration requires WC_URL, WC_KEY, and WC_SECRET in secrets/environment."
+    }
+]

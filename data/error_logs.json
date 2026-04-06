@@ -1,0 +1,205 @@
+[
+    {
+        "timestamp": "2026-04-02 16:32:12",
+        "context": "App Bootstrap",
+        "error": "render_reset_confirm() missing 1 required positional argument: 'reset_fn'",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 154, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 30, in run_app\n    from app_modules.distribution_tab import render_distribution_tab\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\distribution_tab.py\", line 168, in <module>\n    render_reset_confirm(\"inventory\", _reset_inventory_state)\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: render_reset_confirm() missing 1 required positional argument: 'reset_fn'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-02 16:32:32",
+        "context": "App Bootstrap",
+        "error": "render_reset_confirm() missing 1 required positional argument: 'reset_fn'",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 142, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 30, in run_app\n    from app_modules.distribution_tab import render_distribution_tab\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\distribution_tab.py\", line 168, in <module>\n    render_reset_confirm(\"inventory\", _reset_inventory_state)\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: render_reset_confirm() missing 1 required positional argument: 'reset_fn'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-02 16:32:53",
+        "context": "App Bootstrap",
+        "error": "render_reset_confirm() missing 1 required positional argument: 'reset_fn'",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 142, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 30, in run_app\n    from app_modules.distribution_tab import render_distribution_tab\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\distribution_tab.py\", line 168, in <module>\n    render_reset_confirm(\"inventory\", _reset_inventory_state)\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: render_reset_confirm() missing 1 required positional argument: 'reset_fn'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-02 16:33:03",
+        "context": "App Bootstrap",
+        "error": "render_reset_confirm() missing 1 required positional argument: 'reset_fn'",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 142, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 30, in run_app\n    from app_modules.distribution_tab import render_distribution_tab\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\distribution_tab.py\", line 168, in <module>\n    render_reset_confirm(\"inventory\", _reset_inventory_state)\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: render_reset_confirm() missing 1 required positional argument: 'reset_fn'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-02 16:33:36",
+        "context": "App Bootstrap",
+        "error": "render_reset_confirm() missing 1 required positional argument: 'reset_fn'",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 142, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 30, in run_app\n    from app_modules.distribution_tab import render_distribution_tab\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\distribution_tab.py\", line 168, in <module>\n    render_reset_confirm(\"inventory\", _reset_inventory_state)\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: render_reset_confirm() missing 1 required positional argument: 'reset_fn'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-02 16:46:59",
+        "context": "App Bootstrap",
+        "error": "name 'render_reset_confirm' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 143, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 121, in run_app\n    render_manual_tab()\n    ~~~~~~~~~~~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\sales_dashboard.py\", line 838, in render_manual_tab\n    render_reset_confirm(\"Sales Dashboard (Manual)\", \"manual\", _reset_manual_state)\n    ^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_reset_confirm' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-02 16:47:19",
+        "context": "App Bootstrap",
+        "error": "name 'render_reset_confirm' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 143, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 118, in run_app\n    render_live_tab()\n    ~~~~~~~~~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\sales_dashboard.py\", line 901, in render_live_tab\n    render_reset_confirm(\"Live Dashboard\", \"live\", _reset_live_state)\n    ^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_reset_confirm' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-02 16:47:52",
+        "context": "App Bootstrap",
+        "error": "name 'render_reset_confirm' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 143, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 118, in run_app\n    render_live_tab()\n    ~~~~~~~~~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\sales_dashboard.py\", line 901, in render_live_tab\n    render_reset_confirm(\"Live Dashboard\", \"live\", _reset_live_state)\n    ^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_reset_confirm' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-02 16:48:14",
+        "context": "App Bootstrap",
+        "error": "name 'render_reset_confirm' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 143, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 118, in run_app\n    render_live_tab()\n    ~~~~~~~~~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\sales_dashboard.py\", line 901, in render_live_tab\n    render_reset_confirm(\"Live Dashboard\", \"live\", _reset_live_state)\n    ^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_reset_confirm' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-02 16:48:57",
+        "context": "App Bootstrap",
+        "error": "name 'render_reset_confirm' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 127, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 102, in run_app\n    render_live_tab()\n    ~~~~~~~~~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\sales_dashboard.py\", line 901, in render_live_tab\n    render_reset_confirm(\"Live Dashboard\", \"live\", _reset_live_state)\n    ^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_reset_confirm' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-02 16:50:27",
+        "context": "App Bootstrap",
+        "error": "name 'render_reset_confirm' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 127, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 102, in run_app\n    render_live_tab()\n    ~~~~~~~~~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\sales_dashboard.py\", line 901, in render_live_tab\n    render_reset_confirm(\"live\", _reset_live_state)\n    ^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_reset_confirm' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-02 16:51:55",
+        "context": "App Bootstrap",
+        "error": "name 'render_reset_confirm' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 127, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 102, in run_app\n    render_live_tab()\n    ~~~~~~~~~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\sales_dashboard.py\", line 901, in render_live_tab\n    render_reset_confirm(\"live\", _reset_live_state)\n    ^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_reset_confirm' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-02 16:52:49",
+        "context": "App Bootstrap",
+        "error": "name 'render_reset_confirm' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 127, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 102, in run_app\n    render_live_tab()\n    ~~~~~~~~~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\sales_dashboard.py\", line 901, in render_live_tab\n    render_reset_confirm(\"live\", _reset_live_state)\n    ^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_reset_confirm' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-02 16:53:20",
+        "context": "App Bootstrap",
+        "error": "name 'render_reset_confirm' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 127, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 102, in run_app\n    render_live_tab()\n    ~~~~~~~~~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\sales_dashboard.py\", line 901, in render_live_tab\n    render_reset_confirm(\"live\", _reset_live_state)\n    ^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_reset_confirm' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-02 16:53:25",
+        "context": "App Bootstrap",
+        "error": "name 'render_reset_confirm' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 127, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 102, in run_app\n    render_live_tab()\n    ~~~~~~~~~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\sales_dashboard.py\", line 901, in render_live_tab\n    render_reset_confirm(\"live\", _reset_live_state)\n    ^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_reset_confirm' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-02 16:53:39",
+        "context": "App Bootstrap",
+        "error": "name 'render_reset_confirm' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 127, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 102, in run_app\n    render_live_tab()\n    ~~~~~~~~~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\sales_dashboard.py\", line 901, in render_live_tab\n    render_reset_confirm(\"live\", _reset_live_state)\n    ^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_reset_confirm' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-02 16:54:15",
+        "context": "App Bootstrap",
+        "error": "name 'render_reset_confirm' is not defined",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 127, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 102, in run_app\n    render_live_tab()\n    ~~~~~~~~~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\sales_dashboard.py\", line 901, in render_live_tab\n    render_reset_confirm(\"live\", _reset_live_state)\n    ^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_reset_confirm' is not defined\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-02 16:58:43",
+        "context": "App Bootstrap",
+        "error": "render_reset_confirm() missing 1 required positional argument: 'reset_fn'",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 143, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 118, in run_app\n    render_live_tab()\n    ~~~~~~~~~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\sales_dashboard.py\", line 901, in render_live_tab\n    render_reset_confirm(\"live\", _reset_live_state)\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: render_reset_confirm() missing 1 required positional argument: 'reset_fn'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-02 16:59:03",
+        "context": "App Bootstrap",
+        "error": "render_reset_confirm() missing 1 required positional argument: 'reset_fn'",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 143, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 127, in run_app\n    render_fuzzy_parser_tab()\n    ~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\fuzzy_parser_tab.py\", line 276, in render_fuzzy_parser_tab\n    render_reset_confirm(\"parser\", _reset_parser_state)\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: render_reset_confirm() missing 1 required positional argument: 'reset_fn'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-04 10:07:50",
+        "context": "App Bootstrap",
+        "error": "tuple index out of range",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 143, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 129, in run_app\n    with nav_tabs[4]:\n         ~~~~~~~~^^^\nIndexError: tuple index out of range\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-04 10:43:29",
+        "context": "App Bootstrap",
+        "error": "'NoneType' object has no attribute 'iterrows'",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 143, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 132, in run_app\n    render_wp_tab()\n    ~~~~~~~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\wp_tab.py\", line 170, in render_wp_tab\n    for _, row in links_df.iterrows():\n                  ^^^^^^^^^^^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'iterrows'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-04 11:01:44",
+        "context": "App Bootstrap",
+        "error": "'NoneType' object has no attribute 'iterrows'",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 143, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 132, in run_app\n    render_wp_tab()\n    ~~~~~~~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\wp_tab.py\", line 170, in render_wp_tab\n    for _, row in links_df.iterrows():\n                  ^^^^^^^^^^^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'iterrows'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-04 14:06:52",
+        "context": "App Bootstrap",
+        "error": "A non-empty `title` argument has to be provided for dialogs, for example `@st.dialog(\"Example Title\")`.",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 144, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 38, in run_app\n    from app_modules.sales_dashboard import render_live_tab, render_manual_tab\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\sales_dashboard.py\", line 808, in <module>\n    @st.dialog(\"\", width=\"large\")\n     ~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\streamlit\\elements\\dialog_decorator.py\", line 301, in wrapper\n    return _dialog_decorator(\n        non_optional_func=f,\n    ...<4 lines>...\n        on_dismiss=on_dismiss,\n    )\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\streamlit\\elements\\dialog_decorator.py\", line 72, in _dialog_decorator\n    raise StreamlitAPIException(\n    ...<2 lines>...\n    )\nstreamlit.errors.StreamlitAPIException: A non-empty `title` argument has to be provided for dialogs, for example `@st.dialog(\"Example Title\")`.\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-06 11:08:52",
+        "context": "Pathao Live Pull",
+        "error": "load_live_source() takes 0 positional arguments but 1 was given",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\pathao_tab.py\", line 66, in render_pathao_tab\n    df_live, source_name, _ = load_live_source(source_options[default_idx])\n                              ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: load_live_source() takes 0 positional arguments but 1 was given\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-06 11:08:59",
+        "context": "Inventory Live Pull",
+        "error": "load_live_source() takes 0 positional arguments but 1 was given",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\distribution_tab.py\", line 83, in render_distribution_tab\n    df_live, source_name, _ = load_live_source(source_options[default_idx])\n                              ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: load_live_source() takes 0 positional arguments but 1 was given\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-06 11:09:03",
+        "context": "WP Live Pull",
+        "error": "load_live_source() takes 0 positional arguments but 1 was given",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\wp_tab.py\", line 99, in render_wp_tab\n    df_live, _, _ = load_live_source(source_options[default_idx])\n                    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: load_live_source() takes 0 positional arguments but 1 was given\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-06 11:11:43",
+        "context": "Pathao Processor",
+        "error": "Index(['Order Number'], dtype='object')",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\pathao_tab.py\", line 104, in render_pathao_tab\n    result_df = process_orders_dataframe(preview_df)\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\processor.py\", line 235, in process_orders_dataframe\n    record = process_single_order_group(phone, group, data_cols)\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\processor.py\", line 75, in process_single_order_group\n    unique_orders = group.drop_duplicates(subset=[\"Order Number\"])\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\pandas\\core\\frame.py\", line 6840, in drop_duplicates\n    result = self[-self.duplicated(subset, keep=keep)]\n                   ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\pandas\\core\\frame.py\", line 6972, in duplicated\n    raise KeyError(Index(diff))\nKeyError: Index(['Order Number'], dtype='object')\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-06 11:12:33",
+        "context": "Pathao Processor",
+        "error": "Index(['Order Number'], dtype='object')",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\pathao_tab.py\", line 104, in render_pathao_tab\n    result_df = process_orders_dataframe(preview_df)\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\processor.py\", line 235, in process_orders_dataframe\n    record = process_single_order_group(phone, group, data_cols)\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\processor.py\", line 75, in process_single_order_group\n    unique_orders = group.drop_duplicates(subset=[\"Order Number\"])\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\pandas\\core\\frame.py\", line 6840, in drop_duplicates\n    result = self[-self.duplicated(subset, keep=keep)]\n                   ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\pandas\\core\\frame.py\", line 6972, in duplicated\n    raise KeyError(Index(diff))\nKeyError: Index(['Order Number'], dtype='object')\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-06 11:12:35",
+        "context": "Pathao Processor",
+        "error": "Index(['Order Number'], dtype='object')",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\pathao_tab.py\", line 104, in render_pathao_tab\n    result_df = process_orders_dataframe(preview_df)\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\processor.py\", line 235, in process_orders_dataframe\n    record = process_single_order_group(phone, group, data_cols)\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\processor.py\", line 75, in process_single_order_group\n    unique_orders = group.drop_duplicates(subset=[\"Order Number\"])\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\pandas\\core\\frame.py\", line 6840, in drop_duplicates\n    result = self[-self.duplicated(subset, keep=keep)]\n                   ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\pandas\\core\\frame.py\", line 6972, in duplicated\n    raise KeyError(Index(diff))\nKeyError: Index(['Order Number'], dtype='object')\n",
+        "details": {}
+    }
+]
