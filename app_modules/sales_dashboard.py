@@ -163,61 +163,58 @@ def get_gcp_service_account_info():
 
 
 def get_category(name):
-    """Categorizes products based on keywords in their names."""
+    """Categorizes products based on detailed keywords and logic (merged from analytics)."""
     name_str = str(name).lower()
 
-    def has_any(keywords, text):
-        return any(
-            re.search(rf"\b{re.escape(kw.lower())}\b", text, re.IGNORECASE)
-            for kw in keywords
-        )
+    # Detailed lambda-based rules for high-precision categorization
+    stock_rules = {
+        "Jeans Slim Fit": lambda n: "jeans" in n and "slim fit" in n,
+        "Jeans Regular Fit": lambda n: "jeans" in n and "regular fit" in n,
+        "Jeans Straight Fit": lambda n: "jeans" in n and "straight fit" in n,
+        "Panjabi": lambda n: "panjabi" in n,
+        "Active Wear": lambda n: "active wear" in n,
+        "T-shirt Basic Full": lambda n: "t-shirt" in n and "full sleeve" in n,
+        "T-shirt Drop-Shoulder": lambda n: "t-shirt" in n and ("drop-shoulder" in n or "drop shoulder" in n),
+        "T-shirt Basic Half": lambda n: "t-shirt" in n and not ("full sleeve" in n or "drop-shoulder" in n or "drop shoulder" in n),
+        "Sweatshirt": lambda n: "sweatshirt" in n,
+        "Turtle-Neck": lambda n: "turtle-neck" in n or "turtleneck" in n,
+        "Tank-Top": lambda n: "tank-top" in n or "tank top" in n,
+        "Trousers Cotton": lambda n: ("trouser" in n or "jogger" in n or "pant" in n) and ("twill" in n or "chino" in n or "cotton" in n),
+        "Trousers Terry": lambda n: ("trouser" in n or "jogger" in n or "pant" in n) and "terry" in n,
+        "Polo": lambda n: "polo" in n,
+        "Kaftan Shirt": lambda n: "kaftan" in n,
+        "Denim Shirt": lambda n: "denim" in n and "shirt" in n,
+        "Flannel Shirt": lambda n: "flannel" in n and "shirt" in n,
+        "Casual Shirt Full": lambda n: "shirt" in n and "full sleeve" in n and not any(k in n for k in ["denim", "flannel", "kaftan", "polo"]),
+        "Casual Shirt Half": lambda n: "shirt" in n and not any(k in n for k in ["full sleeve", "denim", "flannel", "kaftan", "polo", "t-shirt"]),
+        "Belt": lambda n: "belt" in n,
+        "Wallet": lambda n: "wallet" in n,
+        "Mask": lambda n: "mask" in n,
+        "Water Bottle": lambda n: "water bottle" in n,
+        "Boxer": lambda n: "boxer" in n,
+    }
 
-    specific_cats = {
-        "Tank Top": ["tank top"],
-        "Boxer": ["boxer"],
-        "Jeans": ["jeans"],
-        "Denim Shirt": ["denim"],
-        "Flannel Shirt": ["flannel"],
-        "Polo Shirt": ["polo"],
-        "Panjabi": ["panjabi", "punjabi"],
-        "Trousers": [
-            "trousers",
-            "pant",
-            "cargo",
-            "trouser",
-            "joggers",
-            "track pant",
-            "jogger",
-        ],
-        "Twill Chino": ["twill chino"],
-        "Mask": ["mask"],
+    # First try high-precision rules
+    for cat, rule in stock_rules.items():
+        if rule(name_str):
+            return cat
+
+    # Fallback to broader keyword matching
+    def has_any(keywords, text):
+        return any(re.search(rf"\b{re.escape(kw.lower())}\b", text, re.IGNORECASE) for kw in keywords)
+
+    broader_cats = {
         "Leather Bag": ["bag", "backpack"],
-        "Water Bottle": ["water bottle"],
-        "Contrast Shirt": ["contrast"],
-        "Turtleneck": ["turtleneck", "mock neck"],
-        "Drop Shoulder": ["drop", "shoulder"],
-        "Wallet": ["wallet"],
-        "Kaftan Shirt": ["kaftan"],
-        "Active Wear": ["active wear"],
         "Jersy": ["jersy"],
-        "Sweatshirt": ["sweatshirt", "hoodie", "pullover"],
         "Jacket": ["jacket", "outerwear", "coat"],
-        "Belt": ["belt"],
         "Sweater": ["sweater", "cardigan", "knitwear"],
         "Passport Holder": ["passport holder"],
         "Cap": ["cap"],
     }
 
-    for cat, keywords in specific_cats.items():
+    for cat, keywords in broader_cats.items():
         if has_any(keywords, name_str):
             return cat
-
-    fs_keywords = ["full sleeve", "long sleeve", "fs", "l/s"]
-    if has_any(["t-shirt", "t shirt", "tee"], name_str):
-        return "FS T-Shirt" if has_any(fs_keywords, name_str) else "T-Shirt"
-
-    if has_any(["shirt"], name_str):
-        return "FS Shirt" if has_any(fs_keywords, name_str) else "HS Shirt"
 
     return "Others"
 
@@ -463,71 +460,172 @@ def load_from_woocommerce():
             "WooCommerce integration requires WC_URL, WC_KEY, and WC_SECRET (or [woocommerce] table in secrets.toml)."
         )
 
-    # Standard WooCommerce endpoint for orders
+    # Unified WooCommerce API fetching with multi-page support
     endpoint = f"{wc_url.rstrip('/')}/wp-json/wc/v3/orders"
-
+    rows = []
+    
     try:
         from datetime import timezone, timedelta
-
-        # Calculate cutoff: 5 PM of the previous day (Local Time)
         tz_bd = timezone(timedelta(hours=6))
-        now_bd = datetime.now(tz_bd)
-        yesterday_5pm = (now_bd - timedelta(days=1)).replace(
-            hour=17, minute=0, second=0, microsecond=0
-        )
-
+        
+        # Determine pulling window based on user selection in session state
+        sync_mode = st.session_state.get("wc_sync_mode", "Operational Cycle")
+        
         params = {
             "per_page": 100,
-            "after": yesterday_5pm.isoformat(),
             "status": "processing,completed,shipped",
+            "orderby": "date",
+            "order": "desc"
         }
 
-        # Some legacy servers might need query param auth, but Basic Auth over HTTPS is standard.
-        response = requests.get(
-            endpoint,
-            params=params,
-            auth=HTTPBasicAuth(wc_key, wc_secret),
-            timeout=15,
-        )
-        response.raise_for_status()
-        orders = response.json()
+        def get_operational_sync_window(ref_time):
+            # Thursday 5 PM to Saturday 5 PM is the weekend slot (Bangladesh)
+            # anchor_5pm is 17:00 of the reference day
+            anchor_5pm = ref_time.replace(hour=17, minute=0, second=0, microsecond=0)
+            if ref_time >= anchor_5pm:
+                start = anchor_5pm
+            else:
+                start = anchor_5pm - timedelta(days=1)
+            
+            # Weekend adjustment: Friday is covered by the Thu-Sat slot
+            if start.weekday() == 4: # Friday
+                start -= timedelta(days=1) # Back to Thu 17:00
+            
+            # Duration adjustment
+            if start.weekday() == 3: # Thu 17:00
+                end = start + timedelta(days=2) # To Sat 17:00
+            else:
+                end = start + timedelta(days=1)
+                
+            return start, end
 
-        if not orders:
+        # Specialized Fetching Strategy for Operational Cycle
+        if sync_mode == "Operational Cycle":
+            now_bd = datetime.now(tz_bd)
+            curr_start, curr_end = get_operational_sync_window(now_bd)
+            prev_start, prev_end = get_operational_sync_window(curr_start - timedelta(seconds=1))
+            st.session_state.wc_curr_slot = (curr_start, curr_end)
+            st.session_state.wc_prev_slot = (prev_start, prev_end)
+            
+            # Request 1: All relevant statuses within the broad operational window
+            # (since prev_start, to catch both current and previous slots)
+            params["after"] = prev_start.isoformat()
+            params["before"] = curr_end.isoformat()
+            params["status"] = "processing,completed,shipped,on-hold,pending"
+            
+            # Fetch Batch 1 (Window based)
+            def fetch_batch(p):
+                b_rows = []
+                page = 1
+                while True:
+                    r = requests.get(endpoint, params={**p, "page": page}, auth=HTTPBasicAuth(wc_key, wc_secret), timeout=15)
+                    r.raise_for_status()
+                    batch_data = r.json()
+                    if not batch_data: break
+                    for order in batch_data:
+                        oid, d_val, status = order.get("id"), order.get("date_created"), order.get("status")
+                        bill = order.get("billing", {})
+                        c_name = f"{bill.get('first_name','')} {bill.get('last_name','')}".strip()
+                        for item in order.get("line_items", []):
+                            b_rows.append({"Order ID": oid, "Order Date": d_val, "Order Status": status, "Full Name (Billing)": c_name, "Phone (Billing)": bill.get("phone",""), "Item Name": item.get("name"), "Item Cost": item.get("price"), "Quantity": item.get("quantity"), "Order Total Amount": item.get("total")})
+                    if len(batch_data) < 100: break
+                    page += 1
+                return b_rows
+
+            rows = fetch_batch(params)
+
+            # Request 2: Global Open Orders (On-Hold & Pending/Waiting) Regardless of date
+            # To catch "hold order time is from any time" and "waiting orders from any time"
+            global_params = {
+                "per_page": 100,
+                "status": "on-hold,pending",
+                "orderby": "date",
+                "order": "desc"
+            }
+            global_rows = fetch_batch(global_params)
+            
+            # Merge and deduplicate by Order ID + Item Name (to avoid double counting if they overlap in the window)
+            # Efficiently merging two lists of dicts
+            seen_items = set()
+            merged_rows = []
+            for r in rows + global_rows:
+                key = (r["Order ID"], r["Item Name"])
+                if key not in seen_items:
+                    merged_rows.append(r)
+                    seen_items.add(key)
+            rows = merged_rows
+
+        else: # Custom Range mode
+            start_date = st.session_state.get("wc_sync_start_date", datetime.now().date())
+            start_time = st.session_state.get("wc_sync_start_time", (datetime.now() - timedelta(hours=12)).time())
+            end_date = st.session_state.get("wc_sync_end_date", datetime.now().date())
+            end_time = st.session_state.get("wc_sync_end_time", datetime.now().time())
+            params["after"] = f"{start_date}T{start_time.strftime('%H:%M:%S')}"
+            params["before"] = f"{end_date}T{end_time.strftime('%H:%M:%S')}"
+            params["status"] = "processing,completed,shipped,on-hold,pending"
+            
+            page = 1
+            while True:
+                r = requests.get(endpoint, params={**params, "page": page}, auth=HTTPBasicAuth(wc_key, wc_secret), timeout=15)
+                r.raise_for_status()
+                batch_data = r.json()
+                if not batch_data: break
+                for order in batch_data:
+                    oid, d_val, status = order.get("id"), order.get("date_created"), order.get("status")
+                    bill = order.get("billing", {})
+                    c_name = f"{bill.get('first_name','')} {bill.get('last_name','')}".strip()
+                    for item in order.get("line_items", []):
+                        rows.append({"Order ID": oid, "Order Date": d_val, "Order Status": status, "Full Name (Billing)": c_name, "Phone (Billing)": bill.get("phone",""), "Item Name": item.get("name"), "Item Cost": item.get("price"), "Quantity": item.get("quantity"), "Order Total Amount": item.get("total")})
+                if len(batch_data) < 100: break
+                page += 1
+
+        df_full = pd.DataFrame(rows)
+        if df_full.empty:
             return pd.DataFrame(), "woocommerce_api", "N/A"
 
-        # Flatten orders and line items
-        rows = []
-        for order in orders:
-            order_id = order.get("id")
-            # date_created contains the ISO 8601 string
-            date_val = order.get("date_created")
-            billing = order.get("billing", {})
-            phone = billing.get("phone", "")
-            first_name = billing.get("first_name", "")
-            last_name = billing.get("last_name", "")
-            customer_name = f"{first_name} {last_name}".strip()
+        # Local partitioning for Operational Cycles
+        if sync_mode == "Operational Cycle":
+            df_full["dt_parsed"] = pd.to_datetime(df_full["Order Date"], errors="coerce").dt.tz_localize(None)
+            curr_start = st.session_state.wc_curr_slot[0].replace(tzinfo=None)
+            curr_end = st.session_state.wc_curr_slot[1].replace(tzinfo=None)
+            prev_start = st.session_state.wc_prev_slot[0].replace(tzinfo=None)
+            prev_end = st.session_state.wc_prev_slot[1].replace(tzinfo=None)
+            
+            # Define Status Categories
+            is_shipped = df_full["Order Status"].isin(["completed", "shipped"])
+            is_processing = df_full["Order Status"] == "processing"
+            is_hold = df_full["Order Status"] == "on-hold"
+            is_waiting = df_full["Order Status"] == "pending"
 
-            line_items = order.get("line_items", [])
-            for item in line_items:
-                rows.append(
-                    {
-                        "Order ID": order_id,
-                        "Order Date": date_val,
-                        "Full Name (Billing)": customer_name,
-                        "Phone (Billing)": phone,
-                        "Item Name": item.get("name"),
-                        "Item Cost": item.get("price"),
-                        "Quantity": item.get("quantity"),
-                        "Order Total Amount": item.get("total"),
-                    }
-                )
+            # 1. CURRENT SLOT:
+            # - processing/shipped order in CURRENT timeframe
+            # - hold order from ANY timeframe
+            in_curr_win = (df_full["dt_parsed"] >= curr_start) & (df_full["dt_parsed"] < curr_end)
+            df_live = df_full[
+                (in_curr_win & (is_processing | is_shipped)) |
+                (is_hold)
+            ].copy()
+            st.session_state.wc_curr_df = scrub_raw_dataframe(df_live)
+            
+            # 2. PREVIOUS SLOT:
+            # - shipped from PREVIOUS timeframe
+            # - waiting orders (pending) from ANY timeframe
+            in_prev_win = (df_full["dt_parsed"] >= prev_start) & (df_full["dt_parsed"] < prev_end)
+            df_prev = df_full[
+                (in_prev_win & is_shipped) |
+                (is_waiting)
+            ].copy()
+            
+            st.session_state.wc_prev_df = scrub_raw_dataframe(df_prev)
+        else:
+            df_live = df_full
+            st.session_state.wc_curr_df = None # Not used
 
-        df_live = pd.DataFrame(rows)
-        # Apply standard cleansing
         df_live = scrub_raw_dataframe(df_live)
-
+        
+        sync_desc = f"WooCommerce_API_{len(df_live)}_Orders"
         modified_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        return df_live, f"WooCommerce_API_{len(orders)}_Orders", modified_at
+        return df_live, sync_desc, modified_at
 
     except Exception as e:
         log_system_event("WC_API_ERROR", str(e))
@@ -592,6 +690,16 @@ def _render_welcome_popup_content(summ, basket, last_updated="N/A", focus="all")
             """,
             unsafe_allow_html=True,
         )
+
+        # DEEN BI OPS Branding
+        st.markdown(
+            """<div style="background: linear-gradient(90deg, #1e293b 0%, #334155 100%); padding: 20px; border-radius: 12px; color: white; margin-bottom: 25px;">
+                <h2 style="margin:0; font-size: 1.5rem;">🚀 DEEN BI OPS</h2>
+                <p style="margin:0; opacity: 0.8; font-size: 0.9rem;">Intelligence-Driven E-commerce Operations</p>
+            </div>""",
+            unsafe_allow_html=True
+        )
+        # Branding
         logo_src = "https://logo.clearbit.com/deencommerce.com"
         try:
             logo_jpg = os.path.join("assets", "deen_logo.jpg")
@@ -605,9 +713,9 @@ def _render_welcome_popup_content(summ, basket, last_updated="N/A", focus="all")
         st.markdown(
             f"""
             <div class="hub-welcome-banner">
-                <div style="font-weight: 700; font-size: 1.15rem; margin-bottom: 4px;">Welcome! Today's Actionable Insights</div>
+                <div style="font-weight: 700; font-size: 1.15rem; margin-bottom: 4px;">🚀 DEEN BI OPS: Active Shift Insights</div>
                 <div style="font-size: 0.85rem; opacity: 0.85;">
-                    Powered by <a href="https://deencommerce.com/" target="_blank" style="text-decoration:none;">
+                    Operating at <a href="https://deencommerce.com/" target="_blank" style="text-decoration:none;">
                         <img src="{logo_src}" width="16" style="vertical-align:middle; margin: 0 3px; border-radius:2px;" onerror="this.style.display='none'">
                         <b>DEEN Commerce</b>
                     </a>
@@ -616,6 +724,26 @@ def _render_welcome_popup_content(summ, basket, last_updated="N/A", focus="all")
             """,
             unsafe_allow_html=True,
         )
+
+        # Combined Metrics row in Popup (Command Center Style)
+        if st.session_state.get("wc_sync_mode") == "Operational Cycle" and st.session_state.get("wc_curr_df") is not None:
+            curr_df, prev_df = st.session_state.wc_curr_df, st.session_state.wc_prev_df
+            c_qty, c_rev = curr_df["Quantity"].sum(), (curr_df["Quantity"] * curr_df["Item Cost"]).sum()
+            p_qty, p_rev = (prev_df["Quantity"].sum(), (prev_df["Quantity"] * prev_df["Item Cost"]).sum()) if prev_df is not None else (0, 0)
+            
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric("Item to be sold", f"{c_qty:,.0f}", delta=f"{c_qty - p_qty:,.0f} vs Prev", delta_color="normal")
+            c2.metric("Revenue", f"TK {c_rev:,.0f}", delta=f"TK {c_rev - p_rev:,.0f} vs Prev", delta_color="normal")
+            c3.metric("Orders", f"{basket.get('total_orders', 0):,.0f}")
+            c4.metric("Basket (TK)", f"TK {basket.get('avg_basket_value', 0):,.0f}")
+            st.divider()
+        else:
+            # Standard Fallback
+            m1, m2 = st.columns(2)
+            m1.metric(get_items_sold_label(last_updated), f"{summ['Total Qty'].sum():,.0f}")
+            m2.metric("Revenue", f"TK {summ['Total Amount'].sum():,.0f}")
+            st.divider()
+
         if focus != "all":
             st.info(f"Focused view: {focus.replace('_', ' ').title()}")
 
@@ -755,134 +883,191 @@ else:
         st.info("Quick summary view (dialog not supported by this Streamlit version).")
         _render_welcome_popup_content(summ, basket, last_updated, focus)
 
-
 def render_dashboard_output(
     drill, summ, top, timeframe, basket, source_name, last_updated="N/A"
 ):
     """Renders common dashboard widgets/charts/tables/export."""
-    tz_bd = timezone(timedelta(hours=6))
-    today_key = datetime.now(tz_bd).strftime("%Y-%m-%d")
-    source_key = os.path.basename(str(source_name))
-    popup_key = f"popup_seen::{today_key}::{source_key}"
-    if not st.session_state.get(popup_key, False):
-        show_welcome_popup(summ, basket, last_updated)
-        st.session_state[popup_key] = True
+    # Welcome Insights Popup removed as requested
 
-    t_qty = summ["Total Qty"].sum()
-    t_rev = summ["Total Amount"].sum()
+    # Cross-Slot Comparison Metrics Engine
+    if st.session_state.get("wc_sync_mode") == "Operational Cycle" and st.session_state.get("wc_curr_df") is not None and st.session_state.get("wc_prev_df") is not None:
+        v_mode = st.session_state.get("wc_view_historical", False)
+        c_df, p_df = st.session_state.wc_curr_df, st.session_state.wc_prev_df
+        
+        # 1. Quantity & Revenue
+        c_qty, c_rev = c_df["Quantity"].sum(), (c_df["Quantity"] * c_df["Item Cost"]).sum()
+        p_qty, p_rev = p_df["Quantity"].sum(), (p_df["Quantity"] * p_df["Item Cost"]).sum()
+        
+        # 2. Orders & Basket
+        c_ord = c_df["Order ID"].nunique()
+        p_ord = p_df["Order ID"].nunique()
+        c_bv = (c_rev / c_ord) if c_ord > 0 else 0
+        p_bv = (p_rev / p_ord) if p_ord > 0 else 0
+        
+        # 3. Calculate Deltas (Always Today - Prev)
+        d_qty, d_rev = (c_qty - p_qty), (c_rev - p_rev)
+        d_ord, d_bv = (c_ord - p_ord), (c_bv - p_bv)
+        
+        # Select Active Display Values
+        main_q = p_qty if v_mode else c_qty
+        main_r = p_rev if v_mode else c_rev
+        main_o = p_ord if v_mode else c_ord
+        main_b = p_bv if v_mode else c_bv
+        
+        # 4. Contextual Delta Formatting
+        prefix = "Today " if v_mode else ""
+        suffix = "" if v_mode else " vs Prev"
+        
+        dq_str = f"{prefix}{d_qty:+,.0f}{suffix}"
+        dr_str = f"{prefix}{'+' if d_rev >= 0 else '-'}TK {abs(d_rev):,.0f}{suffix}"
+        do_str = f"{prefix}{d_ord:+,.0f}{suffix}"
+        db_str = f"{prefix}{'+' if d_bv >= 0 else '-'}TK {abs(d_bv):,.0f}{suffix}"
 
-    with st.container():
-        st.markdown('<div id="snapshot-target-main"></div>', unsafe_allow_html=True)
-        st.subheader("Core Metrics")
-        m1, m2, m3, m4 = st.columns(4)
-        m1.metric(get_items_sold_label(last_updated), f"{t_qty:,.0f}")
-        total_orders = basket.get("total_orders", 0)
-        m2.metric("Number of Orders", f"{total_orders:,.0f}" if total_orders else "-")
-        m3.metric("Revenue", f"TK {t_rev:,.0f}")
-        if basket.get("avg_basket_value", 0) > 0:
-            m4.metric("Basket Value (TK)", f"TK {basket['avg_basket_value']:,.0f}")
+        with st.container():
+            st.markdown('<div id="snapshot-target-main"></div>', unsafe_allow_html=True)
+            col1, col2, col3, col4, col5 = st.columns([1, 1.3, 1, 1.2, 1.8])
+            
+            with col1:
+                u_label = "Items sold" if v_mode else "Item to be sold"
+                st.metric(u_label, f"{main_q:,.0f}", delta=dq_str, delta_color="normal")
+            
+            with col2:
+                st.metric("Revenue", f"TK {main_r:,.0f}", delta=dr_str, delta_color="normal")
+            
+            with col3:
+                st.metric("Orders", f"{main_o:,.0f}", delta=do_str, delta_color="normal")
+            
+            with col4:
+                st.metric("Basket (TK)", f"TK {main_b:,.0f}", delta=db_str, delta_color="normal")
+            
+            with col5:
+                curr_s, curr_e = st.session_state.wc_curr_slot
+                prev_s, prev_e = st.session_state.wc_prev_slot
+                if not v_mode:
+                    st.caption(f"📍 **ACTIVE: Today**")
+                    st.caption(f"{curr_s.strftime('%a %d %b, %I%p')} - {curr_e.strftime('%a %d %b, %I%p')}")
+                    if st.button(f"⏮️ View Prev ({prev_s.strftime('%d %b')})", use_container_width=True):
+                        st.session_state.wc_view_historical = True
+                        st.rerun()
+                else:
+                    st.caption(f"⏮️ **ACTIVE: Previous Window**")
+                    st.caption(f"{prev_s.strftime('%a %d %b, %I%p')} → {prev_e.strftime('%a %d %b, %I%p')}")
+                    if st.button("📍 Return to Today", use_container_width=True, type="primary"):
+                        st.session_state.wc_view_historical = False
+                        st.rerun()
+            st.divider()
+
+    else:
+        # Standard Fallback for non-operational modes
+        with st.container():
+            st.markdown('<div id="snapshot-target-main"></div>', unsafe_allow_html=True)
+            st.subheader("Core Metrics")
+            m1, m2, m3, m4 = st.columns(4)
+            m1.metric(get_items_sold_label(last_updated), f"{summ['Total Qty'].sum():,.0f}")
+            total_orders = basket.get("total_orders", 0)
+            m2.metric("Number of Orders", f"{total_orders:,.0f}" if total_orders else "-")
+            m3.metric("Revenue", f"TK {summ['Total Amount'].sum():,.0f}")
+            m4.metric("Basket Value (TK)", f"TK {basket.get('avg_basket_value', 0):,.0f}")
+            st.divider()
+
+    st.subheader("Performance Outlook")
+    st.subheader("Visual Analytics")
+
+    sorted_cats = summ.sort_values("Total Amount", ascending=False)[
+        "Category"
+    ].tolist()
+    color_map = {}
+    for i, cat in enumerate(sorted_cats):
+        val = (
+            (i / max(1, len(sorted_cats) - 1)) * 0.85
+            if len(sorted_cats) > 1
+            else 0.0
+        )
+        color_map[cat] = px.colors.sample_colorscale("Plasma", [val])[0]
+
+    v1, v2 = st.columns(2)
+    with v1:
+        fig_pie = px.pie(
+            summ,
+            values="Total Amount",
+            names="Category",
+            color="Category",
+            hole=0.6,
+            title="Revenue Share",
+            color_discrete_map=color_map,
+        )
+
+        if (
+            hasattr(fig_pie, "data")
+            and len(fig_pie.data) > 0
+            and getattr(fig_pie.data[0], "values", None) is not None
+        ):
+            t_val = sum(fig_pie.data[0].values)
+            t_val = t_val if t_val > 0 else 1
+            pos_array = [
+                "inside" if (v / t_val) >= 0.02 else "none"
+                for v in fig_pie.data[0].values
+            ]
         else:
-            m4.metric("Basket Value (TK)", "-")
+            pos_array = "inside"
 
-        st.divider()
+        fig_pie.update_layout(
+            margin=dict(l=80, r=160, t=40, b=40),
+            showlegend=True,
+            legend=dict(
+                orientation="v",
+                yanchor="top",
+                y=1,
+                xanchor="left",
+                x=1.05,
+                font=dict(size=11),
+            ),
+            uniformtext_minsize=10,
+            uniformtext_mode="hide",
+        )
+        fig_pie.update_traces(
+            textposition=pos_array,
+            textinfo="label+percent",
+            textfont_size=11,
+            pull=0.01,
+            rotation=270,
+            direction="clockwise",
+        )
+        st.plotly_chart(
+            fig_pie,
+            use_container_width=True,
+            config={"scrollZoom": True, "displayModeBar": False},
+        )
 
-        st.subheader("Visual Analytics")
-
-        sorted_cats = summ.sort_values("Total Amount", ascending=False)[
-            "Category"
-        ].tolist()
-        color_map = {}
-        for i, cat in enumerate(sorted_cats):
-            val = (
-                (i / max(1, len(sorted_cats) - 1)) * 0.85
-                if len(sorted_cats) > 1
-                else 0.0
-            )
-            color_map[cat] = px.colors.sample_colorscale("Plasma", [val])[0]
-
-        v1, v2 = st.columns(2)
-        with v1:
-            fig_pie = px.pie(
-                summ,
-                values="Total Amount",
-                names="Category",
-                color="Category",
-                hole=0.6,
-                title="Revenue Share",
-                color_discrete_map=color_map,
-            )
-
-            if (
-                hasattr(fig_pie, "data")
-                and len(fig_pie.data) > 0
-                and getattr(fig_pie.data[0], "values", None) is not None
-            ):
-                t_val = sum(fig_pie.data[0].values)
-                t_val = t_val if t_val > 0 else 1
-                pos_array = [
-                    "inside" if (v / t_val) >= 0.02 else "none"
-                    for v in fig_pie.data[0].values
-                ]
-            else:
-                pos_array = "inside"
-
-            fig_pie.update_layout(
-                margin=dict(l=80, r=160, t=40, b=40),
-                showlegend=True,
-                legend=dict(
-                    orientation="v",
-                    yanchor="top",
-                    y=1,
-                    xanchor="left",
-                    x=1.05,
-                    font=dict(size=11),
-                ),
-                uniformtext_minsize=10,
-                uniformtext_mode="hide",
-            )
-            fig_pie.update_traces(
-                textposition=pos_array,
-                textinfo="label+percent",
-                textfont_size=11,
-                pull=0.01,
-                rotation=270,
-                direction="clockwise",
-            )
-            st.plotly_chart(
-                fig_pie,
-                use_container_width=True,
-                config={"scrollZoom": True, "displayModeBar": False},
-            )
-
-        with v2:
-            fig_bar = px.bar(
-                summ.sort_values("Total Qty", ascending=False),
-                x="Category",
-                y="Total Qty",
-                color="Category",
-                title="Volume by Category",
-                text_auto=".0f",
-                color_discrete_map=color_map,
-            )
-            fig_bar.update_layout(
-                margin=dict(l=12, r=12, t=50, b=12),
-                xaxis_title="",
-                yaxis_title="Quantity Sold",
-                showlegend=True,
-                legend=dict(
-                    orientation="v",
-                    yanchor="top",
-                    y=1,
-                    xanchor="left",
-                    x=1.02,
-                    borderwidth=1,
-                ),
-            )
-            st.plotly_chart(
-                fig_bar,
-                use_container_width=True,
-                config={"scrollZoom": True, "displayModeBar": False},
-            )
+    with v2:
+        fig_bar = px.bar(
+            summ.sort_values("Total Qty", ascending=False),
+            x="Category",
+            y="Total Qty",
+            color="Category",
+            title="Volume by Category",
+            text_auto=".0f",
+            color_discrete_map=color_map,
+        )
+        fig_bar.update_layout(
+            margin=dict(l=12, r=12, t=50, b=12),
+            xaxis_title="",
+            yaxis_title="Quantity Sold",
+            showlegend=True,
+            legend=dict(
+                orientation="v",
+                yanchor="top",
+                y=1,
+                xanchor="left",
+                x=1.02,
+                borderwidth=1,
+            ),
+        )
+        st.plotly_chart(
+            fig_bar,
+            use_container_width=True,
+            config={"scrollZoom": True, "displayModeBar": False},
+        )
 
     render_snapshot_button("snapshot-target-main")
     st.divider()
@@ -934,6 +1119,25 @@ def render_dashboard_output(
         top.to_excel(wr, sheet_name="Rankings", index=False)
         drill.to_excel(wr, sheet_name="Details", index=False)
 
+        # Access workbook for premium formatting
+        workbook = wr.book
+        header_fmt = workbook.add_format({"bold": True, "bg_color": "#D7E4BC", "border": 1})
+        currency_fmt = workbook.add_format({"num_format": "#,##0.00"})
+        num_fmt = workbook.add_format({"num_format": "#,##0"})
+
+        for sheet_name in wr.sheets:
+            ws = wr.sheets[sheet_name]
+            ws.freeze_panes(1, 0)
+            # Apply consistent column widths
+            ws.set_column(0, 5, 20)
+            
+            if sheet_name == "Summary":
+                ws.set_column("B:B", 15, num_fmt)
+                ws.set_column("C:C", 18, currency_fmt)
+            elif sheet_name == "Details":
+                ws.set_column("B:B", 15, currency_fmt)
+                ws.set_column("C:C", 15, num_fmt)
+
     base_name = os.path.splitext(os.path.basename(source_name))[0]
     file_suffix = f"_{timeframe}" if timeframe else ""
     final_filename = f"Report_{base_name}{file_suffix}.xlsx"
@@ -943,18 +1147,61 @@ def render_dashboard_output(
 def render_manual_tab():
     def _reset_manual_state():
         st.session_state.manual_generate = False
-        st.session_state.manual_res = None
+        st.session_state.manual_df = None
 
-    render_reset_confirm("Sales Dashboard (Manual)", "manual", _reset_manual_state)
-    # Header removed
-    uploaded_file = st.file_uploader("", type=["xlsx", "csv"])
+    render_reset_confirm("Sales Data Ingestion", "manual", _reset_manual_state)
+    
+    st.info("💡 Pull precisely filtered historical data from WooCommerce or upload a local file for analysis.")
+    src_type = st.radio("Source Type", ["Manual File Upload", "WooCommerce Custom Pull"], horizontal=True, key="ingestion_src_type")
+    
+    df = None
+    source_name = ""
+    
+    if src_type == "Manual File Upload":
+        uploaded_file = st.file_uploader("Upload Product Sales File", type=["xlsx", "csv"], key="manual_uploader")
+        if uploaded_file:
+            df = read_sales_file(uploaded_file, uploaded_file.name)
+            source_name = uploaded_file.name
+    else:
+        # WooCommerce Custom Pull Logic (Moved from Live Tab)
+        with st.expander("🔍 Filtered Data Acquisition", expanded=True):
+            st.caption("Specify the exact time window for the data you wish to ingest.")
+            c1, c2 = st.columns(2)
+            start_date = c1.date_input("Start Date", value=datetime.now().date(), key="ingest_start_d")
+            start_time = c1.time_input("Start Time", value=(datetime.now() - timedelta(hours=24)).time(), key="ingest_start_t")
+            end_date = c2.date_input("End Date", value=datetime.now().date(), key="ingest_end_d")
+            end_time = c2.time_input("End Time", value=datetime.now().time(), key="ingest_end_t")
+            
+            if st.button("📩 Fetch & Review Data", use_container_width=True, type="primary"):
+                # Temporarily set session state for the fetcher
+                st.session_state["wc_sync_mode"] = "Custom Range"
+                st.session_state["wc_sync_start_date"] = start_date
+                st.session_state["wc_sync_start_time"] = start_time
+                st.session_state["wc_sync_end_date"] = end_date
+                st.session_state["wc_sync_end_time"] = end_time
+                
+                try:
+                    with st.spinner("Connecting to WooCommerce API..."):
+                        # We use load_from_woocommerce directly to get full control
+                        df_res, src_res, _ = load_from_woocommerce()
+                        if not df_res.empty:
+                            st.session_state.manual_df = df_res
+                            st.session_state.manual_source_name = src_res
+                            st.success(f"Successfully ingested {len(df_res)} records.")
+                        else:
+                            st.warning("No data found for the selected time range.")
+                except Exception as e:
+                    st.error(f"Ingestion failed: {e}")
+        
+        if st.session_state.get("manual_df") is not None:
+            df = st.session_state.manual_df
+            source_name = st.session_state.get("manual_source_name", "WooCommerce_Custom_Pull")
 
-    if uploaded_file is None:
+    if df is None:
         return
 
     try:
-        df = read_sales_file(uploaded_file, uploaded_file.name)
-        st.caption(f"File uploaded: {uploaded_file.name}")
+        st.caption(f"Active Data Source: {source_name}")
 
         auto_cols = find_columns(df)
         all_cols = list(df.columns)
@@ -1041,6 +1288,9 @@ def render_manual_tab():
 
 
 def render_live_tab():
+    if "wc_sync_mode" not in st.session_state:
+        st.session_state.wc_sync_mode = "Operational Cycle"
+
     def _reset_live_state():
         st.session_state.live_sync_time = None
         st.session_state.live_res = None
@@ -1093,22 +1343,39 @@ def render_live_tab():
     </div>
     """
     st.markdown(welcome_html, unsafe_allow_html=True)
+    
+    # Force Operational Cycle in live dashboard
+    st.session_state["wc_sync_mode"] = "Operational Cycle"
 
-    # WooCommerce API is now the only live source
-    source_mode = "WooCommerce API"
-
-    # Freshness Indicator
-    if st.session_state.get("live_sync_time"):
-        diff = datetime.now() - st.session_state.live_sync_time
-        mins = int(diff.total_seconds() / 60)
-        sync_label = "Just now" if mins < 1 else f"{mins}m ago"
-        st.caption(f"🔄 Last Synced: {sync_label}")
+    # Freshness & Direct Action Row
+    c_f1, c_f2 = st.columns([6, 1])
+    with c_f1:
+        if st.session_state.get("live_sync_time"):
+            diff = datetime.now() - st.session_state.live_sync_time
+            mins = int(diff.total_seconds() / 60)
+            sync_label = "Just now" if mins < 1 else f"{mins}m ago"
+            st.caption(f"🔄 Last Synced: {sync_label}")
+    with c_f2:
+        if st.button("🔄 Sync", help="Force Operational Re-sync", use_container_width=True):
+            st.rerun()
 
     if hasattr(st, "autorefresh"):
         st.autorefresh(interval=30000, key="live_autorefresh")
 
     try:
         df_live, source_name, modified_at = load_live_source()
+
+        # Handle 'Time Travel' view mode
+        if st.session_state.get("wc_view_historical") and "wc_prev_df" in st.session_state:
+            prev_df = st.session_state.wc_prev_df
+            if prev_df is not None and not prev_df.empty:
+                df_live = prev_df
+                prev_s, prev_e = st.session_state.wc_prev_slot
+                source_name = f"PREV_SLOT_{prev_s.strftime('%a_%d%b')}"
+                modified_at = "HISTORICAL_SNAPSHOT"
+            else:
+                st.warning("No data found for the previous slot. Reverting to current.")
+                st.session_state.wc_view_historical = False
 
         auto_cols = find_columns(df_live)
         missing_required = [k for k in ["name", "cost", "qty"] if k not in auto_cols]

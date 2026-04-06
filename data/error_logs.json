@@ -201,5 +201,47 @@
         "error": "Index(['Order Number'], dtype='object')",
         "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\pathao_tab.py\", line 104, in render_pathao_tab\n    result_df = process_orders_dataframe(preview_df)\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\processor.py\", line 235, in process_orders_dataframe\n    record = process_single_order_group(phone, group, data_cols)\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\processor.py\", line 75, in process_single_order_group\n    unique_orders = group.drop_duplicates(subset=[\"Order Number\"])\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\pandas\\core\\frame.py\", line 6840, in drop_duplicates\n    result = self[-self.duplicated(subset, keep=keep)]\n                   ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\pandas\\core\\frame.py\", line 6972, in duplicated\n    raise KeyError(Index(diff))\nKeyError: Index(['Order Number'], dtype='object')\n",
         "details": {}
+    },
+    {
+        "timestamp": "2026-04-06 12:26:18",
+        "context": "Pathao Processor",
+        "error": "Index(['Order Number'], dtype='object')",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-OPS\\app_modules\\pathao_tab.py\", line 104, in render_pathao_tab\n    result_df = process_orders_dataframe(preview_df)\n  File \"H:\\Repo\\DEEN-OPS\\app_modules\\processor.py\", line 235, in process_orders_dataframe\n    record = process_single_order_group(phone, group, data_cols)\n  File \"H:\\Repo\\DEEN-OPS\\app_modules\\processor.py\", line 75, in process_single_order_group\n    unique_orders = group.drop_duplicates(subset=[\"Order Number\"])\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\pandas\\core\\frame.py\", line 6840, in drop_duplicates\n    result = self[-self.duplicated(subset, keep=keep)]\n                   ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\pandas\\core\\frame.py\", line 6972, in duplicated\n    raise KeyError(Index(diff))\nKeyError: Index(['Order Number'], dtype='object')\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-06 12:30:30",
+        "context": "Pathao Processor",
+        "error": "unsupported operand type(s) for +=: 'int' and 'str'",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-OPS\\app_modules\\pathao_tab.py\", line 104, in render_pathao_tab\n    result_df = process_orders_dataframe(preview_df)\n  File \"H:\\Repo\\DEEN-OPS\\app_modules\\processor.py\", line 253, in process_orders_dataframe\n    record = process_single_order_group(phone, group, data_cols)\n  File \"H:\\Repo\\DEEN-OPS\\app_modules\\processor.py\", line 128, in process_single_order_group\n    total_to_collect += order_total\nTypeError: unsupported operand type(s) for +=: 'int' and 'str'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-06 13:01:36",
+        "context": "Pathao Processor",
+        "error": "unsupported operand type(s) for +=: 'int' and 'str'",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-OPS\\app_modules\\pathao_tab.py\", line 104, in render_pathao_tab\n    result_df = process_orders_dataframe(preview_df)\n  File \"H:\\Repo\\DEEN-OPS\\app_modules\\processor.py\", line 253, in process_orders_dataframe\n    record = process_single_order_group(phone, group, data_cols)\n  File \"H:\\Repo\\DEEN-OPS\\app_modules\\processor.py\", line 128, in process_single_order_group\n    total_to_collect += order_total\nTypeError: unsupported operand type(s) for +=: 'int' and 'str'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-06 13:04:09",
+        "context": "Pathao Processor",
+        "error": "unsupported operand type(s) for +=: 'int' and 'str'",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-OPS\\app_modules\\pathao_tab.py\", line 104, in render_pathao_tab\n    result_df = process_orders_dataframe(preview_df)\n  File \"H:\\Repo\\DEEN-OPS\\app_modules\\processor.py\", line 253, in process_orders_dataframe\n    record = process_single_order_group(phone, group, data_cols)\n  File \"H:\\Repo\\DEEN-OPS\\app_modules\\processor.py\", line 128, in process_single_order_group\n    total_to_collect += order_total\nTypeError: unsupported operand type(s) for +=: 'int' and 'str'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-06 14:04:51",
+        "context": "App Bootstrap",
+        "error": "unexpected indent (sales_dashboard.py, line 956)",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-OPS\\app.py\", line 144, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Repo\\DEEN-OPS\\app.py\", line 38, in run_app\n    from app_modules.sales_dashboard import render_live_tab, render_manual_tab\n  File \"H:\\Repo\\DEEN-OPS\\app_modules\\sales_dashboard.py\", line 956\n    st.subheader(\"Visual Analytics\")\nIndentationError: unexpected indent\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-06 14:05:22",
+        "context": "App Bootstrap",
+        "error": "unexpected indent (sales_dashboard.py, line 1010)",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-OPS\\app.py\", line 144, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Repo\\DEEN-OPS\\app.py\", line 38, in run_app\n    from app_modules.sales_dashboard import render_live_tab, render_manual_tab\n  File \"H:\\Repo\\DEEN-OPS\\app_modules\\sales_dashboard.py\", line 1010\n    fig_pie.update_traces(\nIndentationError: unexpected indent\n",
+        "details": {}
     }
 ]

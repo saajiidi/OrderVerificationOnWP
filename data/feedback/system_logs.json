@@ -172,5 +172,1916 @@
         "timestamp": "2026-04-06 11:05:07",
         "type": "LIVE_FILE_ERROR",
         "details": "WooCommerce integration requires WC_URL, WC_KEY, and WC_SECRET in secrets/environment."
+    },
+    {
+        "timestamp": "2026-04-06 12:41:02",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 12:41:21",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 12:41:28",
+        "type": "WC_API_ERROR",
+        "details": "name 'sync_desc' is not defined"
+    },
+    {
+        "timestamp": "2026-04-06 12:41:28",
+        "type": "LIVE_FILE_ERROR",
+        "details": "Failed to fetch data from WooCommerce: name 'sync_desc' is not defined"
+    },
+    {
+        "timestamp": "2026-04-06 12:43:40",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 8,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL",
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 12:44:35",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 12:53:25",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 8,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL",
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 12:53:42",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 8,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL",
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 12:53:45",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 8,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL",
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 12:58:45",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 12:59:14",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:00:11",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:01:08",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:05:57",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:07:49",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:13:35",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:15:05",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:15:43",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:35:12",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:35:59",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:41:44",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:42:09",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:42:09",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:42:33",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:42:40",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:42:41",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:43:03",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:46:07",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:47:30",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:48:13",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:49:08",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:50:31",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:50:34",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:50:35",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:50:36",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:50:39",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:50:40",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:50:40",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:51:44",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:51:44",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:51:48",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:51:48",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:52:43",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:52:43",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:53:10",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:53:10",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:53:29",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:53:29",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:53:37",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:53:38",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:54:23",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:54:37",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:54:37",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:54:42",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:54:43",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:57:09",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:57:12",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:57:12",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:57:57",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:57:57",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:59:03",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 13:59:03",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:00:48",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:00:50",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:00:50",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:00:53",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:00:53",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:00:56",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:00:56",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:01:47",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:01:57",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:01:58",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:06:11",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:10:25",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:11:46",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:12:02",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:12:02",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:12:41",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:12:42",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:12:42",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:12:46",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:12:46",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:13:06",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:13:06",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:13:10",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:13:10",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:13:19",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:13:19",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:14:03",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:14:03",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:14:28",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:14:28",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:14:34",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:14:34",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:14:37",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:14:55",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:14:58",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:15:04",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:15:05",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:15:06",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:15:08",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:15:18",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:15:41",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:15:55",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:15:59",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:16:06",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:16:11",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:16:15",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:16:30",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:16:54",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:16:58",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:18:02",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:18:14",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:18:15",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:18:19",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:18:20",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:19:08",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:19:40",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:19:41",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:20:16",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:20:16",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:20:20",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:20:20",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:20:25",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:20:25",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:20:29",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:20:29",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:21:50",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:22:36",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:22:37",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:22:58",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:22:58",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:23:07",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:23:14",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:23:14",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:23:18",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:23:19",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:23:30",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:23:31",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:23:34",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:23:34",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:24:06",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:24:06",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:24:22",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:24:22",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:24:24",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:24:24",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:24:29",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 2,
+            "samples": [
+                "Black Trousers - 2XL",
+                "Choco Trousers - 2XL"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:24:30",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:24:40",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:24:44",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:24:48",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-04-06 14:24:55",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6,
+            "samples": [
+                "Green Trousers - L",
+                "Sky Blue Trousers - L",
+                "Maroon Trousers - L",
+                "Teal Trousers - L",
+                "Brown Trousers - L",
+                "Choco Trousers - L"
+            ]
+        }
     }
 ]

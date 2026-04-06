@@ -33,6 +33,7 @@ def clean_dataframe(df):
         "First Name (Shipping)",
         "State Name (Billing)",
         "Order Number",
+        "Order ID",
     ]
     for col in string_cols:
         if col in df.columns:
@@ -64,15 +65,29 @@ def identify_columns(df):
                 cols["trx_col"] = c
                 break
 
+    # Order Number Column
+    cols["order_col"] = "Order Number"
+    if "Order Number" not in df.columns:
+        for c in df.columns:
+            if c.lower() in ["order number", "order id", "id", "order #", "order_id"]:
+                cols["order_col"] = c
+                break
+
     return cols
 
 
 def process_single_order_group(phone, group, data_cols):
     """
     Processes a group of rows belonging to a single order (phone number).
-    If multiple unique Order Numbers are found, their collection amounts are summed.
     """
-    unique_orders = group.drop_duplicates(subset=["Order Number"])
+    order_col = data_cols.get("order_col", "Order Number")
+    
+    if order_col in group.columns:
+        unique_orders = group.drop_duplicates(subset=[order_col])
+    else:
+        # Fallback if no order identification column is found
+        unique_orders = group.head(1)
+
     first_row = group.iloc[0]
     total_qty = group["Quantity"].sum()
 
@@ -188,12 +203,15 @@ def process_single_order_group(phone, group, data_cols):
     recipient_area = ""
 
     # Combine merchant IDs
-    order_ids = [
-        str(x)
-        for x in unique_orders["Order Number"].unique()
-        if str(x).lower() != "nan"
-    ]
-    combined_merchant_id = ", ".join(order_ids)
+    if order_col in unique_orders.columns:
+        order_ids = [
+            str(x)
+            for x in unique_orders[order_col].unique()
+            if str(x).lower() != "nan"
+        ]
+        combined_merchant_id = ", ".join(order_ids)
+    else:
+        combined_merchant_id = "N/A"
 
     # --- Build Record ---
     record = {

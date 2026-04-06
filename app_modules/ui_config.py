@@ -1,4 +1,4 @@
-APP_TITLE = "Automation Hub Pro"
+APP_TITLE = "DEEN BI OPS"
 APP_VERSION = "v9.0"
 
 PRIMARY_NAV = [
