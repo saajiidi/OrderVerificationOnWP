@@ -208,7 +208,7 @@ def get_category(name):
 
     fs_keywords = ["full sleeve", "long sleeve", "fs", "l/s"]
     if has_any(["t-shirt", "t shirt", "tee"], name_str):
-        return "FS T-Shirt" if has_any(fs_keywords, name_str) else "HS T-Shirt"
+        return "FS T-Shirt" if has_any(fs_keywords, name_str) else "T-Shirt"
 
     if has_any(["shirt"], name_str):
         return "FS Shirt" if has_any(fs_keywords, name_str) else "HS Shirt"
@@ -877,30 +877,7 @@ def render_dashboard_output(
         )
         color_map[cat] = px.colors.sample_colorscale("Plasma", [val])[0]
 
-    # v9.8 Unified Legend System & Responsive Logic
-    st.markdown("""
-    <style>
-    @media (max-width: 800px) {
-        .desktop-only-legend {
-            display: none !important;
-        }
-    }
-    .legend-item {
-        display: flex;
-        align-items: center;
-        margin-bottom: 4px;
-        font-size: 0.85rem;
-    }
-    .legend-box {
-        width: 12px;
-        height: 12px;
-        margin-right: 8px;
-        border-radius: 2px;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-    v1, v2, v3 = st.columns([1.1, 1.1, 0.4])
+    v1, v2 = st.columns(2)
     with v1:
         fig_pie = px.pie(
             summ,
@@ -956,6 +933,7 @@ def render_dashboard_output(
             text_auto=".0f",
             color_discrete_map=color_map,
         )
+        fig_bar.update_traces(showlegend=False)
         fig_bar.update_layout(
             margin=dict(l=50, r=10, t=50, b=40),
             xaxis_title="",
@@ -968,18 +946,7 @@ def render_dashboard_output(
             config={"scrollZoom": True, "displayModeBar": False},
         )
 
-    with v3:
-        st.markdown('<div class="desktop-only-legend" style="margin-top: 50px;">', unsafe_allow_html=True)
-        st.caption("**Categories**")
-        for cat, color in color_map.items():
-            st.markdown(f"""
-                <div class="legend-item">
-                    <div class="legend-box" style="background-color: {color};"></div>
-                    <div>{cat}</div>
-                </div>
-            """, unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-
+    # Categories custom html legend removed as requested
     render_snapshot_button("snapshot-target-main")
     st.divider()
 
@@ -993,12 +960,14 @@ def render_dashboard_output(
         color="Category",
         title="Top 10 products by revenue",
         text_auto=".2s",
+        color_discrete_map=color_map,
     )
+    fig_top.update_traces(showlegend=False)
     fig_top.update_layout(
         margin=dict(l=12, r=12, t=50, b=12),
         yaxis_title="",
         xaxis_title="Revenue (TK)",
-        legend_title="Category",
+        showlegend=False,
     )
     st.plotly_chart(
         fig_top,
