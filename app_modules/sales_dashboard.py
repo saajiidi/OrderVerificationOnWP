@@ -815,15 +815,23 @@ def render_dashboard_output(
             if nav_mode == "Prev":
                 title_html = "⏪ <strong>ACTIVE: Yesterday</strong>"
                 time_html = f"{prev_s.strftime('%a %d %b, %I:%M %p')} - {prev_e.strftime('%a %d %b, %I:%M %p')}"
-                status_html = f"📦 {ship_count} Shipped | ⚙️ {proc_count} Processing"
+                status_html = f"📦 {ship_count} Shipped"
             elif nav_mode == "Backlog":
                 title_html = "⏩ <strong>ACTIVE: Incoming Backlog</strong>"
                 time_html = f"Waiting / On-Hold / Late Ops"
-                status_html = f"⏳ {wait_count} Pending | ⏸️ {hold_count} On-Hold | 🆕 {proc_count} New"
+                status_html = f"⏸️ {hold_count} On-Hold | 🆕 {proc_count} New"
             else:
                 title_html = "📍 <strong>ACTIVE: Today</strong>"
                 time_html = f"{curr_s.strftime('%a %d %b, %I:%M %p')} - {curr_e.strftime('%a %d %b, %I:%M %p')}"
-                status_html = f"📦 {ship_count} Shipped | ⚙️ {proc_count} Processing"
+                
+                now_dt = datetime.now()
+                now_mins = now_dt.hour * 60 + now_dt.minute
+                is_office_hours = 570 <= now_mins < 1050
+                
+                status_html = f"📦 {ship_count} Shipped"
+                if is_office_hours:
+                    status_html += f" | ⚙️ {proc_count} Processing"
+                
                 confirmed_count = proc_count
                 if confirmed_count > 0:
                     status_html += f" | ✅ {confirmed_count} Confirmed"

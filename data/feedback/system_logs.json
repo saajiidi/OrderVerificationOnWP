@@ -3414,5 +3414,15 @@
         "timestamp": "2026-04-07 22:52:31",
         "type": "LIVE_FILE_ERROR",
         "details": "Failed to fetch data from WooCommerce: HTTPSConnectionPool(host='deencommerce.com', port=443): Read timed out."
+    },
+    {
+        "timestamp": "2026-04-07 23:01:08",
+        "type": "WC_API_ERROR",
+        "details": "HTTPSConnectionPool(host='deencommerce.com', port=443): Read timed out."
+    },
+    {
+        "timestamp": "2026-04-07 23:01:08",
+        "type": "LIVE_FILE_ERROR",
+        "details": "Failed to fetch data from WooCommerce: HTTPSConnectionPool(host='deencommerce.com', port=443): Read timed out."
     }
 ]
