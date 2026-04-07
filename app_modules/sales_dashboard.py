@@ -579,23 +579,30 @@ def load_from_woocommerce():
         if df_full.empty:
             return pd.DataFrame(), "woocommerce_api", "N/A"
 
-        # Local partitioning for Operational Cycles (v9.5 Rule Set)
+        # Local partitioning for Operational Cycles (v9.8 Refined Rules)
         if sync_mode == "Operational Cycle":
             df_full["dt_parsed"] = pd.to_datetime(df_full["Order Date"], errors="coerce").dt.tz_localize(None)
             
-            # Classification based on 17:30 CUTOFF (v9.7 Operational Ruleset)
-            now_dt = datetime.now(tz_bd)
+            now_bd = datetime.now(tz_bd)
+            ref_now = now_bd.replace(tzinfo=None)
             
-            # Operational Day Rollover: Today stays 'Today' until 6 AM the next calendar day.
-            # After 6 AM, the previous cycle becomes 'Yesterday' and the Backlog becomes 'Today'.
-            if now_dt.hour < 6:
-                op_now = now_dt - timedelta(days=1)
-            else:
-                op_now = now_dt
+            # THE ANCHOR: Today's 17:30 Cutoff
+            cutoff_today = ref_now.replace(hour=17, minute=30, second=0, microsecond=0)
+            
+            # THE START OF THE CURRENT ACTIVE SLOT (Last Day 17:30)
+            prev_cutoff = cutoff_today - timedelta(days=1)
+            
+            # WEEKEND RULE: On Saturday, the active shift started Thursday 17:30
+            if now_bd.weekday() == 5: # Saturday
+                prev_cutoff = cutoff_today - timedelta(days=2) # Thu 17:30 -> Sat 17:30
                 
-            cutoff_today = op_now.replace(hour=17, minute=30, second=0, microsecond=0).replace(tzinfo=None)
-            cutoff_prev = cutoff_today - timedelta(days=1)
-            cutoff_day_before = cutoff_prev - timedelta(days=1)
+            # THE PREVIOUS HISTORICAL SLOT (Used for "Prev" tab and deltas)
+            day_before_prev = prev_cutoff - timedelta(days=1)
+            
+            # SUNDAY EXCEPTION: Previous Day Sales is Thursday 5:30 PM to Saturday 5:30 PM
+            if now_bd.weekday() == 6: # Sunday
+                prev_cutoff = cutoff_today - timedelta(days=1) # Sat 17:30
+                day_before_prev = prev_cutoff - timedelta(days=2) # Thu 17:30
             
             # Define Status Categories
             is_shipped = df_full["Order Status"].isin(["completed", "shipped"])
@@ -603,39 +610,39 @@ def load_from_woocommerce():
             is_hold = df_full["Order Status"] == "on-hold"
             is_waiting = df_full["Order Status"] == "pending"
             
-            # SNAPSHOT 1: TODAY (Active Shift - v9.6 Standard)
-            # Rule: ALL Waiting (Pending) & Confirmed (Processing) + Recent Shipped
+            # REFINED CUTOFFS
+            shipped_limit = cutoff_today + timedelta(minutes=30)
+            proc_limit = cutoff_today + timedelta(minutes=15)
+            
+            # SNAPSHOT 1: TODAY (Active Shift)
             df_live = df_full[
-                (is_waiting | is_processing) | # All Waiting/Confirmed
-                ( (df_full["dt_parsed"] >= cutoff_prev.replace(tzinfo=None)) & is_shipped ) | # Shipped in current window
-                ( (df_full["dt_parsed"] >= cutoff_today.replace(tzinfo=None)) & is_shipped ) # Shipped post-cutoff today
+                ( (df_full["dt_parsed"] >= prev_cutoff) & (df_full["dt_parsed"] <= shipped_limit) & is_shipped ) |
+                ( is_processing & (df_full["dt_parsed"] <= proc_limit) )
             ].copy()
             st.session_state.wc_curr_df = scrub_raw_dataframe(df_live)
             
             # SNAPSHOT 2: YESTERDAY (Historical Performance)
-            # Status: Shipped orders from Day-before-Yesterday 5:30 PM to Yesterday 5:30 PM
             df_prev = df_full[
-                (df_full["dt_parsed"] >= cutoff_day_before) & 
-                (df_full["dt_parsed"] < cutoff_prev) & 
+                (df_full["dt_parsed"] >= day_before_prev) & 
+                (df_full["dt_parsed"] < prev_cutoff) & 
                 is_shipped
             ].copy()
             st.session_state.wc_prev_df = scrub_raw_dataframe(df_prev)
 
-            # SNAPSHOT 3: BACKLOG (Tomorrow's Intake - v9.6 Standard)
-            # Rule: ALL Hold orders exclusively
+            # SNAPSHOT 3: BACKLOG (Hold + Waiting + Late Ops)
             df_backlog = df_full[
-                is_hold
+                is_hold | is_waiting | 
+                (is_processing & (df_full["dt_parsed"] > proc_limit))
             ].copy()
             st.session_state.wc_backlog_df = scrub_raw_dataframe(df_backlog)
             
             # Persist slots for label indexing
-            st.session_state.wc_curr_slot = (cutoff_prev, cutoff_today)
-            st.session_state.wc_prev_slot = (cutoff_day_before, cutoff_prev)
+            st.session_state.wc_curr_slot = (prev_cutoff, cutoff_today)
+            st.session_state.wc_prev_slot = (day_before_prev, prev_cutoff)
             st.session_state.wc_backlog_slot = (cutoff_today, cutoff_today + timedelta(days=1))
             
-            # v9.7 External Module Logic: Selective Slot Return
-            # Slot Pull: Today until 12 AM, then Backlog until 6 AM
-            current_hour = now_dt.hour
+            # v9.8 Selective Slot Return
+            current_hour = now_bd.hour
             if 0 <= current_hour < 6:
                 df_to_return = df_backlog
                 slot_label = "Backlog"
@@ -722,7 +729,18 @@ def render_dashboard_output(
             m_ord = m_df["Order ID"].nunique()
             m_bv = (m_rev / m_ord) if m_ord > 0 else 0
             
-            # 2. Comparison Metrics
+            # 2. Status Drilldown Intelligence
+            is_ship = m_df["Order Status"].isin(["completed", "shipped"])
+            is_proc = m_df["Order Status"] == "processing"
+            is_hold = m_df["Order Status"] == "on-hold"
+            is_wait = m_df["Order Status"] == "pending"
+            
+            ship_count = m_df[is_ship]["Order ID"].nunique()
+            proc_count = m_df[is_proc]["Order ID"].nunique()
+            hold_count = m_df[is_hold]["Order ID"].nunique()
+            wait_count = m_df[is_wait]["Order ID"].nunique()
+            
+            # 3. Comparison Metrics
             dq_str, dr_str, do_str, db_str = None, None, None, None
             if c_df is not None and not c_df.empty:
                 co_q = c_df["Quantity"].sum()
@@ -730,12 +748,11 @@ def render_dashboard_output(
                 co_o = c_df["Order ID"].nunique()
                 co_b = (co_r / co_o) if co_o > 0 else 0
                 
-                # Deltas
+                # Math: if today, Today-Yesterday. if Yesterday, Today-Yesterday.
+                # Actually, always compare current view to the alternative
                 prefix = "Today " if nav_mode == "Prev" else ""
                 suffix = "" if nav_mode == "Prev" else " vs Prev"
                 
-                # Math: if today, Today-Yesterday. if Yesterday, Today-Yesterday.
-                # Actually, always compare current view to the alternative
                 dq, dr, d_o, db = (m_qty-co_q), (m_rev-co_r), (m_ord-co_o), (m_bv-co_b)
                 if nav_mode == "Prev": # Compare Yesterday to Today (invert for benchmarking)
                     dq, dr, d_o, db = (co_q-m_qty), (co_r-m_rev), (co_o-m_ord), (co_b-m_bv)
@@ -751,14 +768,27 @@ def render_dashboard_output(
                 col1, col2, col3, col4, col5 = st.columns([1, 1.3, 1, 1.2, 1.8])
                 
                 with col1:
-                    l1 = "Incoming Items" if nav_mode == "Backlog" else "Items sold"
+                    l1 = "Backlog Items" if nav_mode == "Backlog" else "Items sold"
                     st.metric(l1, f"{m_qty:,.0f}", delta=dq_str)
+                    if nav_mode == "Today":
+                        st.caption(f"📦 {ship_count} Shipped")
+                    elif nav_mode == "Backlog":
+                        st.caption(f"⏳ {wait_count} Pending")
                 with col2:
-                    l2 = "Potential Rev" if nav_mode == "Backlog" else "Revenue"
+                    l2 = "Backlog Rev" if nav_mode == "Backlog" else "Revenue"
                     st.metric(l2, f"TK {m_rev:,.0f}", delta=dr_str)
+                    if nav_mode == "Today":
+                        st.caption(f"⚙️ {proc_count} Processing")
+                    elif nav_mode == "Backlog":
+                        st.caption(f"⏸️ {hold_count} On-Hold")
                 with col3:
-                    l3 = "Queue Orders" if nav_mode == "Backlog" else "Orders"
+                    l3 = "Backlog Orders" if nav_mode == "Backlog" else "Orders"
                     st.metric(l3, f"{m_ord:,.0f}", delta=do_str)
+                    if nav_mode == "Today":
+                        confirmed_count = proc_count # Processing is effectively confirmed
+                        st.caption(f"✅ {confirmed_count} Confirmed")
+                    elif nav_mode == "Backlog":
+                        st.caption(f"🆕 {proc_count} New Intake")
                 with col4:
                     st.metric("Avg Basket", f"TK {m_bv:,.0f}", delta=db_str)
                 
@@ -772,7 +802,7 @@ def render_dashboard_output(
                         st.caption(f"{prev_s.strftime('%a %d %b, %I:%M %p')} - {prev_e.strftime('%a %d %b, %I:%M %p')}")
                     elif nav_mode == "Backlog":
                         st.caption(f"⏩ **ACTIVE: Incoming Backlog**")
-                        st.caption(f"Waiting / On-Hold Stock")
+                        st.caption(f"Waiting / On-Hold / Late Ops")
                     else:
                         st.caption(f"📍 **ACTIVE: Today**")
                         st.caption(f"{curr_s.strftime('%a %d %b, %I:%M %p')} - {curr_e.strftime('%a %d %b, %I:%M %p')}")
