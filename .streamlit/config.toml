@@ -1,8 +1,0 @@
-[theme]
-primaryColor="#1d4ed8"
-font="sans serif"
-
-[server]
-headless = true
-enableCORS = false
-enableXsrfProtection = false
