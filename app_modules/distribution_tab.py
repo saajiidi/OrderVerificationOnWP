@@ -26,7 +26,7 @@ def _read_uploaded(uploaded_file):
 
 def _reset_inventory_state():
     clear_state_keys(
-        ["inv_res_data", "inv_active_l", "inv_t_col", "inv_master_df_live"]
+        ["inv_res_data", "inv_active_l", "inv_t_col", "inv_master_df_live", "inv_l_Ecom_df"]
     )
 
 
@@ -40,17 +40,40 @@ def render_distribution_tab(search_q):
     render_reset_confirm("Inventory Distribution", "inventory", _reset_inventory_state)
     master_file = st.file_uploader("", type=["xlsx", "csv"], key="inv_up")
 
-    fetch_live_clicked = st.button(
-        "Pull from Live Dash Data & Auto-Analyze",
-        type="secondary",
-        use_container_width=True,
-        key="dist_live",
-    )
+    st.markdown('<div style="margin-top: -12px;"></div>', unsafe_allow_html=True)
+    c_live, c_gsheet = st.columns(2)
+    with c_live:
+        fetch_live_clicked = st.button(
+            "🔗 Pull from Live Dash",
+            type="secondary",
+            use_container_width=True,
+            key="dist_live",
+        )
+    with c_gsheet:
+        if st.button("📩 Fetch Master from GSheet", use_container_width=True, type="secondary", key="dist_gsheet"):
+            try:
+                from app_modules.ui_config import DEFAULT_GSHEET_URL
+                with st.spinner("Fetching master from Google Sheet..."):
+                    df_res = pd.read_csv(DEFAULT_GSHEET_URL)
+                    st.session_state.inv_master_df_live = df_res
+                    st.session_state.inv_auto_analyze = True
+                    st.rerun()
+            except Exception as e:
+                st.error(f"GSheet failed: {e}")
 
     loc_files = {}
     loc_cols = st.columns(len(INVENTORY_LOCATIONS))
     for i, loc in enumerate(INVENTORY_LOCATIONS):
         with loc_cols[i]:
+            if loc == "Ecom":
+                # Show status if synced or using manual upload
+                if st.session_state.get(f"inv_l_{loc}_df") is not None:
+                    st.caption("✅ Using Cached Web Stock")
+                    loc_files[loc] = st.session_state.get(f"inv_l_{loc}_df")
+                
+                # Instruction
+                st.caption("Auto-pulls from WooCommerce during analysis if no file provided.")
+
             uploaded = st.file_uploader(
                 f"{loc}", key=f"inv_l_{loc}", type=["xlsx", "csv"]
             )
@@ -129,6 +152,28 @@ def render_distribution_tab(search_q):
             )
         else:
             try:
+                # 1. INTEGRATED REAL-TIME ECOM SYNC:
+                # Only sync if "Ecom" wasn't manually uploaded for this analysis
+                if "Ecom" not in loc_files:
+                    with st.status("🔗 Reconciling Live Web Stock...", expanded=False) as sync_status:
+                        t_skus = set(master_df[sku_col].dropna().astype(str).unique()) if sku_col and sku_col in master_df.columns else None
+                        t_titles = set()
+                        from inventory_modules.core import item_name_to_title_size
+                        t_col = title_col if title_col in master_df.columns else None
+                        if t_col:
+                            for item in master_df[t_col].dropna():
+                                title, _ = item_name_to_title_size(str(item))
+                                if title: t_titles.add(title.strip().lower())
+                        
+                        from app_modules.sales_dashboard import fetch_woocommerce_stock
+                        wocom_df = fetch_woocommerce_stock(filter_skus=t_skus, filter_titles=t_titles)
+                        
+                        if wocom_df is not None:
+                            loc_files["Ecom"] = wocom_df
+                            sync_status.update(label=f"Done: Ecom stock synced for {len(wocom_df)} relevant items.", state="complete")
+                        else:
+                            st.warning("⚠️ WooCommerce sync failed. Analysis will proceed using other locations.")
+
                 inventory_map, warnings, _, sku_map = (
                     inv_core.load_inventory_from_uploads(loc_files)
                 )

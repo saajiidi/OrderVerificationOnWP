@@ -99,7 +99,7 @@ def identify_columns(
         ) and qty_col is None:
             qty_col = c_orig
         # Prefer explicit "item name" over generic "title"
-        if ("item name" in c_lower or "product name" in c_lower) and title_col is None:
+        if ("item name" in c_lower or "product name" in c_lower or "product" == c_lower) and title_col is None:
             title_col = c_orig
         elif "title" in c_lower and title_col is None:
             title_col = c_orig
@@ -161,6 +161,8 @@ def add_title_size_column(
 
 
 def _read_uploaded(file_obj) -> pd.DataFrame:
+    if isinstance(file_obj, pd.DataFrame):
+        return file_obj
     file_obj.seek(0)
     if getattr(file_obj, "name", "").endswith(".csv"):
         return pd.read_csv(file_obj)

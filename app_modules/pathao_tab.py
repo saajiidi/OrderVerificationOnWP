@@ -34,12 +34,27 @@ def render_pathao_tab():
 
     up_pathao = st.file_uploader("", type=["xlsx", "csv"], key="pathao_up")
 
-    fetch_live_clicked = st.button(
-        "Pull from Live Dash Data & Auto-Process",
-        type="secondary",
-        use_container_width=True,
-        key="pathao_live",
-    )
+    st.markdown('<div style="margin-top: -12px;"></div>', unsafe_allow_html=True)
+    c_live, c_gsheet = st.columns(2)
+    with c_live:
+        fetch_live_clicked = st.button(
+            "🔗 Pull from Live Dash",
+            type="secondary",
+            use_container_width=True,
+            key="pathao_live",
+        )
+    with c_gsheet:
+        if st.button("📩 Fetch from GSheet", use_container_width=True, type="secondary", key="pathao_gsheet"):
+            try:
+                from app_modules.ui_config import DEFAULT_GSHEET_URL
+                with st.spinner("Fetching from Google Sheet..."):
+                    df_res = pd.read_csv(DEFAULT_GSHEET_URL)
+                    st.session_state.pathao_preview_df = df_res
+                    st.session_state.pathao_uploaded_name = "Google_Sheet_Export"
+                    st.session_state.pathao_auto_process = True
+                    st.rerun()
+            except Exception as e:
+                st.error(f"GSheet failed: {e}")
 
     preview_df = None
     valid_file = False

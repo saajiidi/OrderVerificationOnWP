@@ -92,6 +92,38 @@ def normalize_city_name(city_name):
     c = city_name.strip()
     c_lower = c.lower()
 
+    # ISO 3166-2:BD District Mappings (standard for WooCommerce BD)
+    bd_states = {
+        "BD-01": "Bagerhat", "BD-02": "Bandarban", "BD-03": "Barisal", "BD-04": "Bhola",
+        "BD-05": "Bogra", "BD-06": "Brahmanbaria", "BD-07": "Chandpur", "BD-08": "Chapainawabganj",
+        "BD-09": "Chattogram", "BD-10": "Chittagong", "BD-11": "Chuadanga", "BD-12": "Comilla",
+        "BD-13": "Dhaka", "BD-14": "Dinajpur", "BD-15": "Faridpur", "BD-16": "Khulna",
+        "BD-17": "Feni", "BD-18": "Gaibandha", "BD-19": "Gazipur", "BD-20": "Gopalganj",
+        "BD-21": "Habiganj", "BD-22": "Jamalpur", "BD-23": "Jessore", "BD-24": "Jhalokati",
+        "BD-25": "Jhenaidah", "BD-26": "Joypurhat", "BD-27": "Khagrachhari", "BD-28": "Kishoreganj",
+        "BD-29": "Kurigram", "BD-30": "Kushtia", "BD-31": "Lakshmipur", "BD-32": "Lalmonirhat",
+        "BD-33": "Madaripur", "BD-34": "Magura", "BD-35": "Manikganj", "BD-36": "Meherpur",
+        "BD-37": "Moulvibazar", "BD-38": "Munshiganj", "BD-39": "Mymensingh", "BD-40": "Naogaon",
+        "BD-41": "Narail", "BD-42": "Narayanganj", "BD-43": "Narsingdi", "BD-44": "Natore",
+        "BD-45": "Nawabganj", "BD-46": "Netrakona", "BD-47": "Nilphamari", "BD-48": "Noakhali",
+        "BD-49": "Pabna", "BD-50": "Panchagarh", "BD-51": "Patuakhali", "BD-52": "Pirojpur",
+        "BD-53": "Rajbari", "BD-54": "Rajshahi", "BD-55": "Rangamati", "BD-56": "Rangpur",
+        "BD-57": "Satkhira", "BD-58": "Shariatpur", "BD-59": "Sherpur", "BD-60": "Sirajganj",
+        "BD-61": "Sylhet", "BD-62": "Sunamganj", "BD-63": "Tangail", "BD-64": "Thakurgaon"
+    }
+
+    c_upper = c.upper()
+    if c_upper in bd_states:
+        return bd_states[c_upper]
+    
+    # Generic prefix match (e.g. BD13)
+    c_clean = c_upper.replace("-", "").strip()
+    if c_clean.startswith("BD") and c_clean in [k.replace("-", "") for k in bd_states]:
+        # Map cleaned code to state
+        for k, v in bd_states.items():
+            if k.replace("-", "") == c_clean:
+                return v
+
     # User requested mappings
     if "brahmanbaria" in c_lower:
         return "B. Baria"

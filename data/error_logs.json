@@ -320,5 +320,40 @@
         "error": "No module named 'streamlit_autorefresh'",
         "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 150, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 38, in run_app\n    from app_modules.sales_dashboard import render_live_tab, render_manual_tab, render_stock_analytics_tab\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\sales_dashboard.py\", line 16, in <module>\n    from streamlit_autorefresh import st_autorefresh\nModuleNotFoundError: No module named 'streamlit_autorefresh'\n",
         "details": {}
+    },
+    {
+        "timestamp": "2026-04-08 10:26:55",
+        "context": "App Bootstrap",
+        "error": "cannot access local variable 'master_df' where it is not associated with a value",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 150, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 138, in run_app\n    render_distribution_tab(search_q=st.session_state.get(\"inv_matrix_search\", \"\"))\n    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\distribution_tab.py\", line 74, in render_distribution_tab\n    if master_df is not None:\n       ^^^^^^^^^\nUnboundLocalError: cannot access local variable 'master_df' where it is not associated with a value\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-08 10:35:23",
+        "context": "Pathao Processor",
+        "error": "unsupported operand type(s) for +=: 'int' and 'str'",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\pathao_tab.py\", line 124, in render_pathao_tab\n    result_df = process_orders_dataframe(preview_df)\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\processor.py\", line 262, in process_orders_dataframe\n    record = process_single_order_group(phone, group, data_cols)\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\processor.py\", line 135, in process_single_order_group\n    total_to_collect += order_total\nTypeError: unsupported operand type(s) for +=: 'int' and 'str'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-08 10:35:38",
+        "context": "Pathao Processor",
+        "error": "unsupported operand type(s) for +=: 'int' and 'str'",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\pathao_tab.py\", line 124, in render_pathao_tab\n    result_df = process_orders_dataframe(preview_df)\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\processor.py\", line 262, in process_orders_dataframe\n    record = process_single_order_group(phone, group, data_cols)\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\processor.py\", line 135, in process_single_order_group\n    total_to_collect += order_total\nTypeError: unsupported operand type(s) for +=: 'int' and 'str'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-08 10:40:12",
+        "context": "Pathao Processor",
+        "error": "'NoneType' object has no attribute 'get'",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\pathao_tab.py\", line 124, in render_pathao_tab\n    result_df = process_orders_dataframe(preview_df)\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\processor.py\", line 251, in process_orders_dataframe\n    record = process_single_order_group(phone, group, data_cols)\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\processor.py\", line 79, in process_single_order_group\n    order_col = data_cols.get(\"order_col\", \"Order Number\")\n                ^^^^^^^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'get'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-08 10:40:15",
+        "context": "Pathao Processor",
+        "error": "'NoneType' object has no attribute 'get'",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\pathao_tab.py\", line 124, in render_pathao_tab\n    result_df = process_orders_dataframe(preview_df)\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\processor.py\", line 251, in process_orders_dataframe\n    record = process_single_order_group(phone, group, data_cols)\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\processor.py\", line 79, in process_single_order_group\n    order_col = data_cols.get(\"order_col\", \"Order Number\")\n                ^^^^^^^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'get'\n",
+        "details": {}
     }
 ]

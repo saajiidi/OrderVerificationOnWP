@@ -88,7 +88,7 @@ def render_snapshot_button(marker_id="snapshot-target"):
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 FEEDBACK_DIR = os.path.join(DATA_DIR, "feedback")
 INCOMING_DIR = os.path.join(DATA_DIR, "incoming")
-DEFAULT_GSHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTOiRkybNzMNvEaLxSFsX0nGIiM07BbNVsBbsX1dG8AmGOmSu8baPrVYL0cOqoYN4tRWUj1UjUbH1Ij/pub?gid=2118542421&single=true&output=csv"
+from app_modules.ui_config import DEFAULT_GSHEET_URL
 os.makedirs(FEEDBACK_DIR, exist_ok=True)
 os.makedirs(INCOMING_DIR, exist_ok=True)
 
@@ -1357,7 +1357,7 @@ def render_live_tab():
         st.info("💡 Tip: If WooCommerce is down, use the '📥 Sales Data Ingestion' tab to pull fallback data from Google Sheets.")
 
 
-def fetch_woocommerce_stock():
+def fetch_woocommerce_stock(filter_skus=None, filter_titles=None):
     """Fetches real-time stock levels for published items using Expert Rules."""
     wc_info = st.secrets.get("woocommerce", {})
     wc_url = wc_info.get("store_url") or os.environ.get("WC_URL")
@@ -1395,6 +1395,25 @@ def fetch_woocommerce_stock():
                     p_type = p.get("type", "simple")
                     
                     if p_type == "variable":
+                        # Efficiency Hack: Skip variations if we know this product isn't in our target list
+                        if filter_skus or filter_titles:
+                            p_sku_norm = (p.get("sku") or "").strip().lower()
+                            p_name_norm = p.get("name", "").strip().lower()
+                            
+                            is_relevant = False
+                            if filter_skus and (p_sku_norm in filter_skus): is_relevant = True
+                            if filter_titles and (p_name_norm in filter_titles): is_relevant = True
+                            
+                            # If parent metadata doesn't match, we still check if any of the target SKUs 
+                            # MIGHT be a variation SKU (suffix patterns like SKU-L, SKU-XL, SKU-S are common)
+                            if not is_relevant and filter_skus and p_sku_norm:
+                                for ts in filter_skus:
+                                    if ts.lower().startswith(p_sku_norm):
+                                        is_relevant = True
+                                        break
+                            
+                            if not is_relevant: continue
+
                         v_r = requests.get(f"{endpoint}/{p_id}/variations", params={"per_page": 100}, auth=HTTPBasicAuth(wc_key, wc_secret), timeout=15)
                         if v_r.status_code == 200:
                             for v in v_r.json():

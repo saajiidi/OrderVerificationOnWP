@@ -11,19 +11,16 @@ def clean_dataframe(df):
     if df.empty:
         return df
 
-    # Convert Quantity to numeric
-    if "Quantity" in df.columns:
-        df["Quantity"] = pd.to_numeric(df["Quantity"], errors="coerce").fillna(0)
-
-    # Clean Item Cost
-    if "Item Cost" in df.columns:
-        if df["Item Cost"].dtype == "object":
-            df["Item Cost"] = (
-                df["Item Cost"].astype(str).str.replace(r"[^\d.]", "", regex=True)
-            )
-        df["Item Cost"] = pd.to_numeric(df.get("Item Cost", 0), errors="coerce").fillna(
-            0
-        )
+    # Convert numeric columns safely
+    numeric_cols = ["Quantity", "Item Cost", "Order Total Amount"]
+    for col in numeric_cols:
+        if col in df.columns:
+            if df[col].dtype == "object":
+                # Strip non-numeric characters for currency (e.g. "TK 100")
+                df[col] = (
+                    df[col].astype(str).str.replace(r"[^\d.]", "", regex=True)
+                )
+            df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
 
     # Clean string columns
     string_cols = [
@@ -73,6 +70,42 @@ def identify_columns(df):
                 cols["order_col"] = c
                 break
 
+
+    # RecipientCity Column (District/State/County)
+    cols["state_col"] = None
+    for c in df.columns:
+        c_l = c.lower()
+        if ("state" in c_l) or ("district" in c_l) or ("county" in c_l):
+            cols["state_col"] = c
+            break
+
+    # RecipientZone Column (City/Thana/Area)
+    cols["city_col"] = None
+    for c in df.columns:
+        c_l = c.lower()
+        if ("city" in c_l) or ("zone" in c_l) or ("area" in c_l):
+            cols["city_col"] = c
+            break
+
+    # Robust Fallback: If one is missing, use the other
+    if not cols["state_col"] and cols["city_col"]:
+        cols["state_col"] = cols["city_col"]
+    if not cols["city_col"] and cols["state_col"]:
+        cols["city_col"] = cols["state_col"]
+
+    # Recipient Name Column
+    cols["name_col"] = None
+    for c in df.columns:
+        c_l = c.lower()
+        if ("name" in c_l and ("shipping" in c_l or "customer" in c_l or "billing" in c_l or "full" in c_l)):
+            cols["name_col"] = c
+            break
+    
+    # Defaults if everything fails
+    if not cols["name_col"]: cols["name_col"] = df.columns[0]
+    if not cols["state_col"]: cols["state_col"] = df.columns[0]
+    if not cols["city_col"]: cols["city_col"] = df.columns[0]
+        
     return cols
 
 
@@ -191,13 +224,15 @@ def process_single_order_group(phone, group, data_cols):
     if not raw_address or raw_address.lower() == "nan":
         raw_address = str(first_row.get("State Name (Billing)", "")).strip()
 
-    # Normalize City & Address
-    raw_city = str(first_row.get("State Name (Billing)", "")).strip()
-    recipient_city = normalize_city_name(raw_city)
+    # Normalize City & Address (Pathao RecipientCity is the District/State)
+    raw_state = str(first_row.get(data_cols["state_col"], "")).strip()
+    recipient_city = normalize_city_name(raw_state)
     address_val = " ".join(raw_address.split()).title()
 
-    # RecipientZone: Empty as requested (no default Sadar)
-    extracted_zone = ""
+    # RecipientZone: Map to Woocom City (The Area/Thana)
+    extracted_zone = str(first_row.get(data_cols["city_col"], "")).strip().title()
+    if extracted_zone.lower() == "nan":
+        extracted_zone = ""
 
     # Area (Null as requested)
     recipient_area = ""
@@ -218,7 +253,7 @@ def process_single_order_group(phone, group, data_cols):
         "ItemType": "Parcel",
         "StoreName": "Deen Commerce",
         "MerchantOrderId": combined_merchant_id,
-        "RecipientName(*)": first_row.get("First Name (Shipping)", ""),
+        "RecipientName(*)": str(first_row.get(data_cols["name_col"], "")).strip().title(),
         "RecipientPhone(*)": phone,
         "RecipientAddress(*)": address_val,
         "RecipientCity(*)": recipient_city,
