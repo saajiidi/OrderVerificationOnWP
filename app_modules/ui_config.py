@@ -1,3 +1,5 @@
+import streamlit as st
+
 APP_TITLE = "DEEN Business Intelligence"
 APP_VERSION = "v9.6"
 
@@ -13,6 +15,7 @@ PRIMARY_NAV = [
 ]
 
 CLOUD_APP_URL = "https://deen-business-intel.streamlit.app/"
+
 
 MORE_TOOLS = [
     "System Logs",
@@ -35,7 +38,6 @@ DEFAULT_GSHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTOiRkybNz
 def get_pathao_config():
     """Load configuration from Streamlit secrets or local fallback."""
     try:
-        import streamlit as st
         if "pathao" in st.secrets:
             return dict(st.secrets["pathao"])
     except:
