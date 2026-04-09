@@ -1,12 +1,5 @@
 [
     {
-        "timestamp": "2026-04-02 16:52:49",
-        "context": "App Bootstrap",
-        "error": "name 'render_reset_confirm' is not defined",
-        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 127, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 102, in run_app\n    render_live_tab()\n    ~~~~~~~~~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\sales_dashboard.py\", line 901, in render_live_tab\n    render_reset_confirm(\"live\", _reset_live_state)\n    ^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_reset_confirm' is not defined\n",
-        "details": {}
-    },
-    {
         "timestamp": "2026-04-02 16:53:20",
         "context": "App Bootstrap",
         "error": "name 'render_reset_confirm' is not defined",
@@ -694,6 +687,13 @@
     },
     {
         "timestamp": "2026-04-09 14:44:40",
+        "context": "App Bootstrap",
+        "error": "'<' not supported between instances of 'str' and 'float'",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 175, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 149, in run_app\n    render_stock_analytics_tab()\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\sales_dashboard.py\", line 1633, in render_stock_analytics_tab\n    size_options = sorted(df_base[\"Size\"].unique().tolist())\nTypeError: '<' not supported between instances of 'str' and 'float'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-09 14:45:09",
         "context": "App Bootstrap",
         "error": "'<' not supported between instances of 'str' and 'float'",
         "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 175, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 149, in run_app\n    render_stock_analytics_tab()\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\sales_dashboard.py\", line 1633, in render_stock_analytics_tab\n    size_options = sorted(df_base[\"Size\"].unique().tolist())\nTypeError: '<' not supported between instances of 'str' and 'float'\n",

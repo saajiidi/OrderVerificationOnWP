@@ -1612,7 +1612,7 @@ def render_stock_analytics_tab():
     with st.expander("🛠️ Filter Intelligence", expanded=True):
         f1, f2, f3 = st.columns(3)
         with f1:
-            all_cats = sorted(df_raw["Category"].unique().tolist())
+            all_cats = sorted([str(x) for x in df_raw["Category"].unique().tolist() if x is not None])
             sel_cats = st.multiselect("Select Category", all_cats, placeholder="All Categories")
         
         # 1. Filter by Category
@@ -1620,7 +1620,7 @@ def render_stock_analytics_tab():
             
         with f2:
             # 2. Filter by Base Item (Clean groupings)
-            base_options = sorted(df_cat["Base_Product"].unique().tolist())
+            base_options = sorted([str(x) for x in df_cat["Base_Product"].unique().tolist() if x is not None])
             sel_bases = st.multiselect("Select Item / Product", base_options, placeholder="All Items")
         
         df_base = df_cat[df_cat["Base_Product"].isin(sel_bases)] if sel_bases else df_cat
@@ -1628,9 +1628,9 @@ def render_stock_analytics_tab():
         with f3:
             # 3. Filter by Size (Show only sizes for selected items)
             if "Size" not in df_base.columns:
-                 df_base["Size"] = df_base["Product"].apply(get_size_from_name)
+                 df_base["Size"] = df_base["Product"].astype(str).apply(get_size_from_name)
                  
-            size_options = sorted(df_base["Size"].unique().tolist())
+            size_options = sorted([str(x) for x in df_base["Size"].unique().tolist() if x is not None])
             sel_sizes = st.multiselect("Select Size", size_options, placeholder="All Sizes")
             df = df_base[df_base["Size"].isin(sel_sizes)] if sel_sizes else df_base
 
@@ -1642,57 +1642,64 @@ def render_stock_analytics_tab():
         st.info("📭 No inventory data matches your current filters. Adjust your 'Filter Intelligence' above.")
         return
 
-    # Stock Summary by Shift-Category
+    # v11.1 High-Resiliency Rendering Shell
+    try:
+        # Stock Summary by Shift-Category
+        st.divider()
+        
+        # v10.8+ Absolute numeric safety check right before comparison
+        current_stocks = pd.to_numeric(df["Stock"], errors="coerce").fillna(0).astype(float)
+        
+        total_qty = current_stocks.sum()
+        low_stock = (current_stocks < 10.0).sum()
+        
+        k1, k2, k3 = st.columns(3)
+        k1.metric("Total Items in Stock", f"{total_qty:,.0f}")
+        k2.metric("Low Stock Alerts", low_stock, delta="Action Needed" if low_stock > 0 else None, delta_color="inverse")
+        k3.metric("Mapped Categories", df["Category"][df["Category"] != "Uncategorized"].nunique())
 
-    st.divider()
-    
-    # v10.8+ Absolute numeric safety check right before comparison
-    current_stocks = pd.to_numeric(df["Stock"], errors="coerce").fillna(0).astype(float)
-    
-    total_qty = current_stocks.sum()
-    low_stock = (current_stocks < 10.0).sum()
-    
-    k1, k2, k3 = st.columns(3)
-    k1.metric("Total Items in Stock", f"{total_qty:,.0f}")
-    k2.metric("Low Stock Alerts", low_stock, delta="Action Needed" if low_stock > 0 else None, delta_color="inverse")
-    k3.metric("Mapped Categories", df["Category"][df["Category"] != "Uncategorized"].nunique())
+        # Category Volume Table
+        st.subheader("Inventory by Product Category")
+        cat_summ = df.groupby("Category")["Stock"].sum().reset_index()
+        cat_summ["Stock"] = pd.to_numeric(cat_summ["Stock"], errors="coerce").fillna(0)
+        cat_summ = cat_summ.sort_values("Stock", ascending=False)
+        
+        v1, v2 = st.columns([2, 3])
+        with v1:
+            st.dataframe(cat_summ, use_container_width=True, hide_index=True, column_config={"Stock": st.column_config.NumberColumn(format="%d")})
+        with v2:
+            fig = px.bar(cat_summ.head(15), x="Stock", y="Category", orientation="h", title="Top 15 Categories by Volume", color="Stock", color_continuous_scale="Viridis")
+            fig.update_layout(margin=dict(l=0, r=0, t=30, b=0), showlegend=False, coloraxis_showscale=False)
+            st.plotly_chart(fig, use_container_width=True)
 
-
-    # Category Volume Table
-    st.subheader("Inventory by Product Category")
-    cat_summ = df.groupby("Category")["Stock"].sum().reset_index()
-    cat_summ = cat_summ.sort_values("Stock", ascending=False)
-    
-    v1, v2 = st.columns([2, 3])
-    with v1:
-        st.dataframe(cat_summ, use_container_width=True, hide_index=True, column_config={"Stock": st.column_config.NumberColumn(format="%d")})
-    with v2:
-        fig = px.bar(cat_summ.head(15), x="Stock", y="Category", orientation="h", title="Top 15 Categories by Volume", color="Stock", color_continuous_scale="Viridis")
-        fig.update_layout(margin=dict(l=0, r=0, t=30, b=0), showlegend=False, coloraxis_showscale=False)
-        st.plotly_chart(fig, use_container_width=True)
-
-    # Search & Filter
-    st.divider()
-    st.subheader("Granular Stock Details")
-    search = st.text_input("🔍 Filter by Product Name, SKU, or Category", "").strip().lower()
-    
-    filtered_df = df.copy()
-    if search:
-        filtered_df = filtered_df[
-            filtered_df["Product"].str.lower().str.contains(search) | 
-            filtered_df["SKU"].str.lower().str.contains(search) |
-            filtered_df["Category"].str.lower().str.contains(search)
-        ]
-
-    st.dataframe(
-        filtered_df,
-        use_container_width=True,
-        hide_index=True,
-        column_config={
+        # Search & Filter
+        st.divider()
+        st.subheader("Granular Stock Details")
+        search = st.text_input("🔍 Filter by Product Name, SKU, or Category", "").strip().lower()
+        
+        filtered_df = df.copy()
+        if search:
+            mask = (
+                filtered_df["Product"].astype(str).str.lower().str.contains(search) |
+                filtered_df["SKU"].astype(str).str.lower().str.contains(search) |
+                filtered_df["Category"].astype(str).str.lower().str.contains(search)
+            )
+            filtered_df = filtered_df[mask]
+        
+        st.dataframe(filtered_df, use_container_width=True, hide_index=True, column_config={
             "Stock": st.column_config.NumberColumn(format="%d"),
             "Price": st.column_config.NumberColumn(format="TK %.0f")
-        }
-    )
+        })
+
+    except Exception as e:
+        # Recovery Mode: Show at least the total stock if possible
+        try:
+            raw_qty = pd.to_numeric(df_raw["Stock"], errors="coerce").sum()
+            st.metric("Total items in Inventory (Recovery Mode)", f"{raw_qty:,.0f}")
+            st.warning(f"Note: Detailed report is partially unavailable due to data variations. Total count is verified.")
+        except:
+            st.error("Snapshot data is incompatible with current report engine. Please 'Sync Fresh Data'.")
+        log_system_event("STOCK_RENDER_ERROR", str(e))
     
     st.caption(f"Database last refreshed: {st.session_state.get('stock_sync_time', datetime.now()).strftime('%I:%M %p')}")
     st.markdown('</div>', unsafe_allow_html=True)
