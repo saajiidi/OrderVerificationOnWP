@@ -3639,5 +3639,15 @@
         "timestamp": "2026-04-11 16:14:16",
         "type": "STOCK_RENDER_ERROR",
         "details": "'Product Name'"
+    },
+    {
+        "timestamp": "2026-04-11 16:30:00",
+        "type": "FILE_ERROR",
+        "details": "'NoneType' object has no attribute 'sort_values'"
+    },
+    {
+        "timestamp": "2026-04-11 16:30:00",
+        "type": "FILE_ERROR",
+        "details": "'NoneType' object has no attribute 'sort_values'"
     }
 ]
