@@ -14,14 +14,26 @@ def inject_base_styles():
         <style>
         :root {{
             --primary: var(--primary-color, #1d4ed8);
+            --primary-glow: rgba(29, 78, 216, 0.1);
             --surface: var(--background-color, #f8fafc);
-            --border: rgba(128, 128, 128, 0.2);
-            --text-muted: var(--text-color, #64748b);
-            --step-surface: var(--background-color, #ffffff);
+            --border: rgba(128, 128, 128, 0.15);
+            --text-main: var(--text-color, #0f172a);
+            --text-muted: #64748b;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --step-surface: var(--background-color, #f8fafc);
             --step-text: var(--text-color, #0f172a);
             --step-active-bg: var(--secondary-background-color, rgba(29, 78, 216, 0.05));
             --action-surface: var(--secondary-background-color, rgba(255, 255, 255, 0.96));
-            --card-shadow: rgba(0, 0, 0, 0.1);
+        }}
+        
+        /* Modern Scrollbar */
+        ::-webkit-scrollbar {{ width: 8px; height: 8px; }}
+        ::-webkit-scrollbar-track {{ background: transparent; }}
+        ::-webkit-scrollbar-thumb {{ background: #cbd5e1; border-radius: 4px; }}
+        ::-webkit-scrollbar-thumb:hover {{ background: #94a3b8; }}
+
+        .stApp {{
+            background: var(--background-color);
         }}
         
         .hub-footer {{
@@ -57,22 +69,19 @@ def inject_base_styles():
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: linear-gradient(90deg, rgba(29, 78, 216, 0.03) 0%, rgba(29, 78, 216, 0) 100%);
-            border-left: 4px solid #1d4ed8;
+            background: rgba(29, 78, 216, 0.02);
+            border-left: 4px solid var(--primary);
             border-bottom: 1px solid var(--border);
-            padding: 8px 16px;
-            margin-bottom: 0px;
-            border-radius: 0 4px 4px 0;
+            padding: 12px 20px;
+            margin-bottom: 24px;
+            border-radius: 0 12px 12px 0;
         }}
+
         /* Remove the top gap without touching the sidebar toggle */
         .main .block-container {{
             padding-top: 0 !important;
             margin-top: -1.75rem !important;
             padding-bottom: 80px !important;
-        }}
-        .hub-title {{
-            margin: 0;
-            font-weight: 700;
         }}
         .hub-subtitle {{
             margin: 0;
@@ -83,38 +92,42 @@ def inject_base_styles():
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 14px 16px;
-            margin-bottom: 4px;
-            box-shadow: 0 4px 12px var(--card-shadow);
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }}
-        .hub-welcome-banner {{
-            background-color: transparent;
-            border: 1px solid rgba(128, 128, 128, 0.2);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-        }}
-        .hub-welcome-banner a, .hub-welcome-banner b {{
-            color: inherit !important;
-        }}
-        .hub-welcome-status {{
-            text-align: right;
-            background: rgba(29, 78, 216, 0.04);
-            padding: 12px 16px;
-            border-radius: 8px;
-            border: 1px solid rgba(29, 78, 216, 0.1);
+            padding: 18px;
+            margin-bottom: 16px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.2s ease;
         }}
         .hub-card:hover {{
             transform: translateY(-2px);
-            box-shadow: 0 12px 32px var(--card-shadow);
             border-color: var(--primary);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }}
+
+        
+        
+
+        /* Hub Title Style (Premium) */
+        .hub-title {{
+            font-size: 2.2rem !important;
+            font-weight: 800 !important;
+            letter-spacing: -0.04em !important;
+            color: var(--text-main) !important;
+            margin: 0px !important;
+        }}
+        
+        /* Notification Popover Styling */
+        div[data-testid="stPopover"] button {{
+            background: var(--surface) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 20px !important;
+            padding: 4px 16px !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+            transition: all 0.3s ease !important;
+        }}
+        div[data-testid="stPopover"] button:hover {{
+            border-color: var(--primary) !important;
+            box-shadow: 0 4px 12px var(--primary-glow) !important;
+            transform: translateY(-1px);
         }}
         
         /* 3. Action Glow for success/primary steps */
@@ -227,23 +240,52 @@ def render_sidebar_branding():
     except:
         pass
 
-    # Sidebar branding now only shows the logo if requested, 
-    # but the user requested removing the header text entirely.
-    # We'll just leave this as a logo placeholder or remove the div.
+    # User requested no title in sidebar, keeping it clean for main app focus
     pass
 
 
 def render_header(right_slot_callback=None):
-    """Minimal header with flexible right-hand slots."""
-    c1, c2 = st.columns([1, 1])
-    with c1:
+    """Modern command-center header with exact user-requested styling."""
+    st.markdown(
+        f"""
+        <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 0px; justify-content: space-between; width: 100%;">
+            <h1 class="hub-title" id="deen-ops-terminal-v10-0" aria-labelledby=":r9:" style="margin: 0px;">
+                <span id=":r9:">DEEN OPS Terminal <span style="color: rgb(29, 78, 216);">v10.0</span></span>
+            </h1>
+        </div>
+        <p style="color: var(--text-muted); margin-bottom: 24px; font-size: 1rem;">Operational Command & Business Intelligence Center</p>
+        """,
+        unsafe_allow_html=True
+    )
+    if right_slot_callback:
+        with st.container():
+            right_slot_callback()
+
+
+def render_app_banner():
+    """Renders a premium visual banner for the application."""
+    import base64
+    import os
+
+    banner_path = os.path.join("assets", "app_banner.png")
+    if os.path.exists(banner_path):
+        with open(banner_path, "rb") as f:
+            b64 = base64.b64encode(f.read()).decode()
+        
         st.markdown(
-            f'<h1 class="hub-title" style="margin:0;">{APP_TITLE} <span style="color:#1d4ed8;">{APP_VERSION}</span></h1>',
+            f"""
+            <div style="position: relative; width: 100%; height: 200px; border-radius: 12px; overflow: hidden; margin-bottom: 24px; box-shadow: var(--card-shadow);">
+                <img src="data:image/png;base64,{b64}" style="width: 100%; height: 100%; object-fit: cover;">
+                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, rgba(15, 23, 42, 0.7) 0%, rgba(15, 23, 42, 0) 100%); display: flex; align-items: center; padding: 0 40px;">
+                    <div>
+                        <div style="color: white; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 4px;">DEEN OPS Terminal</div>
+                        <div style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem;">Advanced Operational Analytics & Strategic Data Pilot</div>
+                    </div>
+                </div>
+            </div>
+            """,
             unsafe_allow_html=True
         )
-    with c2:
-        if right_slot_callback:
-            right_slot_callback()
 
 
 def section_card(title: str, help_text: str = ""):

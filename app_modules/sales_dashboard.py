@@ -21,6 +21,7 @@ from app_modules.ui_components import (
     render_action_bar,
     render_reset_confirm,
 )
+from app_modules.insights_service import get_business_insights
 from app_modules.utils import (
     get_category_for_sales,
     get_base_product_name,
@@ -856,6 +857,10 @@ def render_dashboard_output(
                 if is_office_hours:
                     status_html += f" | ⚙️ {proc_count} Processing"
 
+            # Intelligence Layer Integration (Panel removed per user request)
+            # insights = get_business_insights(m_df)
+            # render_insight_panel(insights)
+
             sync_label = "Just now"
             if st.session_state.get("live_sync_time"):
                 diff = datetime.now() - st.session_state.live_sync_time
@@ -882,7 +887,7 @@ def render_dashboard_output(
                 st.markdown('<div id="snapshot-target-main"></div>', unsafe_allow_html=True)
                 col1, col2, col3, col4 = st.columns(4)
                 with col1:
-                    l1 = "Backlog Items" if nav_mode == "Backlog" else "Items sold"
+                    l1 = "Backlog Items" if nav_mode == "Backlog" else "Items Sold"
                     st.metric(l1, f"{m_qty:,.0f}", delta=dq_str)
                 with col2:
                     l2 = "Backlog Rev" if nav_mode == "Backlog" else "Revenue"

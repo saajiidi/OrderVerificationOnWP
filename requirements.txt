@@ -16,5 +16,9 @@ google-api-python-client
 google-auth
 google-auth-oauthlib
 google-auth-httplib2
+# AI & Networking
 requests
+aiohttp
+openai
+google-generativeai
 streamlit-autorefresh

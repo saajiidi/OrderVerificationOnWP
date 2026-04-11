@@ -28,6 +28,26 @@ st.set_page_config(
 
 
 def run_app():
+    # ========== AUTHENTICATION LAYER ==========
+    # Native Streamlit OIDC Auth (requires secrets.toml configuration)
+    is_auth_configured = "auth" in st.secrets
+    
+    if is_auth_configured:
+        if not st.experimental_user.is_logged_in:
+            from app_modules.ui_components import inject_base_styles
+            inject_base_styles()
+            st.markdown("<div style='margin-top:100px;'></div>", unsafe_allow_html=True)
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                st.image("assets/deen_logo.jpg", width=120)
+                st.title("🛡️ DEEN OPS Terminal")
+                st.markdown("### Secure Operational Access")
+                st.info("Identity verification required for Business Intelligence access.")
+                if st.button("Log in with Google", use_container_width=True, type="primary"):
+                    st.login()
+            st.stop()
+    # ==========================================
+
     # Lazy imports keep bootstrap resilient on cloud when a module has runtime incompatibilities.
     from app_modules.clock import render_dynamic_clock
     from app_modules.bike_animation import render_bike_animation
@@ -61,12 +81,21 @@ def run_app():
 
     with st.sidebar:
         render_sidebar_branding()
+        
+        # User Authentication Context
+        if is_auth_configured and st.experimental_user.is_logged_in:
+            with st.sidebar.expander(f"👤 {st.experimental_user.name}", expanded=False):
+                st.caption(f"📧 {st.experimental_user.email}")
+                if st.button("Logout", use_container_width=True, type="secondary"):
+                    st.logout()
+            st.divider()
+
         # Clock relocated to header
 
         st.link_button("🌐 Launch DEEN BI", CLOUD_APP_URL, use_container_width=True, type="primary")
         st.divider()
         
-        st.subheader("🚀 Navigation")
+        st.subheader("🚀 COMMAND NAV")
         selected_nav = st.sidebar.radio(
             "Select Workspace", 
             PRIMARY_NAV, 
@@ -138,6 +167,8 @@ def run_app():
 
     # Main content rendering based on sidebar selection
     if selected_nav == "📈 Live Dashboard":
+        from app_modules.ui_components import render_app_banner
+        render_app_banner()
         render_live_tab()
     elif selected_nav == "📦 Bulk Order Processer":
         render_pathao_tab()
@@ -151,13 +182,17 @@ def run_app():
         render_fuzzy_parser_tab()
     elif selected_nav == "📥 Sales Data Ingestion":
         render_manual_tab()
-
+    elif selected_nav == "🛡️ AI-BI Analytics Support":
+        from app_modules.ai_pilot import render_ai_pilot_page
+        render_ai_pilot_page()
     # After tool execution, re-render the header with any injected content
     with header_container:
         def render_header_right():
             from app_modules.clock import render_dynamic_clock
+            
             # 1. Show dynamic clock + sync status
             render_dynamic_clock(st.session_state.get("live_sync_time"))
+
             # 2. Show tool-specific banners
             banner = st.session_state.get("header_status_banner", "")
             if banner:

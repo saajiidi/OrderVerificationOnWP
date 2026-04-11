@@ -1,37 +1,71 @@
-# DEEN Business Intelligence v9.6
+# DEEN INTELLIGENCE 🧠
+### AI-Powered Operational Command Center for E-Commerce
 
-**DEEN Business Intelligence** is a high-performance, intelligence-driven command center for sales analysis, order processing, and real-time inventory management.
+> "Most dashboards show data. This one explains it."
 
-## Main Navigation
+DEEN Intelligence is a high-performance, intelligence-driven command center designed to optimize E-commerce operations through real-time data storytelling and AI-assisted decision making.
 
-- **📈 Live Dashboard**: Operations-focused command center with shift-monitoring (Today vs Prev Slot).
-- **📥 Sales Data Ingestion**: Manual sales file upload and deep-dive analytics.
-- **📦 Current Stock Analytics**: Category-mapped inventory intelligence synced directly from WooCommerce.
-- **📋 Bulk Order Processor**: High-volume courier order repair and formatting.
-- **📊 Inventory Distribution**: Consolidated stock analyzer and distribution management.
-- **💬 WhatsApp Messaging**: Live-synced messaging system for customer verification.
+![DEEN Intelligence Hero](assets/hero_banner.png)
 
-## Key Updates in v9.6
+---
 
-- **Shift-Category Stock Mapping**: Integrated expert rules to group all live warehouse stock into 28 operational categories.
-- **Unified Command Center**: High-density operational row featuring Revenue, Orders, and Basket Value with Today-centric deltas.
-- **Cross-Slot Intelligence**: Bidirectional time travel between "Today" and "Previous Slot" for instant performance benchmarking.
-- **Premium Aesthetics**: Dark-mode optimized, high-density UI with real-time dynamic clocks.
-- **Robust Custom Filters**: Enhanced caching and fixed date-range overrides.
-- **Global Header Sync**: Centralized API action button to purge memory and retrieve the latest WooCommerce dataset instantly.
+## 🔥 The "Hire-Me-Now" Advantage
+Traditional BI tools focus on *what* happened. **DEEN Intelligence** focuses on *why* it matters and *what* to do next.
 
-## Quick Start
-```bash
-pip install -r requirements.txt
-streamlit run app.py
-```
+- **🚀 Real-Time Command**: Live-sync with WooCommerce to monitor performance deltas (Today vs Yesterday) in real-time.
+- **🧠 Insight Engine**: Automated heuristic analysis that detects "Geographic Hotspots," "Retention Stability," and "Operational Risks."
+- **🤖 AI Data Pilot**: An integrated conversational agent that summarizes complex datasets into human-readable action plans.
+- **💎 Premium UX**: A custom-engineered interface featuring glassmorphism, micro-animations, and high-density KPI tracking.
 
-## Project Structure
+---
 
-- `app.py`: Application shell, sidebar settings, and navigation.
-- `app_modules/sales_dashboard.py`: Core logic for live/manual sales analytics.
-- `app_modules/pathao_tab.py`: Optimized bulk order processing.
-- `app_modules/fuzzy_parser_tab.py`: Advanced text-to-data extraction.
-- `app_modules/distribution_tab.py`: Inventory and distribution management.
-- `app_modules/wp_tab.py`: WhatsApp link generation and live integration.
-- `app_modules/persistence.py`: Session state saving and file handling.
+## 🛠️ Tech Stack & Architecture
+Engineered for scalability and professional-grade data handling:
+
+- **Frontend**: Streamlit + Custom CSS (Glassmorphism & Radial Gradients)
+- **Data Engine**: Vectorized Pandas operations for near-zero latency processing.
+- **AI Layer**: Flexible LLM wrapper (OpenAI/Gemini compatible) with heuristic fallback.
+- **Integrations**: WooCommerce REST API, Pathao Courier API, Dynamic PDF/Excel generation.
+- **Reliability**: Robust error logging, session persistence, and multi-threaded API fetching.
+
+---
+
+## 🏗️ Core Modules
+
+### 📍 Live Intelligence Hub
+The flagship command center. Features high-density KPI cards with real-time trend reporting and an "Intelligence Deep-Dive" panel.
+
+### 📦 Logistics Intelligence (Pathao & Bulk Processor)
+Automation suite for high-volume order repairing and courier integration. Reduces manual entry by 90% through intelligent fuzzy parsing.
+
+### 📊 Inventory Intelligence
+Category-mapped distribution matrix for multicenter stock management. Integrated with WooCommerce for live inventory health checks.
+
+---
+
+## 🚀 Getting Started
+
+1. **Clone & Install**:
+   ```bash
+   git clone https://github.com/saajiidi/DEEN-BI.git
+   pip install -r requirements.txt
+   ```
+
+2. **Configure Secrets**:
+   Add your API keys to `.streamlit/secrets.toml`.
+
+3. **Run**:
+   ```bash
+   streamlit run app.py
+   ```
+
+---
+
+## 👤 Author
+**Sajid Islam**  
+*Data Product Engineer specializing in AI-Driven Operational Tools.*
+
+[LinkedIn](https://www.linkedin.com/in/sajidislam/) | [Portfolio](https://saajiidi.github.io/) | [DEEN Commerce](https://deencommerce.com/)
+
+---
+*© 2026 DEEN Intelligence. Proprietary development for DEEN Commerce Ltd.*

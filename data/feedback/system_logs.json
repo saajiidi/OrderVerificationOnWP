@@ -3594,5 +3594,25 @@
         "timestamp": "2026-04-09 15:57:33",
         "type": "FILE_ERROR",
         "details": "'Date'"
+    },
+    {
+        "timestamp": "2026-04-11 10:17:41",
+        "type": "LIVE_FILE_ERROR",
+        "details": "cannot access local variable 'var_primary' where it is not associated with a value"
+    },
+    {
+        "timestamp": "2026-04-11 10:17:55",
+        "type": "LIVE_FILE_ERROR",
+        "details": "cannot access local variable 'var_primary' where it is not associated with a value"
+    },
+    {
+        "timestamp": "2026-04-11 10:18:13",
+        "type": "LIVE_FILE_ERROR",
+        "details": "cannot access local variable 'var_primary' where it is not associated with a value"
+    },
+    {
+        "timestamp": "2026-04-11 10:18:28",
+        "type": "LIVE_FILE_ERROR",
+        "details": "cannot access local variable 'var_primary' where it is not associated with a value"
     }
 ]

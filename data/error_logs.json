@@ -1,124 +1,5 @@
 [
     {
-        "timestamp": "2026-04-02 16:53:20",
-        "context": "App Bootstrap",
-        "error": "name 'render_reset_confirm' is not defined",
-        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 127, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 102, in run_app\n    render_live_tab()\n    ~~~~~~~~~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\sales_dashboard.py\", line 901, in render_live_tab\n    render_reset_confirm(\"live\", _reset_live_state)\n    ^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_reset_confirm' is not defined\n",
-        "details": {}
-    },
-    {
-        "timestamp": "2026-04-02 16:53:25",
-        "context": "App Bootstrap",
-        "error": "name 'render_reset_confirm' is not defined",
-        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 127, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 102, in run_app\n    render_live_tab()\n    ~~~~~~~~~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\sales_dashboard.py\", line 901, in render_live_tab\n    render_reset_confirm(\"live\", _reset_live_state)\n    ^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_reset_confirm' is not defined\n",
-        "details": {}
-    },
-    {
-        "timestamp": "2026-04-02 16:53:39",
-        "context": "App Bootstrap",
-        "error": "name 'render_reset_confirm' is not defined",
-        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 127, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 102, in run_app\n    render_live_tab()\n    ~~~~~~~~~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\sales_dashboard.py\", line 901, in render_live_tab\n    render_reset_confirm(\"live\", _reset_live_state)\n    ^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_reset_confirm' is not defined\n",
-        "details": {}
-    },
-    {
-        "timestamp": "2026-04-02 16:54:15",
-        "context": "App Bootstrap",
-        "error": "name 'render_reset_confirm' is not defined",
-        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 127, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 102, in run_app\n    render_live_tab()\n    ~~~~~~~~~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\sales_dashboard.py\", line 901, in render_live_tab\n    render_reset_confirm(\"live\", _reset_live_state)\n    ^^^^^^^^^^^^^^^^^^^^\nNameError: name 'render_reset_confirm' is not defined\n",
-        "details": {}
-    },
-    {
-        "timestamp": "2026-04-02 16:58:43",
-        "context": "App Bootstrap",
-        "error": "render_reset_confirm() missing 1 required positional argument: 'reset_fn'",
-        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 143, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 118, in run_app\n    render_live_tab()\n    ~~~~~~~~~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\sales_dashboard.py\", line 901, in render_live_tab\n    render_reset_confirm(\"live\", _reset_live_state)\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: render_reset_confirm() missing 1 required positional argument: 'reset_fn'\n",
-        "details": {}
-    },
-    {
-        "timestamp": "2026-04-02 16:59:03",
-        "context": "App Bootstrap",
-        "error": "render_reset_confirm() missing 1 required positional argument: 'reset_fn'",
-        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 143, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 127, in run_app\n    render_fuzzy_parser_tab()\n    ~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\fuzzy_parser_tab.py\", line 276, in render_fuzzy_parser_tab\n    render_reset_confirm(\"parser\", _reset_parser_state)\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: render_reset_confirm() missing 1 required positional argument: 'reset_fn'\n",
-        "details": {}
-    },
-    {
-        "timestamp": "2026-04-04 10:07:50",
-        "context": "App Bootstrap",
-        "error": "tuple index out of range",
-        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 143, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 129, in run_app\n    with nav_tabs[4]:\n         ~~~~~~~~^^^\nIndexError: tuple index out of range\n",
-        "details": {}
-    },
-    {
-        "timestamp": "2026-04-04 10:43:29",
-        "context": "App Bootstrap",
-        "error": "'NoneType' object has no attribute 'iterrows'",
-        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 143, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 132, in run_app\n    render_wp_tab()\n    ~~~~~~~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\wp_tab.py\", line 170, in render_wp_tab\n    for _, row in links_df.iterrows():\n                  ^^^^^^^^^^^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'iterrows'\n",
-        "details": {}
-    },
-    {
-        "timestamp": "2026-04-04 11:01:44",
-        "context": "App Bootstrap",
-        "error": "'NoneType' object has no attribute 'iterrows'",
-        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 143, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 132, in run_app\n    render_wp_tab()\n    ~~~~~~~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\wp_tab.py\", line 170, in render_wp_tab\n    for _, row in links_df.iterrows():\n                  ^^^^^^^^^^^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'iterrows'\n",
-        "details": {}
-    },
-    {
-        "timestamp": "2026-04-04 14:06:52",
-        "context": "App Bootstrap",
-        "error": "A non-empty `title` argument has to be provided for dialogs, for example `@st.dialog(\"Example Title\")`.",
-        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 144, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Analysis\\Order-Process-Automation\\app.py\", line 38, in run_app\n    from app_modules.sales_dashboard import render_live_tab, render_manual_tab\n  File \"H:\\Analysis\\Order-Process-Automation\\app_modules\\sales_dashboard.py\", line 808, in <module>\n    @st.dialog(\"\", width=\"large\")\n     ~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\streamlit\\elements\\dialog_decorator.py\", line 301, in wrapper\n    return _dialog_decorator(\n        non_optional_func=f,\n    ...<4 lines>...\n        on_dismiss=on_dismiss,\n    )\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\streamlit\\elements\\dialog_decorator.py\", line 72, in _dialog_decorator\n    raise StreamlitAPIException(\n    ...<2 lines>...\n    )\nstreamlit.errors.StreamlitAPIException: A non-empty `title` argument has to be provided for dialogs, for example `@st.dialog(\"Example Title\")`.\n",
-        "details": {}
-    },
-    {
-        "timestamp": "2026-04-06 11:08:52",
-        "context": "Pathao Live Pull",
-        "error": "load_live_source() takes 0 positional arguments but 1 was given",
-        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\pathao_tab.py\", line 66, in render_pathao_tab\n    df_live, source_name, _ = load_live_source(source_options[default_idx])\n                              ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: load_live_source() takes 0 positional arguments but 1 was given\n",
-        "details": {}
-    },
-    {
-        "timestamp": "2026-04-06 11:08:59",
-        "context": "Inventory Live Pull",
-        "error": "load_live_source() takes 0 positional arguments but 1 was given",
-        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\distribution_tab.py\", line 83, in render_distribution_tab\n    df_live, source_name, _ = load_live_source(source_options[default_idx])\n                              ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: load_live_source() takes 0 positional arguments but 1 was given\n",
-        "details": {}
-    },
-    {
-        "timestamp": "2026-04-06 11:09:03",
-        "context": "WP Live Pull",
-        "error": "load_live_source() takes 0 positional arguments but 1 was given",
-        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\wp_tab.py\", line 99, in render_wp_tab\n    df_live, _, _ = load_live_source(source_options[default_idx])\n                    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: load_live_source() takes 0 positional arguments but 1 was given\n",
-        "details": {}
-    },
-    {
-        "timestamp": "2026-04-06 11:11:43",
-        "context": "Pathao Processor",
-        "error": "Index(['Order Number'], dtype='object')",
-        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\pathao_tab.py\", line 104, in render_pathao_tab\n    result_df = process_orders_dataframe(preview_df)\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\processor.py\", line 235, in process_orders_dataframe\n    record = process_single_order_group(phone, group, data_cols)\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\processor.py\", line 75, in process_single_order_group\n    unique_orders = group.drop_duplicates(subset=[\"Order Number\"])\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\pandas\\core\\frame.py\", line 6840, in drop_duplicates\n    result = self[-self.duplicated(subset, keep=keep)]\n                   ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\pandas\\core\\frame.py\", line 6972, in duplicated\n    raise KeyError(Index(diff))\nKeyError: Index(['Order Number'], dtype='object')\n",
-        "details": {}
-    },
-    {
-        "timestamp": "2026-04-06 11:12:33",
-        "context": "Pathao Processor",
-        "error": "Index(['Order Number'], dtype='object')",
-        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\pathao_tab.py\", line 104, in render_pathao_tab\n    result_df = process_orders_dataframe(preview_df)\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\processor.py\", line 235, in process_orders_dataframe\n    record = process_single_order_group(phone, group, data_cols)\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\processor.py\", line 75, in process_single_order_group\n    unique_orders = group.drop_duplicates(subset=[\"Order Number\"])\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\pandas\\core\\frame.py\", line 6840, in drop_duplicates\n    result = self[-self.duplicated(subset, keep=keep)]\n                   ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\pandas\\core\\frame.py\", line 6972, in duplicated\n    raise KeyError(Index(diff))\nKeyError: Index(['Order Number'], dtype='object')\n",
-        "details": {}
-    },
-    {
-        "timestamp": "2026-04-06 11:12:35",
-        "context": "Pathao Processor",
-        "error": "Index(['Order Number'], dtype='object')",
-        "traceback": "Traceback (most recent call last):\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\pathao_tab.py\", line 104, in render_pathao_tab\n    result_df = process_orders_dataframe(preview_df)\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\processor.py\", line 235, in process_orders_dataframe\n    record = process_single_order_group(phone, group, data_cols)\n  File \"H:\\Analysis\\DEEN-OPS\\app_modules\\processor.py\", line 75, in process_single_order_group\n    unique_orders = group.drop_duplicates(subset=[\"Order Number\"])\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\pandas\\core\\frame.py\", line 6840, in drop_duplicates\n    result = self[-self.duplicated(subset, keep=keep)]\n                   ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\pandas\\core\\frame.py\", line 6972, in duplicated\n    raise KeyError(Index(diff))\nKeyError: Index(['Order Number'], dtype='object')\n",
-        "details": {}
-    },
-    {
-        "timestamp": "2026-04-06 12:26:18",
-        "context": "Pathao Processor",
-        "error": "Index(['Order Number'], dtype='object')",
-        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-OPS\\app_modules\\pathao_tab.py\", line 104, in render_pathao_tab\n    result_df = process_orders_dataframe(preview_df)\n  File \"H:\\Repo\\DEEN-OPS\\app_modules\\processor.py\", line 235, in process_orders_dataframe\n    record = process_single_order_group(phone, group, data_cols)\n  File \"H:\\Repo\\DEEN-OPS\\app_modules\\processor.py\", line 75, in process_single_order_group\n    unique_orders = group.drop_duplicates(subset=[\"Order Number\"])\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\pandas\\core\\frame.py\", line 6840, in drop_duplicates\n    result = self[-self.duplicated(subset, keep=keep)]\n                   ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\pandas\\core\\frame.py\", line 6972, in duplicated\n    raise KeyError(Index(diff))\nKeyError: Index(['Order Number'], dtype='object')\n",
-        "details": {}
-    },
-    {
         "timestamp": "2026-04-06 12:30:30",
         "context": "Pathao Processor",
         "error": "unsupported operand type(s) for +=: 'int' and 'str'",
@@ -697,6 +578,125 @@
         "context": "App Bootstrap",
         "error": "'<' not supported between instances of 'str' and 'float'",
         "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 175, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 149, in run_app\n    render_stock_analytics_tab()\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\sales_dashboard.py\", line 1633, in render_stock_analytics_tab\n    size_options = sorted(df_base[\"Size\"].unique().tolist())\nTypeError: '<' not supported between instances of 'str' and 'float'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-11 12:15:17",
+        "context": "App Bootstrap",
+        "error": "The truth value of a DataFrame is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 197, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 188, in run_app\n    render_header(render_header_right)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\ui_components.py\", line 241, in render_header\n    right_slot_callback()\n    ~~~~~~~~~~~~~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 179, in render_header_right\n    active_df = st.session_state.get(\"wc_curr_df\") or st.session_state.get(\"manual_df\")\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\pandas\\core\\generic.py\", line 1580, in __nonzero__\n    raise ValueError(\n    ...<2 lines>...\n    )\nValueError: The truth value of a DataFrame is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-11 12:19:53",
+        "context": "App Bootstrap",
+        "error": "The truth value of a DataFrame is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 195, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 186, in run_app\n    render_header(render_header_right)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\ui_components.py\", line 256, in render_header\n    right_slot_callback()\n    ~~~~~~~~~~~~~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 177, in render_header_right\n    active_df = st.session_state.get(\"wc_curr_df\") or st.session_state.get(\"manual_df\")\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\pandas\\core\\generic.py\", line 1580, in __nonzero__\n    raise ValueError(\n    ...<2 lines>...\n    )\nValueError: The truth value of a DataFrame is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-11 12:19:54",
+        "context": "App Bootstrap",
+        "error": "The truth value of a DataFrame is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 195, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 186, in run_app\n    render_header(render_header_right)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\ui_components.py\", line 256, in render_header\n    right_slot_callback()\n    ~~~~~~~~~~~~~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 177, in render_header_right\n    active_df = st.session_state.get(\"wc_curr_df\") or st.session_state.get(\"manual_df\")\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\pandas\\core\\generic.py\", line 1580, in __nonzero__\n    raise ValueError(\n    ...<2 lines>...\n    )\nValueError: The truth value of a DataFrame is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-11 12:28:36",
+        "context": "App Bootstrap",
+        "error": "unmatched ')' (ui_components.py, line 250)",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 197, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 34, in run_app\n    from app_modules.distribution_tab import render_distribution_tab\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\distribution_tab.py\", line 9, in <module>\n    from app_modules.ui_components import (\n    ...<3 lines>...\n    )\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\ui_components.py\", line 250\n    )\n    ^\nSyntaxError: unmatched ')'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-11 12:29:03",
+        "context": "App Bootstrap",
+        "error": "unmatched ')' (ui_components.py, line 250)",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 197, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 34, in run_app\n    from app_modules.distribution_tab import render_distribution_tab\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\distribution_tab.py\", line 9, in <module>\n    from app_modules.ui_components import (\n    ...<3 lines>...\n    )\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\ui_components.py\", line 250\n    )\n    ^\nSyntaxError: unmatched ')'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-11 12:29:34",
+        "context": "App Bootstrap",
+        "error": "cannot import name 'render_insight_panel' from 'app_modules.ui_components' (H:\\Repo\\DEEN-BI\\app_modules\\ui_components.py)",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 197, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 39, in run_app\n    from app_modules.sales_dashboard import render_live_tab, render_manual_tab, render_stock_analytics_tab\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\sales_dashboard.py\", line 19, in <module>\n    from app_modules.ui_components import (\n    ...<4 lines>...\n    )\nImportError: cannot import name 'render_insight_panel' from 'app_modules.ui_components' (H:\\Repo\\DEEN-BI\\app_modules\\ui_components.py)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-11 12:29:47",
+        "context": "App Bootstrap",
+        "error": "cannot import name 'render_insight_panel' from 'app_modules.ui_components' (H:\\Repo\\DEEN-BI\\app_modules\\ui_components.py)",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 197, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 39, in run_app\n    from app_modules.sales_dashboard import render_live_tab, render_manual_tab, render_stock_analytics_tab\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\sales_dashboard.py\", line 19, in <module>\n    from app_modules.ui_components import (\n    ...<4 lines>...\n    )\nImportError: cannot import name 'render_insight_panel' from 'app_modules.ui_components' (H:\\Repo\\DEEN-BI\\app_modules\\ui_components.py)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-11 12:53:17",
+        "context": "App Bootstrap",
+        "error": "'app_modules'",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 183, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 32, in run_app\n    from app_modules.clock import render_dynamic_clock\n  File \"<frozen importlib._bootstrap>\", line 1371, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1342, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 949, in _load_unlocked\nKeyError: 'app_modules'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-11 12:53:19",
+        "context": "App Bootstrap",
+        "error": "cannot import name 'render_ai_pilot_page' from 'app_modules.ai_pilot' (H:\\Repo\\DEEN-BI\\app_modules\\ai_pilot.py)",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 183, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 146, in run_app\n    from app_modules.ai_pilot import render_ai_pilot_page\nImportError: cannot import name 'render_ai_pilot_page' from 'app_modules.ai_pilot' (H:\\Repo\\DEEN-BI\\app_modules\\ai_pilot.py)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-11 12:53:45",
+        "context": "App Bootstrap",
+        "error": "cannot import name 'render_ai_pilot' from 'app_modules.ai_pilot' (H:\\Repo\\DEEN-BI\\app_modules\\ai_pilot.py)",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 183, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 47, in run_app\n    from app_modules.ai_pilot import render_ai_pilot\nImportError: cannot import name 'render_ai_pilot' from 'app_modules.ai_pilot' (H:\\Repo\\DEEN-BI\\app_modules\\ai_pilot.py)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-11 12:54:52",
+        "context": "App Bootstrap",
+        "error": "'app_modules'",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 183, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 33, in run_app\n    from app_modules.bike_animation import render_bike_animation\n  File \"<frozen importlib._bootstrap>\", line 1371, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1348, in _find_and_load_unlocked\nKeyError: 'app_modules'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-11 12:55:30",
+        "context": "App Bootstrap",
+        "error": "cannot import name 'render_ai_pilot' from 'app_modules.ai_pilot' (H:\\Repo\\DEEN-BI\\app_modules\\ai_pilot.py)",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 183, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 47, in run_app\n    from app_modules.ai_pilot import render_ai_pilot\nImportError: cannot import name 'render_ai_pilot' from 'app_modules.ai_pilot' (H:\\Repo\\DEEN-BI\\app_modules\\ai_pilot.py)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-11 12:56:37",
+        "context": "App Bootstrap",
+        "error": "cannot import name 'render_ai_pilot' from 'app_modules.ai_pilot' (H:\\Repo\\DEEN-BI\\app_modules\\ai_pilot.py)",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 182, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 47, in run_app\n    from app_modules.ai_pilot import render_ai_pilot\nImportError: cannot import name 'render_ai_pilot' from 'app_modules.ai_pilot' (H:\\Repo\\DEEN-BI\\app_modules\\ai_pilot.py)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-11 12:56:58",
+        "context": "App Bootstrap",
+        "error": "cannot import name 'render_ai_pilot' from 'app_modules.ai_pilot' (H:\\Repo\\DEEN-BI\\app_modules\\ai_pilot.py)",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 182, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 47, in run_app\n    from app_modules.ai_pilot import render_ai_pilot\nImportError: cannot import name 'render_ai_pilot' from 'app_modules.ai_pilot' (H:\\Repo\\DEEN-BI\\app_modules\\ai_pilot.py)\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-11 13:45:11",
+        "context": "App Bootstrap",
+        "error": "No module named 'aiohttp'",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 210, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 186, in run_app\n    from app_modules.ai_pilot import render_ai_pilot_page\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\ai_pilot.py\", line 7, in <module>\n    from app_modules.llm_manager import init_llm_controller\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\llm_manager.py\", line 7, in <module>\n    import aiohttp\nModuleNotFoundError: No module named 'aiohttp'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-11 13:45:35",
+        "context": "App Bootstrap",
+        "error": "No module named 'aiohttp'",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 210, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 186, in run_app\n    from app_modules.ai_pilot import render_ai_pilot_page\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\ai_pilot.py\", line 7, in <module>\n    from app_modules.llm_manager import init_llm_controller\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\llm_manager.py\", line 7, in <module>\n    import aiohttp\nModuleNotFoundError: No module named 'aiohttp'\n",
+        "details": {}
+    },
+    {
+        "timestamp": "2026-04-11 13:46:35",
+        "context": "App Bootstrap",
+        "error": "Failed to serialize proto",
+        "traceback": "Traceback (most recent call last):\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 210, in <module>\n    run_app()\n    ~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app.py\", line 171, in run_app\n    render_app_banner()\n    ~~~~~~~~~~~~~~~~~^^\n  File \"H:\\Repo\\DEEN-BI\\app_modules\\ui_components.py\", line 275, in render_app_banner\n    st.markdown(\n    ~~~~~~~~~~~^\n        f\"\"\"\n        ^^^^\n    ...<10 lines>...\n        unsafe_allow_html=True\n        ^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\streamlit\\runtime\\metrics_util.py\", line 532, in wrapped_func\n    result = non_optional_func(*args, **kwargs)\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\streamlit\\elements\\markdown.py\", line 184, in markdown\n    return self.dg._enqueue(\"markdown\", markdown_proto, layout_config=layout_config)\n           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\streamlit\\delta_generator.py\", line 524, in _enqueue\n    _enqueue_message(msg)\n    ~~~~~~~~~~~~~~~~^^^^^\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\streamlit\\runtime\\scriptrunner_utils\\script_run_context.py\", line 277, in enqueue_message\n    ctx.enqueue(msg)\n    ~~~~~~~~~~~^^^^^\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\streamlit\\runtime\\scriptrunner_utils\\script_run_context.py\", line 190, in enqueue\n    populate_hash_if_needed(msg)\n    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^\n  File \"C:\\Users\\deenb\\AppData\\Roaming\\Python\\Python314\\site-packages\\streamlit\\runtime\\forward_msg_cache.py\", line 44, in populate_hash_if_needed\n    serialized_msg = msg.SerializeToString(deterministic=True)\ngoogle.protobuf.message.EncodeError: Failed to serialize proto\n",
         "details": {}
     }
 ]

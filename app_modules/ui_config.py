@@ -1,6 +1,6 @@
 import streamlit as st
 
-APP_TITLE = "DEEN Ops Terminal"
+APP_TITLE = "DEEN OPS Terminal"
 APP_VERSION = "v10.0"
 
 PRIMARY_NAV = [
@@ -11,6 +11,7 @@ PRIMARY_NAV = [
     "📊 Inventory Distribution",
     "💬 WhatsApp Messaging",
     "🧩 Delivery Data Parser",
+    "🛡️ AI-BI Analytics Support",
 ]
 
 CLOUD_APP_URL = "https://deen-business-intel.streamlit.app/"
