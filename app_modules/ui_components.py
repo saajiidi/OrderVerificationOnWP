@@ -219,6 +219,30 @@ def inject_base_styles():
                 display: none !important;
             }}
         }}
+
+        /* Chat UI Enhancements */
+        .stChatMessage {{
+            background-color: var(--secondary-background-color, rgba(128, 128, 128, 0.05)) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 16px !important;
+            padding: 1.2rem !important;
+            margin-bottom: 1rem !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02) !important;
+            transition: transform 0.2s ease !important;
+        }}
+        .stChatMessage:hover {{
+            transform: translateX(4px);
+            border-color: var(--primary) !important;
+        }}
+        .stChatMessage [data-testid="stChatMessageContent"] {{
+            font-size: 1.05rem !important;
+            line-height: 1.6 !important;
+        }}
+        /* Assistant Message Slight Glow */
+        .stChatMessage[data-testid="stChatMessageAssistant"] {{
+            border-left: 4px solid var(--primary) !important;
+            background: linear-gradient(90deg, var(--primary-glow) 0%, transparent 100%) !important;
+        }}
         </style>
         """,
         unsafe_allow_html=True,

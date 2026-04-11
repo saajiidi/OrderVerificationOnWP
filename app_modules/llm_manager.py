@@ -163,79 +163,72 @@ class DynamicLLMController:
         self.key_manager = APIKeyManager()
         self.load_balancer = AdaptiveLoadBalancer()
 
-    async def _call_provider_async(self, provider: str, api_key: str, prompt: str, context: str) -> Tuple[Optional[str], float]:
+    async def _call_provider_stream_async(self, provider: str, api_key: str, messages: List[Dict[str, str]]) -> Any:
         config = PROVIDERS[provider]
-        start_time = time.time()
         
         if provider == "gemini_free":
-            payload = {"contents": [{"parts": [{"text": f"Context: {context}\n\nUser: {prompt}"}]}]}
+            # Gemini non-streaming for now in this manager, but we'll adapt
+            payload = {"contents": [{"parts": [{"text": m["content"]}]} for m in messages]}
             headers = {"x-goog-api-key": api_key}
             full_url = f"{config.api_url}?key={api_key}"
-        elif provider == "huggingface":
-            payload = {
-                "inputs": f"Context: {context}\n\nUser: {prompt}",
-                "parameters": {"max_new_tokens": 500, "return_full_text": False}
-            }
-            headers = {"Authorization": f"Bearer {api_key}"}
-            full_url = config.api_url
-        else:
-            # OpenAI compatible (OpenRouter, Groq, Ollama)
-            payload = {
-                "model": config.model_name,
-                "messages": [
-                    {"role": "system", "content": f"You are a retail fashion BI assistant. Context: {context}"},
-                    {"role": "user", "content": prompt}
-                ]
-            }
-            headers = {}
-            if config.auth_type == "bearer":
-                headers["Authorization"] = f"Bearer {api_key}"
-            elif config.auth_type == "api_key":
-                headers["x-api-key"] = api_key
-            
-            full_url = config.api_url
-
-        try:
             async with aiohttp.ClientSession() as session:
-                async with session.post(full_url, json=payload, headers=headers, timeout=config.timeout) as response:
-                    latency = time.time() - start_time
+                async with session.post(full_url, json=payload, headers=headers) as response:
                     if response.status == 200:
                         data = await response.json()
-                        if provider == "gemini_free":
-                            text = data["candidates"][0]["content"]["parts"][0]["text"]
-                        elif provider == "huggingface":
-                            text = data[0]["generated_text"] if isinstance(data, list) else data["generated_text"]
-                        else:
-                            text = data["choices"][0]["message"]["content"]
-                        return text, latency
-                    return None, latency
-        except Exception:
-            return None, 1.0
+                        yield data["candidates"][0]["content"]["parts"][0]["text"]
+        else:
+            payload = {
+                "model": config.model_name,
+                "messages": messages,
+                "stream": True
+            }
+            headers = {"Authorization": f"Bearer {api_key}"} if config.auth_type == "bearer" else {"x-api-key": api_key}
+            full_url = config.api_url
 
-    async def get_response_async(self, prompt: str, context: str) -> str:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(full_url, json=payload, headers=headers) as response:
+                    if response.status == 200:
+                        async for line in response.content:
+                            line = line.decode('utf-8').strip()
+                            if line.startswith("data: "):
+                                if line == "data: [DONE]": break
+                                try:
+                                    content = json.loads(line[6:])
+                                    delta = content["choices"][0]["delta"].get("content", "")
+                                    if delta: yield delta
+                                except: continue
+                    else:
+                        yield f"Error: {response.status}"
+
+    async def get_response_stream_async(self, messages: List[Dict[str, str]]) -> Any:
         available_providers = [p for p in PROVIDERS.keys() if p in self.key_manager.keys]
-        if not available_providers: return ""
+        if not available_providers: 
+            yield "No active LLM providers. Check settings."
+            return
         
-        for _ in range(len(available_providers) * 2):
-            selected = self.load_balancer.select_provider(available_providers)
-            key_res = self.key_manager.get_next_key(selected)
-            if not key_res: continue
+        selected = self.load_balancer.select_provider(available_providers)
+        key_res = self.key_manager.get_next_key(selected)
+        if not key_res: 
+            yield "All keys exhausted."
+            return
             
-            api_key, _ = key_res
-            response, latency = await self._call_provider_async(selected, api_key, prompt, context)
-            if response:
-                self.load_balancer.record_result(selected, True, latency)
-                return response
-            self.load_balancer.record_result(selected, False, latency)
-        return ""
+        api_key, _ = key_res
+        async for chunk in self._call_provider_stream_async(selected, api_key, messages):
+            yield chunk
 
-    def get_response_sync(self, prompt: str, context: str) -> str:
+    def get_response_sync(self, messages: List[Dict[str, str]]) -> str:
+        async def _run():
+            full_text = ""
+            async for chunk in self.get_response_stream_async(messages):
+                full_text += chunk
+            return full_text
+            
         try:
             loop = asyncio.get_event_loop()
         except RuntimeError:
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-        return loop.run_until_complete(self.get_response_async(prompt, context))
+        return loop.run_until_complete(_run())
 
 def init_llm_controller():
     # Safety: Re-initialize if the stored object is from an old class definition
