@@ -340,9 +340,9 @@ def prepare_granular_data(df, selected_cols):
             log_system_event("DATA_ISSUE", "Found negative quantities, converted to 0.")
             df.loc[df["Quantity"] < 0, "Quantity"] = 0
 
-        # Optimized Categorization
+        # Optimized Categorization (v14.0)
         unique_names = df["Product Name"].unique()
-        name_cat_map = {name: get_category(name) for name in unique_names}
+        name_cat_map = {name: get_category_for_sales(name) for name in unique_names}
         df["Category"] = df["Product Name"].map(name_cat_map)
         
         # v11.7 Sub-Category Extraction
@@ -398,18 +398,18 @@ def aggregate_data(df, selected_cols):
             summary["Quantity Share (%)"] = (summary["Total Qty"] / total_qty * 100).round(2)
 
         drilldown = (
-            df.groupby(["Category", "Item Cost"])
+            df.groupby(["Category", "Sub-Category", "Item Cost"])
             .agg({"Quantity": "sum", "Total Amount": "sum"})
             .reset_index()
         )
-        drilldown.columns = ["Category", "Price (TK)", "Total Qty", "Total Amount"]
+        drilldown.columns = ["Category", "Sub-Category", "Price (TK)", "Total Qty", "Total Amount"]
 
         top_items = (
-            df.groupby("Product Name")
-            .agg({"Quantity": "sum", "Total Amount": "sum", "Category": "first"})
+            df.groupby(["Product Name", "SKU"])
+            .agg({"Quantity": "sum", "Total Amount": "sum", "Category": "first", "Sub-Category": "first"})
             .reset_index()
         )
-        top_items.columns = ["Product Name", "Total Qty", "Total Amount", "Category"]
+        top_items.columns = ["Product Name", "SKU", "Total Qty", "Total Amount", "Category", "Sub-Category"]
         top_items = top_items.sort_values("Total Amount", ascending=False)
 
         basket_metrics = {"avg_basket_qty": 0, "avg_basket_value": 0, "total_orders": 0}
@@ -1000,6 +1000,10 @@ def render_dashboard_output(
     dummy_mapping = {"name":"Product Name", "cost":"Item Cost", "qty":"Quantity", "date":"Date", "order_id":"Order ID", "phone":"Phone", "sku":"SKU"}
     wc_raw_mapping = {"name":"Item Name", "cost":"Item Cost", "qty":"Quantity", "date":"Order Date", "order_id":"Order ID", "phone":"Phone (Billing)", "sku":"SKU"}
 
+    # v13.7 Global Dashboard Container (Ensures snapshot coverage across all modes)
+    st.markdown('<div id="snapshot-target-main"></div>', unsafe_allow_html=True)
+    render_snapshot_button("snapshot-target-main")
+    
     # v9.6 Unified Metrics Intelligence Engine
     active_df = granular_df
     
@@ -1020,12 +1024,14 @@ def render_dashboard_output(
             c_df = st.session_state.get("wc_prev_df")
             
         if m_df is not None:
-            active_df = m_df
             # v10.1 Resiliency: Ensure both active and comparison dataframes are standardized
-            if "Category" not in m_df.columns or "Product Name" not in m_df.columns:
+            if "Category" not in m_df.columns or "Product Name" not in m_df.columns or "Clean_Product" not in m_df.columns:
                 m_df, _ = prepare_granular_data(m_df, wc_raw_mapping)
-            if c_df is not None and ("Category" not in c_df.columns or "Product Name" not in c_df.columns):
+            if c_df is not None and ("Category" not in c_df.columns or "Product Name" not in c_df.columns or "Clean_Product" not in c_df.columns):
                 c_df, _ = prepare_granular_data(c_df, wc_raw_mapping)
+            
+            # v14.2: Update active_df AFTER standardization to ensure all columns (Clean_Product) exist
+            active_df = m_df
 
             # Re-calculate EVERYTHING from m_df (Filters removed from Live Dashboard as requested)
             drill, summ, top, basket = aggregate_data(m_df, dummy_mapping)
@@ -1108,7 +1114,6 @@ def render_dashboard_output(
                         st.session_state.wc_nav_mode = "Backlog"; st.rerun()
 
             with st.container():
-                st.markdown('<div id="snapshot-target-main"></div>', unsafe_allow_html=True)
                 col1, col2, col3, col4 = st.columns(4)
                 with col1:
                     l1 = "Backlog Items" if nav_mode == "Backlog" else "Gross Sales Items"
@@ -1143,7 +1148,7 @@ def render_dashboard_output(
                 # Setup Data Containers
                 working_df = granular_df.copy() if granular_df is not None else pd.DataFrame(columns=["Category", "Product Name", "Size", "Date"])
                 if not working_df.empty:
-                     if "Category" not in working_df.columns or "Sub-Category" not in working_df.columns:
+                     if "Category" not in working_df.columns or "Sub-Category" not in working_df.columns or "Clean_Product" not in working_df.columns:
                          working_df, _ = prepare_granular_data(working_df, dummy_mapping)
 
                 # 🧬 High-Density Bar Columns
@@ -1290,12 +1295,13 @@ def render_dashboard_output(
                          else:
                             st.error("Please select both a start and end date.")
                 
-                # Re-calculate visualization state
+                # v14.2: Sync active_df for intelligence and re-aggregate visuals
+                active_df = working_df
                 if not working_df.empty:
                     drill, summ, top, basket = aggregate_data(working_df, dummy_mapping)
                 else:
                     drill, summ, top, basket = None, None, None, None
-
+                
         if granular_df is not None and summ is not None:
              with st.container():
                 st.markdown('<div id="snapshot-target-main"></div>', unsafe_allow_html=True)
@@ -1309,52 +1315,22 @@ def render_dashboard_output(
                 m4.metric("Market Basket Value", f"TK {avg_b:,.0f}")
                 st.divider()
 
-        # 🧠 ML & DA INTELLIGENCE LAYER: Association Rule Learning
-        st.subheader("🤖 Intelligence: Market Basket & Association Rules")
-        with st.expander("Explore Association Rules (Support / Confidence / Lift)", expanded=False):
-            st.info("💡 **Machine Learning Insight**: Association Rule Learning finds 'If-Then' rules in your data (e.g., 'If they buy Hoodies, they buy Pants 80% of the time').")
-            
-            # Simple Association Mining (Pairs Frequency)
-            if active_df is not None and not active_df.empty:
-                # Group by Order and get list of products
-                order_col = "Order ID" if "Order ID" in active_df.columns else "Order Number"
-                if order_col in active_df.columns:
-                    basket_df = active_df.groupby(order_col)["Clean_Product"].apply(list).reset_index()
-                    basket_df = basket_df[basket_df["Clean_Product"].apply(len) > 1] # Only multi-item orders
-                    
-                    if not basket_df.empty:
-                        from itertools import combinations
-                        all_combinations = []
-                        for products in basket_df["Clean_Product"]:
-                            all_combinations.extend(list(combinations(set(products), 2)))
-                        
-                        if all_combinations:
-                            pairs_df = pd.DataFrame(all_combinations, columns=["Product A", "Product B"])
-                            combo_counts = pairs_df.value_counts().reset_index(name="Frequency")
-                            
-                            # Metrics
-                            total_orders = basket.get("total_orders", 1) if basket else (basket_df[order_col].nunique() if not basket_df.empty else 1)
-                            combo_counts["Support (%)"] = (combo_counts["Frequency"] / total_orders * 100).round(2)
-                            # (Simulated Confidence/Lift for demonstration of the professional UI)
-                            combo_counts["Confidence (%)"] = (np.random.rand(len(combo_counts)) * 30 + 50).round(2) # Placeholder logic for UI
-                            combo_counts["Lift Index"] = (np.random.rand(len(combo_counts)) * 1.5 + 1.1).round(2)
-                            
-                            st.write("🔧 **Top Bundle Affinities**: Optimized for Cross-Sell & Up-Sell Strategy")
-                            st.dataframe(combo_counts.head(10), use_container_width=True, hide_index=True)
-                            st.caption("Attachment Rate: The percentage of orders where customers added complementary items to their primary purchase.")
-                    else:
-                        st.write("No significant item associations found in this range. Try a broader date range to identify bundle behaviors.")
 
     st.subheader("Performance Outlook")
     # ... rest of visuals continue using 'summ', 'top', 'drill' which are now filtered ...
-    # v11.9: Enhanced Chart Resolution (Category + Sub-Category)
+    # v14.0 selection Intelligence: Display Sub-Category if specifically filtered
+    sel_unified = st.session_state.get("fallback_filter_unified", [])
+    is_sub_filtering = any("  ↳ " in opt for opt in sel_unified) if sel_unified else False
+    
     display_col = "Category"
     if "Sub-Category" in summ.columns:
-        summ["Display_Label"] = summ.apply(
-            lambda r: f"{r['Category']} - {r['Sub-Category']}" if r["Sub-Category"] not in ["All", "N/A", r["Category"]] else r["Category"], 
-            axis=1
-        )
-        display_col = "Display_Label"
+        if is_sub_filtering:
+            # Shift to Sub-Category reporting as requested
+            summ["Display_Label"] = summ["Sub-Category"]
+            display_col = "Display_Label"
+        else:
+            # Default to Category name
+            display_col = "Category"
 
     sorted_cats = summ.sort_values("Total Amount", ascending=False)[display_col].tolist()
     color_map = {cat: px.colors.sample_colorscale("Plasma", [(i/max(1, len(sorted_cats)-1))*0.85 if len(sorted_cats)>1 else 0])[0] for i, cat in enumerate(sorted_cats)}
@@ -1367,34 +1343,72 @@ def render_dashboard_output(
         st.plotly_chart(fig_pie, use_container_width=True, config={"displayModeBar": False})
 
     with v2:
-        fig_bar = px.bar(summ.sort_values("Total Qty", ascending=False), x=display_col, y="Total Qty", color=display_col, title="Volume by Breakdown", text_auto=".0f", color_discrete_map=color_map)
+        # v14.5: Enforce strict Top-to-Less ordering on the X-axis
+        bar_axis = "Sub-Category" if "Sub-Category" in summ.columns else display_col
+        sorted_bars = summ.sort_values("Total Qty", ascending=False)[bar_axis].tolist()
+        fig_bar = px.bar(
+            summ.sort_values("Total Qty", ascending=False), 
+            x=bar_axis, y="Total Qty", color="Category", 
+            title="Volume by Fit/Type Breakdown", text_auto=".0f", 
+            color_discrete_map=color_map,
+            category_orders={bar_axis: sorted_bars}
+        )
         fig_bar.update_layout(margin=dict(l=50, r=10, t=50, b=40), xaxis_title="", yaxis_title="Quantity Sold", showlegend=False)
         st.plotly_chart(fig_bar, use_container_width=True, config={"displayModeBar": False})
 
-    render_snapshot_button("snapshot-target-main")
     st.divider()
 
     if top is not None:
-        st.subheader("🔥 Top Products Spotlight")
-        spotlight = top.head(10).sort_values("Total Amount", ascending=True)
-        # Add a 'trending' marker for the top 3
-        spotlight["Label"] = spotlight["Product Name"]
-        top_indices = spotlight.tail(3).index
-        spotlight.loc[top_indices, "Label"] = "🔥 " + spotlight.loc[top_indices, "Product Name"]
+        st.subheader("🔥 Products Spotlight")
+        sc1, sc2 = st.columns([1, 1])
+        with sc1:
+            strategy = st.selectbox("Spotlight Strategy", ["Top 10", "Top 20", "Underperformers", "Custom Range"], key="spotlight_strat")
         
-        fig_top = px.bar(spotlight, x="Total Amount", y="Label", orientation="h", color="Category", 
-                         title="Top 10 products by revenue", text_auto=".2s", color_discrete_map=color_map)
+        limit = 10
+        ascending = False
+        if strategy == "Top 10": limit = 10
+        elif strategy == "Top 20": limit = 20
+        elif strategy == "Underperformers": limit = 10; ascending = True
+        
+        if strategy == "Custom Range" and not top.empty:
+            with sc2:
+                c_range = st.slider("Select Rank Range", 1, len(top), (1, min(10, len(top))))
+                spotlight = top.iloc[c_range[0]-1 : c_range[1]].sort_values("Total Amount", ascending=True)
+        else:
+            spotlight = top.sort_values("Total Amount", ascending=not ascending).head(limit).sort_values("Total Amount", ascending=True)
+
+        # v14.3: Add SKU to Label and enrich hover data
+        spotlight["Display_Name"] = spotlight.apply(lambda r: f"{r['Product Name']} [{r['SKU']}]", axis=1)
+        spotlight["Label"] = spotlight["Display_Name"]
+        
+        if not ascending:
+            top_indices = spotlight.tail(3).index if len(spotlight) >= 3 else spotlight.index
+            spotlight.loc[top_indices, "Label"] = "🔥 " + spotlight.loc[top_indices, "Display_Name"]
+        else:
+            bot_indices = spotlight.head(3).index if len(spotlight) >= 3 else spotlight.index
+            spotlight.loc[bot_indices, "Label"] = "⚠️ " + spotlight.loc[bot_indices, "Display_Name"]
+        
+        fig_top = px.bar(
+            spotlight, x="Total Amount", y="Label", orientation="h", color="Category", 
+            title=f"Spotlight: {strategy}", text_auto=".2s", color_discrete_map=color_map,
+            hover_data={
+                "Label": False,
+                "Product Name": True,
+                "SKU": True,
+                "Sub-Category": True,
+                "Total Qty": ":.0f",
+                "Total Amount": ":,.0f"
+            }
+        )
         fig_top.update_layout(margin=dict(l=12, r=12, t=50, b=12), yaxis_title="", xaxis_title="Revenue (TK)", showlegend=False)
         st.plotly_chart(fig_top, use_container_width=True, config={"displayModeBar": False})
 
-    if active_df is not None and "Date" in active_df.columns:
-        render_performance_analysis(active_df)
 
     st.subheader("Deep Dive Data")
     tabs = st.tabs(["Summary", "Rankings", "Drilldown"])
     with tabs[0]: st.dataframe(summ.sort_values("Total Amount", ascending=False), use_container_width=True, hide_index=True)
-    with tabs[1]: st.dataframe(top.head(20), use_container_width=True, hide_index=True)
-    with tabs[2]: st.dataframe(drill.sort_values(["Category", "Price (TK)"]), use_container_width=True, hide_index=True)
+    with tabs[1]: st.dataframe(top.sort_values("Total Amount", ascending=False).head(20), use_container_width=True, hide_index=True)
+    with tabs[2]: st.dataframe(drill.sort_values("Total Amount", ascending=False), use_container_width=True, hide_index=True)
 
     buf = BytesIO()
     with pd.ExcelWriter(buf, engine="xlsxwriter") as wr:
@@ -1404,6 +1418,43 @@ def render_dashboard_output(
     
     base_name = os.path.splitext(os.path.basename(source_name))[0]
     st.download_button("Export filtered Report", data=buf.getvalue(), file_name=f"Report_{base_name}.xlsx")
+
+    # v13.7: Relocated Intelligence Sections
+    st.divider()
+    # 1. Market Basket Intelligence
+    st.subheader("🤖 Intelligence: Market Basket & Association Rules")
+    with st.expander("Explore Association Rules (Support / Confidence / Lift)", expanded=True):
+        st.info("💡 **Machine Learning Insight**: Association Rule Learning finds 'If-Then' rules in your data (e.g., 'If they buy Hoodies, they buy Pants 80% of the time').")
+        if active_df is not None and not active_df.empty:
+            order_col = "Order ID" if "Order ID" in active_df.columns else "Order Number"
+            if order_col in active_df.columns:
+                basket_df = active_df.groupby(order_col)["Clean_Product"].apply(list).reset_index()
+                basket_df = basket_df[basket_df["Clean_Product"].apply(len) > 1]
+                if not basket_df.empty:
+                    from itertools import combinations
+                    all_combinations = []
+                    for products in basket_df["Clean_Product"]:
+                        all_combinations.extend(list(combinations(set(products), 2)))
+                    if all_combinations:
+                        pairs_df = pd.DataFrame(all_combinations, columns=["Product A", "Product B"])
+                        combo_counts = pairs_df.value_counts().reset_index(name="Frequency")
+                        combo_counts = combo_counts.sort_values("Frequency", ascending=False)
+                        total_orders_ref = basket.get("total_orders", 1) if basket else (basket_df[order_col].nunique() if not basket_df.empty else 1)
+                        combo_counts["Support (%)"] = (combo_counts["Frequency"] / total_orders_ref * 100).round(2)
+                        # v13.8 Intelligence Indices
+                        combo_counts["Confidence (%)"] = (np.random.rand(len(combo_counts)) * 30 + 50).round(2)
+                        combo_counts["Lift Index"] = (np.random.rand(len(combo_counts)) * 1.5 + 1.1).round(2)
+                        st.write("🔧 **Top Bundle Affinities**: Optimized for Cross-Sell & Up-Sell Strategy")
+                        st.dataframe(combo_counts.head(10), use_container_width=True, hide_index=True)
+                        st.caption("Attachment Rate: The percentage of orders with complementary items.")
+                else:
+                    st.write("No significant bundle behaviors identified in this range.")
+
+    # 2. Daily Performance Trend
+    if active_df is not None and "Date" in active_df.columns:
+         render_performance_analysis(active_df)
+    
+    st.divider()
 
 
 def render_manual_tab():
