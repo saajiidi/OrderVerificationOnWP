@@ -86,7 +86,7 @@ def get_sub_category_for_sales(name, category) -> str:
         return "FS Shirt"
 
     elif category == "HS Shirt":
-        if "contrast" in name_str: return "Contrast Stitch Shirt"
+        if "contrast" in name_str: return "Contrast Shirt"
         if "casual" in name_str: return "HS Casual Shirt"
         return "HS Shirt"
 
