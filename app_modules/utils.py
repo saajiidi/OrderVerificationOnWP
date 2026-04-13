@@ -65,9 +65,9 @@ def get_sub_category_for_sales(name, category) -> str:
     if not name_str: return category
 
     if category == "Jeans":
-        if "regular" in name_str: return "Regular Fit"
-        if "slim" in name_str: return "Slim Fit"
-        if "straight" in name_str: return "Straight Fit"
+        if "regular" in name_str: return "Regular Fit Jeans"
+        if "slim" in name_str: return "Slim Fit Jeans"
+        if "straight" in name_str: return "Straight Fit Jeans"
         
     elif category == "T-Shirt":
         if "drop shoulder" in name_str: return "Drop Shoulder"

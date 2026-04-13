@@ -1324,13 +1324,8 @@ def render_dashboard_output(
     
     display_col = "Category"
     if "Sub-Category" in summ.columns:
-        if is_sub_filtering:
-            # Shift to Sub-Category reporting as requested
-            summ["Display_Label"] = summ["Sub-Category"]
-            display_col = "Display_Label"
-        else:
-            # Default to Category name
-            display_col = "Category"
+        # v14.9: Simplify to ONLY sub-category name as requested for cleaner readability
+        display_col = "Sub-Category"
 
     sorted_cats = summ.sort_values("Total Amount", ascending=False)[display_col].tolist()
     color_map = {cat: px.colors.sample_colorscale("Plasma", [(i/max(1, len(sorted_cats)-1))*0.85 if len(sorted_cats)>1 else 0])[0] for i, cat in enumerate(sorted_cats)}
@@ -1343,12 +1338,12 @@ def render_dashboard_output(
         st.plotly_chart(fig_pie, use_container_width=True, config={"displayModeBar": False})
 
     with v2:
-        # v14.5: Enforce strict Top-to-Less ordering on the X-axis
+        # v14.8: Enforce consistent coloring using display_col for unique item identification
         bar_axis = "Sub-Category" if "Sub-Category" in summ.columns else display_col
         sorted_bars = summ.sort_values("Total Qty", ascending=False)[bar_axis].tolist()
         fig_bar = px.bar(
             summ.sort_values("Total Qty", ascending=False), 
-            x=bar_axis, y="Total Qty", color="Category", 
+            x=bar_axis, y="Total Qty", color=display_col, 
             title="Volume by Fit/Type Breakdown", text_auto=".0f", 
             color_discrete_map=color_map,
             category_orders={bar_axis: sorted_bars}
