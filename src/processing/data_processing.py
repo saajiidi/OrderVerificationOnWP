@@ -44,13 +44,17 @@ def prepare_granular_data(df, selected_cols):
                 dates_valid = df["Date"].dropna()
                 if not dates_valid.empty:
                     # v10.2 Strip timezone for easier Streamlit widget comparison
-                    df["Date"] = df["Date"].dt.tz_localize(None)
+                    if dates_valid.dt.tz is not None:
+                        df["Date"] = df["Date"].dt.tz_localize(None)
 
                     if dates_valid.dt.to_period("M").nunique() == 1:
                         timeframe_suffix = dates_valid.iloc[0].strftime("%B_%Y")
                     else:
                         timeframe_suffix = f"{dates_valid.min().strftime('%d%b')}_to_{dates_valid.max().strftime('%d%b_%y')}"
-            except Exception:
+                else:
+                    log_system_event("DATE_PARSE_WARN", "No valid dates parsed from date column; proceeding without date filtering.")
+            except Exception as date_err:
+                log_system_event("DATE_PARSE_ERROR", f"Date parsing failed: {date_err}; proceeding without date column.")
                 non_null = df[selected_cols["date"]].dropna()
                 val = str(non_null.iloc[0]) if not non_null.empty else ""
                 timeframe_suffix = val.replace("/", "-").replace(" ", "_")[:20]

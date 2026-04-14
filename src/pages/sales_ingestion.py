@@ -3,7 +3,6 @@ import pandas as pd
 from datetime import datetime, timedelta
 
 from src.components.widgets import render_action_bar, render_reset_confirm, section_card
-from src.config.ui_config import DEFAULT_GSHEET_URL
 from src.processing.column_detection import find_columns
 from src.processing.data_processing import prepare_granular_data, aggregate_data
 from src.pages.dashboard_output import render_dashboard_output
@@ -71,33 +70,31 @@ def render_manual_tab():
     source_name = st.session_state.get("manual_source_name", "")
 
     # Optional Sources Expander
-    with st.expander("\U0001f4e4 Optional: External Source (Upload / GSheet)"):
-        c1, c2 = st.columns([2, 1])
-        with c1:
-            uploaded_file = st.file_uploader("\U0001f4c2 Drag and drop sales file", type=["xlsx", "csv"], key="manual_uploader_v2")
-            if uploaded_file:
-                df_up = read_sales_file(uploaded_file, uploaded_file.name)
-                if df_up is not None:
-                    st.session_state.manual_df = df_up
-                    st.session_state.manual_source_name = uploaded_file.name
-                    df = df_up
-                    source_name = uploaded_file.name
-        with c2:
-            st.markdown('<div style="height: 28px;"></div>', unsafe_allow_html=True)
-            if st.button("\U0001f310 Pull Default GSheet", use_container_width=True, type="secondary"):
-                try:
-                    with st.spinner("Fetching GSheet..."):
-                        df_gs = pd.read_csv(DEFAULT_GSHEET_URL)
-                        st.session_state.manual_df = df_gs
-                        st.session_state.manual_source_name = "Google_Sheet_Export"
-                        df = df_gs
-                        source_name = "Google_Sheet_Export"
-                        st.success("Google Sheet Loaded!")
-                except Exception as e:
-                    st.error(f"Link fetch failed: {e}")
+    with st.expander("\U0001f4e4 Optional: External Source (Upload / URL)"):
+        uploaded_file = st.file_uploader("\U0001f4c2 Drag and drop sales file", type=["xlsx", "csv"], key="manual_uploader_v2")
+        if uploaded_file:
+            df_up = read_sales_file(uploaded_file, uploaded_file.name)
+            if df_up is not None:
+                st.session_state.manual_df = df_up
+                st.session_state.manual_source_name = uploaded_file.name
+                df = df_up
+                source_name = uploaded_file.name
 
+        url_input = st.text_input("\U0001f310 Or paste a public CSV/XLSX URL", key="manual_url_input")
+        if url_input and st.button("Fetch from URL", use_container_width=True, type="secondary", key="manual_url_fetch"):
+            try:
+                from src.utils.url_fetch import fetch_dataframe_from_url
+                with st.spinner("Fetching from URL..."):
+                    df_url = fetch_dataframe_from_url(url_input)
+                    st.session_state.manual_df = df_url
+                    st.session_state.manual_source_name = "URL_Import"
+                    df = df_url
+                    source_name = "URL_Import"
+                    st.success(f"Loaded {len(df_url)} rows from URL!")
+            except Exception as e:
+                st.error(f"URL fetch failed: {e}")
 
-        if st.session_state.get("manual_df") is not None and st.session_state.get("manual_source_name") != "Google_Sheet_Export":
+        if st.session_state.get("manual_df") is not None:
             df = st.session_state.manual_df
             source_name = st.session_state.get("manual_source_name", "WooCommerce_Custom_Pull")
 

@@ -185,11 +185,15 @@ def run_app():
     with header_container:
         def render_header_right():
             from src.components.clock import render_dynamic_clock
+            from src.components.live_banner import render_live_banner
 
-            # 1. Show dynamic clock + sync status
+            # 1. Live banner — passive stats on all pages
+            render_live_banner()
+
+            # 2. Show dynamic clock + sync status
             render_dynamic_clock(st.session_state.get("live_sync_time"))
 
-            # 2. Show tool-specific banners
+            # 3. Show tool-specific banners
             banner = st.session_state.get("header_status_banner", "")
             if banner:
                 st.markdown(f'<div style="margin-top:8px;">{banner}</div>', unsafe_allow_html=True)

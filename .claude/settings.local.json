@@ -16,7 +16,9 @@
       "Bash(python -m pytest tests/test_utils.py tests/test_categorization.py tests/test_core.py tests/test_processor.py -v)",
       "Bash(mv app_modules _deprecated/app_modules)",
       "Bash(mv inventory_modules _deprecated/inventory_modules)",
-      "Bash(python -m pytest tests/ -v)"
+      "Bash(python -m pytest tests/ -v)",
+      "Bash(wc -l /g/AI_BI_DEEN_ROOT/dashboard_v1/src/**/*.py)",
+      "Bash(python -m pytest tests/test_display.py tests/test_safe_ops.py tests/test_url_fetch.py tests/test_snapshot_metrics.py tests/test_smart_filters.py -v)"
     ]
   }
 }

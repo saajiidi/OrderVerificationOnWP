@@ -11,7 +11,6 @@ from src.components.widgets import (
 )
 from src.utils.file_io import to_excel_bytes, read_uploaded
 from src.processing.whatsapp_processor import WhatsAppOrderProcessor
-from src.config.ui_config import DEFAULT_GSHEET_URL
 
 FUZZY_REQUIRED_FIELDS = {
     "phone": ["phone", "mobile", "contact", "billing phone"],
@@ -60,7 +59,7 @@ def render_wp_tab():
     wp_file = st.file_uploader("", key="wp_up_2", type=["xlsx", "csv"])
 
     st.markdown('<div style="margin-top: -12px;"></div>', unsafe_allow_html=True)
-    c_live, c_gsheet = st.columns(2)
+    c_live, c_url = st.columns(2)
     with c_live:
         fetch_live_clicked = st.button(
             "🔗 Pull from Live Dash",
@@ -68,17 +67,19 @@ def render_wp_tab():
             use_container_width=True,
             key="wp_live",
         )
-    with c_gsheet:
-        if st.button("📩 Fetch from GSheet", use_container_width=True, type="secondary", key="wp_gsheet"):
+    with c_url:
+        url_input = st.text_input("Paste public CSV/XLSX URL", key="wp_url_input", label_visibility="collapsed", placeholder="Paste public CSV/XLSX URL...")
+        if url_input and st.button("Fetch URL", use_container_width=True, type="secondary", key="wp_url_fetch"):
             try:
-                with st.spinner("Fetching from Google Sheet..."):
-                    df_res = pd.read_csv(DEFAULT_GSHEET_URL)
+                from src.utils.url_fetch import fetch_dataframe_from_url
+                with st.spinner("Fetching from URL..."):
+                    df_res = fetch_dataframe_from_url(url_input)
                     st.session_state.wp_preview_df = df_res
-                    st.session_state.wp_upload_name = "Google_Sheet_Export"
+                    st.session_state.wp_upload_name = "URL_Import"
                     st.session_state.wp_auto_generate = True
                     st.rerun()
             except Exception as e:
-                st.error(f"GSheet failed: {e}")
+                st.error(f"URL fetch failed: {e}")
 
     preview_df = None
     valid_file = False

@@ -1,0 +1,52 @@
+"""Fetch DataFrames from public CSV/XLSX URLs with auto-detection."""
+
+from __future__ import annotations
+
+from io import BytesIO, StringIO
+
+import pandas as pd
+import requests
+
+
+def fetch_dataframe_from_url(url: str, timeout: int = 15) -> pd.DataFrame:
+    """Fetch a DataFrame from a public CSV or XLSX URL.
+
+    Auto-detects the file format based on URL extension, query parameters,
+    and HTTP Content-Type header.
+
+    Args:
+        url: Public URL pointing to a CSV or XLSX file.
+        timeout: Request timeout in seconds.
+
+    Returns:
+        Parsed DataFrame.
+
+    Raises:
+        ValueError: If URL is empty or the response cannot be parsed.
+        requests.RequestException: On network errors.
+    """
+    if not url or not url.strip():
+        raise ValueError("URL cannot be empty.")
+
+    url = url.strip()
+    resp = requests.get(url, timeout=timeout)
+    resp.raise_for_status()
+
+    content_type = resp.headers.get("content-type", "").lower()
+    url_lower = url.lower()
+
+    is_csv = (
+        url_lower.endswith(".csv")
+        or "output=csv" in url_lower
+        or "text/csv" in content_type
+        or "text/plain" in content_type
+    )
+
+    if is_csv:
+        return pd.read_csv(StringIO(resp.text))
+
+    # Try Excel first, fall back to CSV
+    try:
+        return pd.read_excel(BytesIO(resp.content))
+    except Exception:
+        return pd.read_csv(StringIO(resp.text))

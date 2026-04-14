@@ -15,7 +15,7 @@ from src.components.widgets import (
 from src.utils.file_io import to_excel_bytes, read_uploaded
 from src.components.status import render_status_toggle
 from src.services.pathao.client import PathaoClient
-from src.config.ui_config import PATHAO_CONFIG, DEFAULT_GSHEET_URL
+from src.config.ui_config import PATHAO_CONFIG
 
 REQUIRED_COLUMNS = ["Phone (Billing)"]
 
@@ -87,7 +87,7 @@ def render_pathao_tab():
     up_pathao = st.file_uploader("", type=["xlsx", "csv"], key="pathao_up")
 
     st.markdown('<div style="margin-top: -12px;"></div>', unsafe_allow_html=True)
-    c_live, c_gsheet = st.columns(2)
+    c_live, c_url = st.columns(2)
     with c_live:
         fetch_live_clicked = st.button(
             "🔗 Pull from Live Dash",
@@ -95,17 +95,19 @@ def render_pathao_tab():
             use_container_width=True,
             key="pathao_live",
         )
-    with c_gsheet:
-        if st.button("📩 Fetch from GSheet", use_container_width=True, type="secondary", key="pathao_gsheet"):
+    with c_url:
+        url_input = st.text_input("Paste public CSV/XLSX URL", key="pathao_url_input", label_visibility="collapsed", placeholder="Paste public CSV/XLSX URL...")
+        if url_input and st.button("Fetch URL", use_container_width=True, type="secondary", key="pathao_url_fetch"):
             try:
-                with st.spinner("Fetching from Google Sheet..."):
-                    df_res = pd.read_csv(DEFAULT_GSHEET_URL)
+                from src.utils.url_fetch import fetch_dataframe_from_url
+                with st.spinner("Fetching from URL..."):
+                    df_res = fetch_dataframe_from_url(url_input)
                     st.session_state.pathao_preview_df = df_res
-                    st.session_state.pathao_uploaded_name = "Google_Sheet_Export"
+                    st.session_state.pathao_uploaded_name = "URL_Import"
                     st.session_state.pathao_auto_process = True
                     st.rerun()
             except Exception as e:
-                st.error(f"GSheet failed: {e}")
+                st.error(f"URL fetch failed: {e}")
 
     preview_df = None
     valid_file = False

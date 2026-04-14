@@ -141,65 +141,100 @@ def render_ai_pilot_page():
     # Sidebar
     provider, api_key, model_name = render_sidebar_controls()
 
-    # Chat Display
-    chat_container = st.container()
-    with chat_container:
-        for msg in st.session_state.agent_messages:
-            avatar = "🤖" if msg["role"] == "assistant" else "👤"
-            with st.chat_message(msg["role"], avatar=avatar):
-                st.markdown(msg["content"])
+    # Two-column layout: Chat (left) + Context Panel (right)
+    col_chat, col_context = st.columns([3, 2])
 
-    # Input Area
-    if prompt := st.chat_input("Ask about sales, stock, or your uploaded files..."):
-        # 1. Add user message
-        st.session_state.agent_messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user", avatar="👤"):
-            st.markdown(prompt)
+    with col_context:
+        st.markdown("#### Data Context")
 
-        # 2. Get AI Response
-        with st.chat_message("assistant", avatar="🤖"):
-            response_placeholder = st.empty()
-            full_response = ""
+        # Live Sales preview
+        sales_df = st.session_state.get("wc_curr_df")
+        if sales_df is not None and not sales_df.empty:
+            st.caption(f"Live Sales — {len(sales_df)} rows")
+            st.dataframe(sales_df.head(5), use_container_width=True, hide_index=True)
+        else:
+            st.caption("Live Sales — No data")
 
-            agent = AIDataAgent(provider, api_key, model_name)
+        # Inventory preview
+        inv_df = st.session_state.get("inv_res_data")
+        if inv_df is not None and not inv_df.empty:
+            st.caption(f"Inventory — {len(inv_df)} rows")
+            st.dataframe(inv_df.head(5), use_container_width=True, hide_index=True)
+        else:
+            st.caption("Inventory — No data")
 
-            # Optimized Async Bridge for Streamlit
-            async def run_streaming():
-                nonlocal full_response
+        # Uploaded preview
+        up_df = st.session_state.get("pilot_uploaded_df")
+        if up_df is not None and not up_df.empty:
+            st.caption(f"Uploaded — {len(up_df)} rows")
+            st.dataframe(up_df.head(5), use_container_width=True, hide_index=True)
+        else:
+            st.caption("Uploaded — No data")
+
+        # Last analysis intent
+        last_intent = st.session_state.get("pilot_last_intent")
+        if last_intent:
+            st.divider()
+            st.markdown(f"**Last Analysis Intent:** `{last_intent}`")
+
+    with col_chat:
+        # Chat Display
+        chat_container = st.container()
+        with chat_container:
+            for msg in st.session_state.agent_messages:
+                avatar = "🤖" if msg["role"] == "assistant" else "👤"
+                with st.chat_message(msg["role"], avatar=avatar):
+                    st.markdown(msg["content"])
+
+        # Input Area
+        if prompt := st.chat_input("Ask about sales, stock, or your uploaded files..."):
+            # 1. Add user message
+            st.session_state.agent_messages.append({"role": "user", "content": prompt})
+            with st.chat_message("user", avatar="👤"):
+                st.markdown(prompt)
+
+            # 2. Get AI Response
+            with st.chat_message("assistant", avatar="🤖"):
+                response_placeholder = st.empty()
+                full_response = ""
+
+                agent = AIDataAgent(provider, api_key, model_name)
+                st.session_state.pilot_last_intent = agent.detect_intent(prompt)
+
+                # Optimized Async Bridge for Streamlit
+                async def run_streaming():
+                    nonlocal full_response
+                    try:
+                        async for chunk in agent.get_response_stream(prompt, st.session_state.agent_messages[:-1]):
+                            full_response += chunk
+                            response_placeholder.markdown(full_response + "▌")
+                        response_placeholder.markdown(full_response)
+                    except Exception as e:
+                        st.error(f"Streaming Error: {e}")
+
+                # Safe Loop Execution
                 try:
-                    async for chunk in agent.get_response_stream(prompt, st.session_state.agent_messages[:-1]):
-                        full_response += chunk
-                        response_placeholder.markdown(full_response + "▌")
-                    response_placeholder.markdown(full_response)
-                except Exception as e:
-                    st.error(f"Streaming Error: {e}")
+                    loop = asyncio.get_event_loop()
+                    if loop.is_running():
+                        import threading
+                        def thread_run():
+                            new_loop = asyncio.new_event_loop()
+                            asyncio.set_event_loop(new_loop)
+                            new_loop.run_until_complete(run_streaming())
 
-            # Safe Loop Execution
-            try:
-                loop = asyncio.get_event_loop()
-                if loop.is_running():
-                    # If loop is running, we need to bridge it.
-                    # Streamlit usually doesn't run the main script in the loop, but some components do.
-                    # Best approach: Use a new thread or loop if nested doesn't work.
-                    import threading
-                    def thread_run():
-                        new_loop = asyncio.new_event_loop()
-                        asyncio.set_event_loop(new_loop)
-                        new_loop.run_until_complete(run_streaming())
+                        t = threading.Thread(target=thread_run)
+                        t.start()
+                        t.join()
+                    else:
+                        loop.run_until_complete(run_streaming())
+                except Exception:
+                    asyncio.run(run_streaming())
 
-                    t = threading.Thread(target=thread_run)
-                    t.start()
-                    t.join()
-                else:
-                    loop.run_until_complete(run_streaming())
-            except Exception:
-                asyncio.run(run_streaming())
+            # 3. Save assistant message
+            st.session_state.agent_messages.append({"role": "assistant", "content": full_response})
 
-        # 3. Save assistant message
-        st.session_state.agent_messages.append({"role": "assistant", "content": full_response})
-
-        # 4. Optional: Insights Chip
-        if len(full_response) > 50:
-            with st.expander("🔍 Reasoning & Data Sources"):
-                st.caption(f"Engine: {provider} | Intent: {agent.detect_intent(prompt)}")
-                st.info("Grounding: Using operational context linked to WooCommerce and Inventory databases.")
+            # 4. Optional: Insights Chip
+            if len(full_response) > 50:
+                with st.expander("🔍 Reasoning & Data Sources"):
+                    st.caption(f"Engine: {provider} | Intent: {agent.detect_intent(prompt)}")
+                    st.info("Grounding: Using operational context linked to WooCommerce and Inventory databases.")

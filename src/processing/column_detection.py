@@ -1,10 +1,23 @@
 import streamlit as st
 import pandas as pd
 
+from src.utils.logging import log_system_event
+
 
 @st.cache_data(show_spinner=False)
-def find_columns(df):
-    """Detects primary columns using exact and then partial matching."""
+def find_columns(df: pd.DataFrame) -> dict[str, str]:
+    """Detects primary columns using exact and then partial matching.
+
+    Returns partial results on failure instead of an empty dict, logging
+    any errors encountered during detection.
+
+    Args:
+        df: Input DataFrame to detect columns in.
+
+    Returns:
+        Dict mapping logical names (name, cost, qty, date, order_id, phone)
+        to actual column names found in the DataFrame.
+    """
     mapping = {
         "name": [
             "item name",
@@ -46,22 +59,25 @@ def find_columns(df):
     }
 
     found = {}
-    actual_cols = [c.strip() for c in df.columns]
-    lower_cols = [c.lower() for c in actual_cols]
+    try:
+        actual_cols = [c.strip() for c in df.columns]
+        lower_cols = [c.lower() for c in actual_cols]
 
-    for key, aliases in mapping.items():
-        for alias in aliases:
-            if alias in lower_cols:
-                idx = lower_cols.index(alias)
-                found[key] = actual_cols[idx]
-                break
-
-    for key, aliases in mapping.items():
-        if key not in found:
-            for col, l_col in zip(actual_cols, lower_cols):
-                if any(alias in l_col for alias in aliases):
-                    found[key] = col
+        for key, aliases in mapping.items():
+            for alias in aliases:
+                if alias in lower_cols:
+                    idx = lower_cols.index(alias)
+                    found[key] = actual_cols[idx]
                     break
+
+        for key, aliases in mapping.items():
+            if key not in found:
+                for col, l_col in zip(actual_cols, lower_cols):
+                    if any(alias in l_col for alias in aliases):
+                        found[key] = col
+                        break
+    except Exception as e:
+        log_system_event("COLUMN_DETECT_ERROR", f"Partial detection returned {len(found)} columns: {e}")
 
     return found
 
@@ -93,3 +109,21 @@ def scrub_raw_dataframe(df):
         df = df[~df[col].astype(str).str.lower().str.contains(pattern, na=False)]
 
     return df
+
+
+def classify_columns(df: pd.DataFrame) -> dict[str, str]:
+    """Classify all DataFrame columns by data type for smart filtering.
+
+    This is a thin wrapper that delegates to
+    ``src.components.smart_filters.detect_filterable_columns`` so the
+    detection logic lives in one place while remaining accessible from the
+    processing layer.
+
+    Args:
+        df: DataFrame to classify.
+
+    Returns:
+        Dict mapping column names to 'date', 'categorical', or 'numeric'.
+    """
+    from src.components.smart_filters import detect_filterable_columns
+    return detect_filterable_columns(df)

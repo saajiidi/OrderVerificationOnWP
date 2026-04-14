@@ -10,7 +10,7 @@ from src.components.widgets import (
     render_reset_confirm,
     section_card,
 )
-from src.config.ui_config import INVENTORY_LOCATIONS, DEFAULT_GSHEET_URL
+from src.config.ui_config import INVENTORY_LOCATIONS
 from src.inventory import core as inv_core
 from src.utils.file_io import read_uploaded
 
@@ -32,7 +32,7 @@ def render_distribution_tab(search_q):
     master_file = st.file_uploader("", type=["xlsx", "csv"], key="inv_up")
 
     st.markdown('<div style="margin-top: -12px;"></div>', unsafe_allow_html=True)
-    c_live, c_gsheet = st.columns(2)
+    c_live, c_url = st.columns(2)
     with c_live:
         fetch_live_clicked = st.button(
             "🔗 Pull from Live Dash",
@@ -40,16 +40,18 @@ def render_distribution_tab(search_q):
             use_container_width=True,
             key="dist_live",
         )
-    with c_gsheet:
-        if st.button("📩 Fetch Master from GSheet", use_container_width=True, type="secondary", key="dist_gsheet"):
+    with c_url:
+        url_input = st.text_input("Paste public CSV/XLSX URL", key="dist_url_input", label_visibility="collapsed", placeholder="Paste public CSV/XLSX URL...")
+        if url_input and st.button("Fetch URL", use_container_width=True, type="secondary", key="dist_url_fetch"):
             try:
-                with st.spinner("Fetching master from Google Sheet..."):
-                    df_res = pd.read_csv(DEFAULT_GSHEET_URL)
+                from src.utils.url_fetch import fetch_dataframe_from_url
+                with st.spinner("Fetching from URL..."):
+                    df_res = fetch_dataframe_from_url(url_input)
                     st.session_state.inv_master_df_live = df_res
                     st.session_state.inv_auto_analyze = True
                     st.rerun()
             except Exception as e:
-                st.error(f"GSheet failed: {e}")
+                st.error(f"URL fetch failed: {e}")
 
     loc_files = {}
     loc_cols = st.columns(len(INVENTORY_LOCATIONS))

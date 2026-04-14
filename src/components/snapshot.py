@@ -1,65 +1,101 @@
-import streamlit.components.v1 as components
+"""JSON metric snapshot — replaces the old PNG html2canvas screenshot."""
+
+from __future__ import annotations
+
+import json
+from datetime import datetime, timedelta, timezone
+from typing import Any
+
+import pandas as pd
+import streamlit as st
+
+from src.utils.metric_snapshots import save_metric_snapshot
 
 
-def render_snapshot_button(marker_id="snapshot-target"):
-    """Capture and download dashboard area snapshot as PNG."""
-    html_code = """
-    <div style="text-align:right; margin:6px 0 2px 0;">
-      <button onclick="captureDashboard()" style="
-          background:#1d4ed8; color:#fff; border:none; border-radius:8px;
-          padding:7px 12px; font-size:13px; font-weight:600; cursor:pointer;">
-          Save Snapshot
-      </button>
-    </div>
-    <script>
-    function captureDashboard() {
-      const marker = window.parent.document.getElementById('__MARKER__');
-      let target = null;
-      if (marker) {
-        target = marker.closest('[data-testid="stVerticalBlock"]');
-      }
-      if (!target) {
-        target = window.parent.document.querySelector('[data-testid="stAppViewContainer"]');
-      }
-      if (!target) return;
+def compute_snapshot_metrics(
+    granular_df: pd.DataFrame | None,
+    basket_metrics: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """Compute a snapshot of core metrics from the current dashboard state.
 
-      const doCapture = () => {
-        const originalPadding = target.style.padding;
-        const originalBackground = target.style.backgroundColor;
-        const originalBorderRadius = target.style.borderRadius;
-        const appBg = window.parent.getComputedStyle(window.parent.document.body).backgroundColor || '#0f172a';
+    Args:
+        granular_df: The granular (row-level) DataFrame currently displayed.
+        basket_metrics: Pre-computed basket metrics dict from ``aggregate_data``.
 
-        // Add breathing room so left edge does not feel cramped in snapshot.
-        target.style.padding = '18px 22px 18px 30px';
-        target.style.backgroundColor = appBg;
-        target.style.borderRadius = '12px';
-
-        window.parent.html2canvas(target, {useCORS: true, scale: 2, backgroundColor: appBg})
-          .then((canvas) => {
-            target.style.padding = originalPadding;
-            target.style.backgroundColor = originalBackground;
-            target.style.borderRadius = originalBorderRadius;
-            const a = window.parent.document.createElement('a');
-            a.download = 'dashboard_snapshot.png';
-            a.href = canvas.toDataURL('image/png');
-            a.click();
-          })
-          .catch(() => {
-            target.style.padding = originalPadding;
-            target.style.backgroundColor = originalBackground;
-            target.style.borderRadius = originalBorderRadius;
-          });
-      };
-
-      if (!window.parent.html2canvas) {
-        const script = window.parent.document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-        script.onload = doCapture;
-        window.parent.document.head.appendChild(script);
-      } else {
-        doCapture();
-      }
+    Returns:
+        Dict with keys: timestamp, core, volume_by_category, revenue_by_category.
+    """
+    tz_bd = timezone(timedelta(hours=6))
+    snapshot: dict[str, Any] = {
+        "timestamp": datetime.now(tz_bd).isoformat(),
+        "core": {
+            "total_qty": 0,
+            "total_revenue": 0,
+            "total_orders": 0,
+            "avg_basket_value": 0,
+        },
+        "volume_by_category": {},
+        "revenue_by_category": {},
     }
-    </script>
-    """.replace("__MARKER__", marker_id)
-    components.html(html_code, height=44)
+
+    if granular_df is None or granular_df.empty:
+        return snapshot
+
+    # Core metrics
+    qty = granular_df["Quantity"].sum() if "Quantity" in granular_df.columns else 0
+    revenue = (
+        (granular_df["Quantity"] * granular_df["Item Cost"]).sum()
+        if {"Quantity", "Item Cost"}.issubset(granular_df.columns)
+        else 0
+    )
+
+    snapshot["core"]["total_qty"] = int(qty)
+    snapshot["core"]["total_revenue"] = float(revenue)
+
+    if basket_metrics:
+        snapshot["core"]["total_orders"] = int(basket_metrics.get("total_orders", 0))
+        snapshot["core"]["avg_basket_value"] = round(
+            float(basket_metrics.get("avg_basket_value", 0)), 2
+        )
+
+    # Category breakdowns
+    if "Category" in granular_df.columns:
+        vol = granular_df.groupby("Category")["Quantity"].sum()
+        snapshot["volume_by_category"] = {k: int(v) for k, v in vol.items()}
+
+        if "Item Cost" in granular_df.columns:
+            rev = granular_df.copy()
+            rev["_rev"] = rev["Quantity"] * rev["Item Cost"]
+            rev_by_cat = rev.groupby("Category")["_rev"].sum()
+            snapshot["revenue_by_category"] = {
+                k: round(float(v), 2) for k, v in rev_by_cat.items()
+            }
+
+    return snapshot
+
+
+def render_snapshot_button(
+    granular_df: pd.DataFrame | None = None,
+    basket_metrics: dict[str, Any] | None = None,
+) -> None:
+    """Render a download button for a JSON metric snapshot.
+
+    If no data is available, shows a disabled-looking info message instead.
+
+    Args:
+        granular_df: Row-level DataFrame for metric computation.
+        basket_metrics: Pre-computed basket metrics dict.
+    """
+    metrics = compute_snapshot_metrics(granular_df, basket_metrics)
+
+    json_str = json.dumps(metrics, indent=2, default=str)
+
+    col_left, col_right = st.columns([4, 1])
+    with col_right:
+        st.download_button(
+            label="Save Snapshot",
+            data=json_str,
+            file_name=f"snapshot_{datetime.now().strftime('%Y%m%d_%H%M')}.json",
+            mime="application/json",
+            use_container_width=True,
+        )

@@ -8,6 +8,7 @@ from src.processing.data_processing import prepare_granular_data, aggregate_data
 from src.pages.dashboard_output import render_dashboard_output
 from src.services.woocommerce.client import load_live_source
 from src.utils.logging import log_system_event
+from src.utils.safe_ops import safe_render
 
 
 def render_live_tab():
@@ -59,7 +60,14 @@ def render_live_tab():
                 st.session_state.wc_nav_mode = "Today"
                 st.rerun()
 
-        auto_cols = find_columns(df_live)
+        try:
+            auto_cols = find_columns(df_live)
+        except Exception as col_err:
+            log_system_event("LIVE_COLUMN_DETECT_ERROR", str(col_err))
+            st.error(f"Column detection failed: {col_err}")
+            st.dataframe(df_live.head(20), use_container_width=True)
+            return
+
         missing_required = [k for k in ["name", "cost", "qty"] if k not in auto_cols]
         if missing_required:
             st.error(f"Cannot auto-map required columns: {', '.join(missing_required)}")
@@ -76,9 +84,19 @@ def render_live_tab():
         }
 
         df_standard, timeframe = prepare_granular_data(df_live, live_mapping)
-        if not df_standard.empty:
-            drill, summ, top, basket = aggregate_data(df_standard, live_mapping)
-            render_dashboard_output(
+        if df_standard.empty:
+            st.warning("Data preparation returned empty results. Raw data shown below.")
+            st.dataframe(df_live.head(20), use_container_width=True)
+            return
+
+        drill, summ, top, basket = aggregate_data(df_standard, live_mapping)
+        if drill is None or summ is None:
+            st.warning("Data aggregation failed. Raw data shown below.")
+            st.dataframe(df_standard.head(20), use_container_width=True)
+            return
+
+        safe_render(
+            lambda: render_dashboard_output(
                 drill,
                 summ,
                 top,
@@ -87,10 +105,11 @@ def render_live_tab():
                 source_name,
                 modified_at,
                 granular_df=df_standard
-            )
-
+            ),
+            fallback_msg="Dashboard rendering encountered an error.",
+        )
 
     except Exception as e:
         log_system_event("LIVE_FILE_ERROR", str(e))
         st.error(f"Live source error: {e}")
-        st.info("\U0001f4a1 Tip: If WooCommerce is down, use the '\U0001f4e5 Sales Data Ingestion' tab to pull fallback data from Google Sheets.")
+        st.info("\U0001f4a1 Tip: If WooCommerce is down, use the '\U0001f4e5 Sales Data Ingestion' tab to upload a local file or paste a public URL.")

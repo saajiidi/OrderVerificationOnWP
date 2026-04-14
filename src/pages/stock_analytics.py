@@ -10,6 +10,8 @@ from src.services.woocommerce.stock import fetch_woocommerce_stock
 from src.utils.product import get_base_product_name, get_size_from_name
 from src.utils.logging import log_system_event
 from src.utils.snapshots import load_stock_snapshot
+from src.utils.display import truncate_label
+from src.utils.safe_ops import safe_filter, safe_render
 
 
 def render_bundle_inventory_intelligence(sales_df, stock_df):
@@ -154,14 +156,16 @@ def render_stock_analytics_tab():
 
         # 1. Filter by Category / Sub-Category
         if sel_unified:
-            mask = pd.Series(False, index=df_raw.index)
-            for opt in sel_unified:
-                if "  \u21b3 " in opt:
-                    sub_name = opt.replace("  \u21b3 ", "")
-                    mask |= (df_raw["Sub-Category"] == sub_name)
-                else:
-                    mask |= (df_raw["Category"] == opt)
-            df_cat = df_raw[mask]
+            def _cat_filter(d):
+                mask = pd.Series(False, index=d.index)
+                for opt in sel_unified:
+                    if "  \u21b3 " in opt:
+                        sub_name = opt.replace("  \u21b3 ", "")
+                        mask |= (d["Sub-Category"] == sub_name)
+                    else:
+                        mask |= (d["Category"] == opt)
+                return d[mask]
+            df_cat = safe_filter(df_raw, _cat_filter, "Category/Fit")
         else:
             df_cat = df_raw
 
@@ -170,7 +174,7 @@ def render_stock_analytics_tab():
             base_options = sorted([str(x) for x in df_cat["Filter_Identity"].unique().tolist() if x is not None])
             sel_bases = st.multiselect("Select Item / Product", base_options, placeholder="All Items")
 
-        df_base = df_cat[df_cat["Filter_Identity"].isin(sel_bases)] if sel_bases else df_cat
+        df_base = safe_filter(df_cat, lambda d: d[d["Filter_Identity"].isin(sel_bases)], "Item") if sel_bases else df_cat
 
         with f3:
             # 3. Filter by Size (Show only sizes for selected items)
@@ -179,7 +183,7 @@ def render_stock_analytics_tab():
 
             size_options = sorted([str(x) for x in df_base["Size"].unique().tolist() if x is not None])
             sel_sizes = st.multiselect("Select Size", size_options, placeholder="All Sizes")
-            df = df_base[df_base["Size"].isin(sel_sizes)] if sel_sizes else df_base
+            df = safe_filter(df_base, lambda d: d[d["Size"].isin(sel_sizes)], "Size") if sel_sizes else df_base
 
     # v10.9 Final Strategic Numeric Lock
     if not df.empty:
@@ -190,7 +194,7 @@ def render_stock_analytics_tab():
         return
 
     # v11.1 High-Resiliency Rendering Shell
-    try:
+    def _render_stock_body():
         # Stock Summary by Shift-Category
         st.divider()
 
@@ -209,7 +213,10 @@ def render_stock_analytics_tab():
         # New Intelligence Layer: Bundle-Aware Inventory
         sales_df = st.session_state.get("wc_curr_df")
         if sales_df is not None and not sales_df.empty:
-            render_bundle_inventory_intelligence(sales_df, df)
+            safe_render(
+                lambda: render_bundle_inventory_intelligence(sales_df, df),
+                fallback_msg="Bundle intelligence section unavailable.",
+            )
 
         st.divider()
 
@@ -227,11 +234,13 @@ def render_stock_analytics_tab():
             st.dataframe(cat_summ, use_container_width=True, hide_index=True, column_config={"Stock": st.column_config.NumberColumn(format="%d")})
         with v2:
             # v14.6: Top-to-Less chronology for horizontal bars
-            fig_data = cat_summ.head(15).sort_values("Stock", ascending=True)
-            fig = px.bar(fig_data, x="Stock", y=display_label, orientation="h",
+            fig_data = cat_summ.head(15).sort_values("Stock", ascending=True).copy()
+            fig_data["Short_Label"] = fig_data[display_label].apply(truncate_label)
+            fig = px.bar(fig_data, x="Stock", y="Short_Label", orientation="h",
                          title=f"Top Volume: {display_label}",
-                         color="Stock", color_continuous_scale="Plasma")
-            fig.update_layout(margin=dict(l=0, r=0, t=30, b=0), showlegend=False, coloraxis_showscale=False)
+                         color="Stock", color_continuous_scale="Plasma",
+                         hover_data={display_label: True, "Short_Label": False})
+            fig.update_layout(margin=dict(l=0, r=0, t=30, b=0), showlegend=False, coloraxis_showscale=False, yaxis_title="")
             st.plotly_chart(fig, use_container_width=True)
 
         # Search & Filter
@@ -241,27 +250,30 @@ def render_stock_analytics_tab():
 
         filtered_df = df.copy()
         if search:
-            mask = (
-                filtered_df["Product"].astype(str).str.lower().str.contains(search) |
-                filtered_df["SKU"].astype(str).str.lower().str.contains(search) |
-                filtered_df["Category"].astype(str).str.lower().str.contains(search)
+            filtered_df = safe_filter(
+                filtered_df,
+                lambda d: d[
+                    d["Product"].astype(str).str.lower().str.contains(search) |
+                    d["SKU"].astype(str).str.lower().str.contains(search) |
+                    d["Category"].astype(str).str.lower().str.contains(search)
+                ],
+                "Text search",
             )
-            filtered_df = filtered_df[mask]
 
         st.dataframe(filtered_df, use_container_width=True, hide_index=True, column_config={
             "Stock": st.column_config.NumberColumn(format="%d"),
             "Price": st.column_config.NumberColumn(format="TK %.0f")
         })
 
-    except Exception as e:
+    result = safe_render(_render_stock_body, fallback_msg="Stock analytics rendering failed.")
+    if result is None:
         # Recovery Mode: Show at least the total stock if possible
         try:
-            st.warning(f"Note: Detailed report is partially unavailable due to data variations. Error: {e}")
-            # BUG FIX #3: Use total_qty instead of undefined raw_qty
+            total_qty = pd.to_numeric(df["Stock"], errors="coerce").fillna(0).sum()
             st.metric("Total items in Inventory (Recovery Mode)", f"{total_qty:,.0f}")
-        except:
-            st.error(f"Snapshot data is incompatible. Detail: {e}")
-        log_system_event("STOCK_RENDER_ERROR", str(e))
+        except Exception:
+            pass
+        log_system_event("STOCK_RENDER_ERROR", "Rendering fell back to recovery mode")
 
     st.caption(f"Database last refreshed: {st.session_state.get('stock_sync_time', datetime.now()).strftime('%I:%M %p')}")
     st.markdown('</div>', unsafe_allow_html=True)
