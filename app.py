@@ -162,27 +162,29 @@ def run_app():
     if st.session_state.get("show_animation"):
         render_bike_animation()
 
+    from src.utils.safe_ops import safe_render
+    
     # Main content rendering based on sidebar selection
     if selected_nav == "📈 Live Dashboard":
         from src.components.header import render_banner_mode_controls
-        render_app_banner()
-        render_banner_mode_controls()
-        render_live_tab()
+        safe_render(render_app_banner, fallback_msg="App banner unavailable.")
+        safe_render(render_banner_mode_controls, fallback_msg="Mode controls unavailable.")
+        safe_render(render_live_tab, fallback_msg="Live Dashboard unavailable.")
     elif selected_nav == "📦 Bulk Order Processer":
-        render_pathao_tab()
+        safe_render(render_pathao_tab, fallback_msg="Bulk Order Processor unavailable.")
     elif selected_nav == "💬 WhatsApp Messaging":
-        render_wp_tab()
+        safe_render(render_wp_tab, fallback_msg="WhatsApp Messaging unavailable.")
     elif selected_nav == "📊 Inventory Distribution":
-        render_distribution_tab(search_q=st.session_state.get("inv_matrix_search", ""))
+        safe_render(lambda: render_distribution_tab(search_q=st.session_state.get("inv_matrix_search", "")), fallback_msg="Inventory Distribution unavailable.")
     elif selected_nav == "📦 Current Stock Analytics":
-        render_stock_analytics_tab()
+        safe_render(render_stock_analytics_tab, fallback_msg="Stock Analytics unavailable.")
     elif selected_nav == "🧩 Delivery Data Parser":
-        render_fuzzy_parser_tab()
+        safe_render(render_fuzzy_parser_tab, fallback_msg="Delivery Data Parser unavailable.")
     elif selected_nav == "📥 Sales Data Ingestion":
-        render_manual_tab()
+        safe_render(render_manual_tab, fallback_msg="Sales Data Ingestion unavailable.")
     elif selected_nav == "🚀 Data Pilot":
         from src.pages.data_pilot import render_ai_pilot_page
-        render_ai_pilot_page()
+        safe_render(render_ai_pilot_page, fallback_msg="Data Pilot unavailable.")
     # After tool execution, re-render the header with any injected content
     with header_container:
         def render_header_right():

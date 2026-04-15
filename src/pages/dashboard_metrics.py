@@ -143,6 +143,21 @@ def render_operational_metrics(
         }
         .delta-up { background: rgba(16, 185, 129, 0.1); color: #10b981; }
         .delta-down { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+        
+        @media (max-width: 900px) {
+            .metric-container { grid-template-columns: repeat(2, 1fr); }
+            .metric-value { font-size: 1.3rem; }
+        }
+        @media (max-width: 600px) {
+            .metric-container { grid-template-columns: 1fr; gap: 12px; }
+            .metric-card { padding: 16px; }
+            .metric-value { font-size: 1.4rem; }
+        }
+        @media (prefers-color-scheme: dark) {
+            .metric-value { color: #ffffff !important; }
+            .metric-label { color: #cbd5e1 !important; }
+            .metric-card { background: rgba(255, 255, 255, 0.05); }
+        }
         </style>
     """, unsafe_allow_html=True)
 
