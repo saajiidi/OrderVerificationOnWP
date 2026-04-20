@@ -48,6 +48,8 @@ def get_category_for_sales(name) -> str:
         return "T-Shirt"
 
     if _has_any(["shirt"], name_str):
+        if _has_any(["denim", "flannel", "oxford", "kaftan"], name_str):
+            return "FS Shirt"
         return "FS Shirt" if _has_any(fs_keywords, name_str) else "HS Shirt"
 
     # v14.1: Typo Resilience (Fuzzy Logic Fallback)
@@ -99,7 +101,7 @@ def get_sub_category_for_sales(name, category) -> str:
         return "Wallet"
 
     elif category == "Panjabi":
-        if "embroidered cotton panjabi" in name_str: return "Old Panjabi"
+        if "embroidered cotton panjabi" in name_str: return "Embroidered Cotton Panjabi"
         return "Panjabi"
 
     elif category == "Sweatshirt":
@@ -107,22 +109,14 @@ def get_sub_category_for_sales(name, category) -> str:
         if "french terry" in name_str: return "French Terry Sweatshirt"
         return "Sweatshirt"
 
-    elif category == "Twill Chino":
-        if "pant" in name_str: return "Twill Chino Pant"
+    elif category == "Twill":
         if "joggers" in name_str: return "Twill Joggers"
-        if "five pockets" in name_str: return "Five Pockets"
+        if "five pockets" in name_str: return "Twill Five Pockets"
         return "Twill Chino"
 
     elif category == "Trousers":
         if "joggers" in name_str: return "Joggers"
-        if "regular fit" in name_str: return "Cotton Trousers"
+        if "regular fit" in name_str: return "Regular Fit Trousers"
         return "Trousers"
-
-    elif category == "Bundles":
-        detected = []
-        if "jeans" in name_str: detected.append("Jeans")
-        if "shirt" in name_str: detected.append("Shirt")
-        if "t-shirt" in name_str: detected.append("T-Shirt")
-        return f"Bundle ({', '.join(detected)})" if detected else "Bundle"
 
     return category

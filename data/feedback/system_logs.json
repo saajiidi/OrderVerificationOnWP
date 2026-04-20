@@ -3969,5 +3969,15 @@
         "timestamp": "2026-04-17 12:40:59",
         "type": "AGGREGATE_ERROR",
         "details": "'Category'"
+    },
+    {
+        "timestamp": "2026-04-20 11:06:27",
+        "type": "AGGREGATE_ERROR",
+        "details": "'Category'"
+    },
+    {
+        "timestamp": "2026-04-20 11:17:18",
+        "type": "AGGREGATE_ERROR",
+        "details": "'Category'"
     }
 ]

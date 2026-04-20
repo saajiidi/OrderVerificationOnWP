@@ -98,16 +98,7 @@ def render_ingestion_filters(
         active_df = working_df
 
         with c2:
-            unified_options: list[str] = []
-            if not working_df.empty:
-                for cat in sorted(working_df["Category"].unique().tolist()):
-                    unified_options.append(cat)
-                    subs = sorted(working_df[working_df["Category"] == cat]["Sub-Category"].unique().tolist())
-                    for s in subs:
-                        if s not in ["All", "N/A", cat]:
-                            unified_options.append(f"  \u21b3 {s}")
-            else:
-                unified_options = sorted(COMMON_CATS)
+            unified_options = COMMON_CATS
 
             sel_unified = st.multiselect(
                 "Select Category / Fit",

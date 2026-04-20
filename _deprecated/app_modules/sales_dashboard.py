@@ -24,9 +24,11 @@ from app_modules.ui_components import (
 )
 from app_modules.insights_service import get_business_insights
 from app_modules.utils import (
-    get_category_for_sales,
     get_base_product_name,
     get_size_from_name,
+)
+from src.processing.categorization import (
+    get_category_for_sales,
     get_sub_category_for_sales
 )
 
