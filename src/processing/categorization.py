@@ -24,7 +24,7 @@ def get_category_for_sales(name) -> str:
     # 2. MAIN CLUSTERS
     if _has_any(["jeans"], name_str): return "Jeans"
     
-    if _has_any(["t-shirt", "t shirt", "tee"], name_str):
+    if _has_any(["t-shirt", "t shirt", "tee", "tank top", "active wear", "activewear", "jersy", "jersey"], name_str):
         return "T-Shirt"
 
     fs_keywords = ["full sleeve", "long sleeve", "fs", "l/s", "fullsleeve", "full-sleeve"]
