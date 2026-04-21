@@ -83,7 +83,6 @@ def render_app_banner():
 @media (max-width: 800px) {{
     .app-banner-wrapper {{ height: auto; min-height: 180px; }}
     .app-banner-overlay {{ flex-direction: column; align-items: flex-start; justify-content: center; padding: 25px 20px; gap: 15px; position: static; background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.5) 100%); }}
-    .app-banner-img {{ display: none; }} /* Hide or dim on very small screens to avoid weird scaling */
     .app-banner-title {{ font-size: 1.4rem; }}
     .app-banner-subtitle {{ font-size: 0.85rem; }}
     .app-banner-clock-area {{ text-align: left; background: rgba(0,0,0,0.2); padding: 12px !important; margin-top: 5px; width: 100%; box-sizing: border-box; }}
