@@ -63,7 +63,6 @@ def run_app():
     from src.components.styles import inject_base_styles
     from src.components.header import render_header, render_app_banner
     from src.components.footer import render_footer
-    from src.components.sidebar import render_sidebar_branding
     from src.components.widgets import section_card
     from src.config.ui_config import PRIMARY_NAV, CLOUD_APP_URL
     import os
@@ -80,8 +79,6 @@ def run_app():
         pass
 
     with st.sidebar:
-        render_sidebar_branding()
-
         # User Authentication Context
         if is_auth_configured and st.experimental_user.is_logged_in:
             with st.sidebar.expander(f"👤 {st.experimental_user.name}", expanded=False):

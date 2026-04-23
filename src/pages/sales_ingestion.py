@@ -42,8 +42,9 @@ def render_manual_tab():
             st.rerun()
         else:
             # 2. If no snapshot, run API load
-            with st.spinner("\U0001f680 Initial API sync (Last 30 Days)..."):
+            with st.status("🚀 Connecting to WooCommerce (Last 30 Days)...", expanded=True) as status:
                 try:
+                    st.write("Initializing synchronization protocol...")
                     e_d = datetime.now().date()
                     s_d = e_d - timedelta(days=30)
                     st.session_state["wc_sync_mode"] = "Custom Range"
@@ -52,17 +53,20 @@ def render_manual_tab():
                     st.session_state["wc_sync_end_date"] = e_d
                     st.session_state["wc_sync_end_time"] = datetime.strptime("23:59", "%H:%M").time()
 
+                    st.write("Fetching transaction payloads...")
                     wc_res = load_from_woocommerce()
                     df_res = wc_res["df_to_return"]
                     src_res = wc_res["sync_desc"]
                     if not df_res.empty:
+                        st.write("Data structured. Saving snapshot...")
                         st.session_state.manual_df = df_res
                         st.session_state.manual_source_name = src_res
                         save_sales_snapshot(df_res)
+                        status.update(label="API Sync Complete", state="complete", expanded=False)
                         st.toast("\u2705 API Sync Complete!")
                         st.rerun()
                 except Exception:
-                    pass
+                    status.update(label="API Sync Failed", state="error", expanded=False)
 
 
     # v11.3 Sync State
@@ -84,12 +88,15 @@ def render_manual_tab():
         if url_input and st.button("Fetch from URL", use_container_width=True, type="secondary", key="manual_url_fetch"):
             try:
                 from src.utils.url_fetch import fetch_dataframe_from_url
-                with st.spinner("Fetching from URL..."):
+                with st.status("Fetching from URL...", expanded=True) as status:
+                    st.write("Establishing connection to target host...")
                     df_url = fetch_dataframe_from_url(url_input)
+                    st.write("Ingesting and normalizing structure...")
                     st.session_state.manual_df = df_url
                     st.session_state.manual_source_name = "URL_Import"
                     df = df_url
                     source_name = "URL_Import"
+                    status.update(label="Fetch Complete", state="complete", expanded=False)
                     st.success(f"Loaded {len(df_url)} rows from URL!")
             except Exception as e:
                 st.error(f"URL fetch failed: {e}")

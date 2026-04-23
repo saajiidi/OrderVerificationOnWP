@@ -17,11 +17,6 @@ PRIMARY_NAV = [
 CLOUD_APP_URL = "https://deen-business-intel.streamlit.app/"
 
 
-MORE_TOOLS = [
-    "System Logs",
-    "Dev Lab",
-]
-
 INVENTORY_LOCATIONS = ["Ecom", "Mirpur", "Wari", "Cumilla", "Sylhet"]
 
 STATUS_COLORS = {

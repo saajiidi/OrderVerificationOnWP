@@ -216,13 +216,14 @@ class WhatsAppOrderProcessor:
         product_col = self.config["product_col"]
         sku_col = self.config.get("sku_col")
         if sku_col and sku_col in df.columns:
-
-            def combine(row):
-                p = str(row[product_col]) if pd.notna(row[product_col]) else ""
-                s = str(row[sku_col]) if pd.notna(row[sku_col]) else ""
-                return f"{p} - {s}" if s.strip() and s.lower() != "nan" else p
-
-            df[product_col] = df.apply(combine, axis=1)
+            # Vectorized SKU integration for better performance
+            p_series = df[product_col].fillna("").astype(str)
+            s_series = df[sku_col].fillna("").astype(str)
+            
+            valid_sku = (s_series.str.strip() != "") & (s_series.str.lower() != "nan")
+            
+            df.loc[valid_sku, product_col] = p_series[valid_sku] + " - " + s_series[valid_sku]
+            df.loc[~valid_sku, product_col] = p_series[~valid_sku]
 
         # Aggregation rules
         agg_funcs = {
@@ -261,30 +262,42 @@ class WhatsAppOrderProcessor:
         self, df: pd.DataFrame, custom_template: str = None
     ) -> pd.DataFrame:
         """Generate formatted WhatsApp messages and links."""
-        df["whatsapp_link"] = None
+        whatsapp_links = []
+        order_summaries = []
         phone_col = self.config["phone_col"]
+        name_col = self.config["name_col"]
+        order_id_col = self.config["order_id_col"]
+        address_col = self.config.get("address_col")
+        city_col = self.config.get("city_col")
+        product_col = self.config["product_col"]
+        quantity_col = self.config["quantity_col"]
+        price_col = self.config["price_col"]
+        order_total_col = self.config["order_total_col"]
+        payment_method_col = self.config.get("payment_method_col")
 
-        for idx, row in df.iterrows():
-            phone = row[phone_col]
+        for row in df.to_dict("records"):
+            phone = row.get(phone_col, "")
             if not phone:
+                whatsapp_links.append(None)
+                order_summaries.append(None)
                 continue
 
             # Determine Salutation
-            name = row[self.config["name_col"]]
+            name = row.get(name_col, "")
             salutation = self.detect_gender_salutation(name)
-            order_id = str(row[self.config["order_id_col"]])
+            order_id = str(row.get(order_id_col, ""))
 
             # Format Address
             formatted_address = self.format_address(
-                row.get(self.config["address_col"], ""),
-                row.get(self.config.get("city_col"), ""),
+                row.get(address_col, ""),
+                row.get(city_col, ""),
             )
 
             # Build Product List & Totals for template use
             product_list = []
-            products = str(row[self.config["product_col"]]).split("\n- ")
-            quantities = str(row[self.config["quantity_col"]]).split("\n- ")
-            prices = str(row[self.config["price_col"]]).split("\n- ")
+            products = str(row.get(product_col, "")).split("\n- ")
+            quantities = str(row.get(quantity_col, "")).split("\n- ")
+            prices = str(row.get(price_col, "")).split("\n- ")
 
             for i, prod in enumerate(products):
                 item_line = f"- {prod.strip()}"
@@ -296,12 +309,13 @@ class WhatsAppOrderProcessor:
 
             products_str = "\n".join(product_list)
 
-            total_amount = float(row[self.config["order_total_col"]])
+            total_amount = float(row.get(order_total_col, 0.0))
             collectable_amount = total_amount
-            payment_col = self.config.get("payment_method_col")
             is_paid = False
-            if payment_col and payment_col in row and pd.notna(row[payment_col]):
-                method = str(row[payment_col]).lower()
+            
+            payment_method = row.get(payment_method_col)
+            if payment_method and pd.notna(payment_method):
+                method = str(payment_method).lower()
                 if any(x in method for x in ["bkash", "online", "ssl", "paid"]):
                     collectable_amount = 0
                     is_paid = True
@@ -349,25 +363,18 @@ class WhatsAppOrderProcessor:
                     "Thank you for shopping with DEEN Commerce! Grab our latest collection on: https://deencommerce.com/",
                 ]
                 message = "\n".join(lines)
+            
             encoded_message = urllib.parse.quote(message)
-            df.at[idx, "whatsapp_link"] = (
-                f"https://wa.me/+88{phone}?text={encoded_message}"
-            )
+            whatsapp_links.append(f"https://wa.me/+88{phone}?text={encoded_message}")
 
             # Simple Summary for copy-pasting
-            summary_parts = []
-            products = str(row[self.config["product_col"]]).split("\n- ")
-            total_qty = 0
-            for prod in products:
-                summary_parts.append(prod.strip())
+            summary_parts = [prod.strip() for prod in products]
+            summary_text = f"Order {order_id}: " + ", ".join(summary_parts)
+            summary_text += f" | Total: {total_amount:.0f} BDT"
+            order_summaries.append(summary_text)
 
-            summary_text = f"Order {row[self.config['order_id_col']]}: " + ", ".join(
-                summary_parts
-            )
-            summary_text += (
-                f" | Total: {float(row[self.config['order_total_col']]):.0f} BDT"
-            )
-            df.at[idx, "order_summary"] = summary_text
+        df["whatsapp_link"] = whatsapp_links
+        df["order_summary"] = order_summaries
 
         return df
 
