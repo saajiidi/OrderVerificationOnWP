@@ -193,8 +193,7 @@ def render_stock_analytics_tab():
             )
 
         st.divider()
-        is_sub_filtering = any("  \u21b3 " in opt for opt in st.session_state.get("stock_filter_unified", []))
-        display_label = "Sub-Category" if is_sub_filtering else "Category"
+        display_label = "Sub-Category"
 
         st.subheader(f"Inventory by {display_label}")
         cat_summ = df.groupby(display_label)["Stock"].sum().reset_index()
