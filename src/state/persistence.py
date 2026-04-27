@@ -16,8 +16,6 @@ def save_state():
         "inv_active_l",
         "inv_t_col",
         "pathao_res_df",
-        "low_stock_threshold",
-        "operational_holidays",
     ]
 
     for key in keys_to_persist:
@@ -65,10 +63,6 @@ def load_state():
 
 
 def init_state():
-    if "low_stock_threshold" not in st.session_state:
-        st.session_state.low_stock_threshold = 5
-    if "operational_holidays" not in st.session_state:
-        st.session_state.operational_holidays = []
     load_state()
 
 

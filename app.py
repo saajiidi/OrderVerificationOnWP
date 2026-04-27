@@ -49,10 +49,9 @@ def run_app():
     # ==========================================
 
     # Lazy imports keep bootstrap resilient on cloud when a module has runtime incompatibilities.
-    from src.components.clock import render_dynamic_clock
     from src.components.bike_animation import render_bike_animation
     from src.pages.inventory_distribution import render_distribution_tab
-    from src.utils.logging import get_logs, log_error
+    from src.utils.logging import get_logs
     from src.config.constants import ERROR_LOG_FILE
     from src.pages.delivery_parser import render_fuzzy_parser_tab
     from src.pages.pathao_orders import render_pathao_tab
@@ -63,7 +62,6 @@ def run_app():
     from src.components.styles import inject_base_styles
     from src.components.header import render_header, render_app_banner
     from src.components.footer import render_footer
-    from src.components.widgets import section_card
     from src.config.ui_config import PRIMARY_NAV, CLOUD_APP_URL
     import os
     from src.pages.whatsapp_messaging import render_wp_tab
@@ -73,10 +71,8 @@ def run_app():
 
     # Automated Log Rotation
     try:
-        import os
         import json
         from datetime import datetime
-        from src.config.constants import ERROR_LOG_FILE
 
         LOG_MAX_SIZE_BYTES = 1 * 1024 * 1024  # 1 MB
         LOGS_TO_KEEP = 200

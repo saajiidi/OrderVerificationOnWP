@@ -1,6 +1,3 @@
-import re
-import pandas as pd
-
 def _normalize(name):
     """Normalizes names for matching."""
     if not name: return ""

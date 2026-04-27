@@ -1,10 +1,7 @@
 import pandas as pd
-from openpyxl.styles import Font, Alignment, PatternFill
-from openpyxl.utils import get_column_letter
 from typing import Dict, Optional
 import urllib.parse
 import re
-import io
 
 
 class WhatsAppOrderProcessor:
@@ -377,52 +374,3 @@ class WhatsAppOrderProcessor:
         df["order_summary"] = order_summaries
 
         return df
-
-    def generate_excel_bytes(self, df: pd.DataFrame) -> bytes:
-        """Create formatted Excel file in memory."""
-        output = io.BytesIO()
-        with pd.ExcelWriter(output, engine="openpyxl") as writer:
-            df.to_excel(writer, index=False, sheet_name="Orders")
-            worksheet = writer.sheets["Orders"]
-
-            # Styles
-            header_fill = PatternFill(
-                start_color="4F81BD", end_color="4F81BD", fill_type="solid"
-            )
-            header_font = Font(color="FFFFFF", bold=True)
-            link_font = Font(color="0000FF", underline="single")
-            center_align = Alignment(horizontal="center")
-
-            # Header Formatting
-            for col in range(1, len(df.columns) + 1):
-                cell = worksheet.cell(row=1, column=col)
-                cell.fill = header_fill
-                cell.font = header_font
-                cell.alignment = center_align
-
-            # Link Formatting
-            if "whatsapp_link" in df.columns:
-                whatsapp_col = df.columns.get_loc("whatsapp_link") + 1
-                for row in range(2, len(df) + 2):
-                    cell = worksheet.cell(row=row, column=whatsapp_col)
-                    if cell.value:
-                        cell.hyperlink = cell.value
-                        cell.value = "Send WhatsApp"
-                        cell.font = link_font
-                        cell.alignment = center_align
-
-            # Auto-width
-            for column in worksheet.columns:
-                max_length = 0
-                column_letter = get_column_letter(column[0].column)
-                for cell in column:
-                    try:
-                        if len(str(cell.value)) > max_length:
-                            max_length = len(str(cell.value))
-                    except:
-                        pass
-                worksheet.column_dimensions[column_letter].width = min(
-                    (max_length + 2) * 1.2, 50
-                )
-
-        return output.getvalue()

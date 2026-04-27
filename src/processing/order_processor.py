@@ -1,5 +1,4 @@
 import pandas as pd
-import re
 import os
 import json
 from src.utils.product import get_category_from_name

@@ -21,7 +21,7 @@ REQUIRED_COLUMNS = ["Phone (Billing)"]
 
 
 def _reset_pathao_state():
-    clear_state_keys(["pathao_res_df", "pathao_preview_df", "pathao_uploaded_name"])
+    clear_state_keys(["pathao_res_df", "pathao_preview_df"])
 
 
 def render_pathao_tab():
@@ -103,7 +103,6 @@ def render_pathao_tab():
                 with st.spinner("Fetching from URL..."):
                     df_res = fetch_dataframe_from_url(url_input)
                     st.session_state.pathao_preview_df = df_res
-                    st.session_state.pathao_uploaded_name = "URL_Import"
                     st.session_state.pathao_auto_process = True
                     st.rerun()
             except Exception as e:
@@ -126,7 +125,6 @@ def render_pathao_tab():
 
             preview_df = df_live
             st.session_state.pathao_preview_df = preview_df
-            st.session_state.pathao_uploaded_name = source_name
             st.session_state.pathao_auto_process = True
 
             missing = [c for c in REQUIRED_COLUMNS if c not in preview_df.columns]
@@ -140,7 +138,6 @@ def render_pathao_tab():
         try:
             preview_df = read_uploaded(up_pathao)
             st.session_state.pathao_preview_df = preview_df
-            st.session_state.pathao_uploaded_name = up_pathao.name
             valid_file = render_file_summary(up_pathao, preview_df, REQUIRED_COLUMNS)
         except Exception as exc:
             log_error(exc, context="Pathao Upload")

@@ -1,5 +1,4 @@
 import streamlit as st
-import pandas as pd
 from datetime import datetime, timedelta, timezone
 
 from src.components.widgets import render_reset_confirm
@@ -21,10 +20,6 @@ def render_live_tab():
 
     render_reset_confirm("Live Dashboard", "live", _reset_live_state)
     st.session_state.manual_tab_active = False # v11.3 Flag Reset
-    """Always running dashboard from selected source."""
-    tz_bd = timezone(timedelta(hours=6))
-    current_t = datetime.now(tz_bd).strftime("%B %d, %Y %I:%M %p")
-    # logo_src logically moved to render_dashboard_output
 
     # Use global imports
     tz_bd = timezone(timedelta(hours=6))

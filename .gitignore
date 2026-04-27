@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv/
+env/
+venv/
+ENV/
+pathao_token.json
+data/feedback/system_logs.json
+data/processed/
+data/raw/
+.streamlit/
+.claude/

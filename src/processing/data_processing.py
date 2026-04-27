@@ -1,5 +1,4 @@
 import pandas as pd
-import streamlit as st
 from src.processing.column_detection import find_columns, scrub_raw_dataframe
 from src.processing.categorization import get_category_for_sales, get_sub_category_for_sales
 from src.utils.product import get_base_product_name, get_size_from_name

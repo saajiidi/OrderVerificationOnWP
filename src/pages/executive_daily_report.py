@@ -22,8 +22,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 import streamlit as st
 if "wc_sync_mode" not in st.session_state:
     st.session_state["wc_sync_mode"] = "Operational Cycle"
-if "operational_holidays" not in st.session_state:
-    st.session_state["operational_holidays"] = []
 
 from src.services.woocommerce.client import load_from_woocommerce
 from src.processing.data_processing import prepare_granular_data, aggregate_data

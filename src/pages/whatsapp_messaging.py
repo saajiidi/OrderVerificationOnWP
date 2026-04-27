@@ -20,7 +20,7 @@ FUZZY_REQUIRED_FIELDS = {
 
 
 def _reset_wp_state():
-    clear_state_keys(["wp_links_df", "wp_preview_df", "wp_upload_name"])
+    clear_state_keys(["wp_links_df", "wp_preview_df"])
 
 
 def _has_fuzzy_column(columns: list[str], aliases: list[str]) -> bool:
@@ -75,7 +75,6 @@ def render_wp_tab():
                 with st.spinner("Fetching from URL..."):
                     df_res = fetch_dataframe_from_url(url_input)
                     st.session_state.wp_preview_df = df_res
-                    st.session_state.wp_upload_name = "URL_Import"
                     st.session_state.wp_auto_generate = True
                     st.rerun()
             except Exception as e:
@@ -98,7 +97,6 @@ def render_wp_tab():
 
             preview_df = df_live
             st.session_state.wp_preview_df = preview_df
-            st.session_state.wp_upload_name = source_name
             st.session_state.wp_auto_generate = True
 
             valid_file, missing_fields = _validate_wp_columns(preview_df)
@@ -115,7 +113,6 @@ def render_wp_tab():
         try:
             preview_df = read_uploaded(wp_file)
             st.session_state.wp_preview_df = preview_df
-            st.session_state.wp_upload_name = wp_file.name
             # Keep the summary card and use a fuzzy requirement check to avoid strict header dependence.
             render_file_summary(wp_file, preview_df, [])
             valid_file, missing_fields = _validate_wp_columns(preview_df)
