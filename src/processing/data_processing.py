@@ -239,7 +239,7 @@ def generate_executive_briefing(today_rev, today_qty, today_orders, today_aov, d
         "",
 
         f"👕 *Free T-Shirts:* {dm.get('free_tshirts', 0):,.0f}",
-        f"🍼 *Free Water Bottles:* {dm.get('free_bottles', 0):,.0f}",
+        f"🍶 *Free Water Bottles:* {dm.get('free_bottles', 0):,.0f}",
     ]
 
     if prev_rev is not None:
