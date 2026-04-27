@@ -209,3 +209,54 @@ def get_dispatch_metrics(active_df, total_orders=0):
 
     metrics["ecom_dispatch"] = max(0, total_orders - metrics["outlet_dispatch"] - metrics["exchange_dispatch"])
     return metrics
+
+
+def generate_executive_briefing(today_rev, today_qty, today_orders, today_aov, dm, top, prev_rev=None, prev_orders=None, forecast_str=""):
+    """Generates the single source of truth narrative for the Executive Briefing."""
+    from datetime import datetime, timedelta, timezone
+    
+    rev_trend = ""
+    if prev_rev is not None:
+        rev_trend = " 📈" if today_rev >= prev_rev else " 📉"
+        
+    rev_line = f"💰 *Today's Revenue:* ৳{today_rev:,.0f}{rev_trend}" if prev_rev is not None else f"💰 *Revenue:* ৳{today_rev:,.0f}"
+
+    report_lines = [
+        f"📊 *DEEN-OPS Executive Briefing*",
+        f"📅 {datetime.now(timezone(timedelta(hours=6))).strftime('%A, %d %B %Y')}",
+        "",
+        rev_line,
+        f"📦 *Gross Items Sold:* {today_qty:,.0f}",
+        f"🛍️ *Avg Basket Value:* ৳{today_aov:,.0f}",
+        "",
+        f"🚚 *Last Shipped Order:* {dm.get('last_shipped_order', 'N/A')}",
+        f"🖨️ *Last Pathao Print:* {dm.get('last_pathao_print', 'N/A')}",
+        "",
+        f"🛒 *Total Orders:* {today_orders:,.0f}",
+        f"🔄 *Exchange:* {dm.get('exchange_dispatch', 0):,.0f}",
+        f"🚀 *Ecom Dispatch:* {dm.get('ecom_dispatch', 0):,.0f}",
+        f"🏪 *Outlet Dispatch:* {dm.get('outlet_dispatch', 0):,.0f}",
+        "",
+
+        f"👕 *Free T-Shirts:* {dm.get('free_tshirts', 0):,.0f}",
+        f"🍼 *Free Water Bottles:* {dm.get('free_bottles', 0):,.0f}",
+    ]
+
+    if prev_rev is not None:
+        report_lines.extend(["", f"📉 *Yesterday's Revenue:* ৳{prev_rev:,.0f} ({prev_orders} orders)"])
+        
+    if forecast_str:
+        report_lines.append(forecast_str)
+
+    report_lines.extend(["", "🔥 *Top Performing Products:*"])
+
+    if top is not None and not top.empty:
+        top_3 = top.head(3)
+        for _, row in top_3.iterrows():
+            report_lines.append(f"• {row['Product Name']} ({row['Total Qty']} pcs)")
+    else:
+        report_lines.append("No product data available.")
+
+    report_lines.extend(["", "💻 _Access the full dashboard at your DEEN-OPS Terminal: https://deen-ops.streamlit.app/_"])
+    
+    return "\n".join(report_lines)

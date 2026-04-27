@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 from io import BytesIO
 from itertools import combinations
 
-from src.processing.data_processing import get_dispatch_metrics
+from src.processing.data_processing import get_dispatch_metrics, generate_executive_briefing
 from src.pages.dashboard_charts import render_category_charts, render_spotlight
 from src.pages.dashboard_filters import render_ingestion_filters
 from src.pages.dashboard_metrics import render_operational_metrics
@@ -230,32 +230,7 @@ def render_dashboard_output(
         
         dm = get_dispatch_metrics(active_df, today_orders)
 
-        report_lines = [
-            f"📊 *DEEN-OPS Executive Briefing*",
-            f"📅 {datetime.now(timezone(timedelta(hours=6))).strftime('%A, %d %B %Y')}",
-            "",
-            f"💰 *Revenue:* ৳{today_rev:,.0f}",
-            f"📦 *Gross Items Sold:* {today_qty:,.0f}",
-            f"🛍️ *Avg Basket Value:* ৳{today_aov:,.0f}",
-            "",
-            f"🚚 *Last Shipped Order:* {dm['last_shipped_order']}",
-            f"🖨️ *Last Pathao Print:* {dm['last_pathao_print']}",
-            "",
-            f"🛒 *Total Orders:* {today_orders:,.0f}, 🔄 *Exchange:* {dm['exchange_dispatch']:,.0f} ||",
-            f"🚀 *Ecom Dispatch:* {dm['ecom_dispatch']:,.0f}, 🏪 *Outlet Dispatch:* {dm['outlet_dispatch']:,.0f}",
-            "",
-            f"🎁 *Free T-Shirts (>3499 TK):* {dm['free_tshirts']:,.0f}",
-            f"💧 *Free Water Bottles (>2499 TK):* {dm['free_bottles']:,.0f}",
-            "",
-            "🔥 *Top Performing Products:*"
-        ]
-        if top is not None and not top.empty:
-            top_3 = top.head(3)
-            for _, row in top_3.iterrows():
-                report_lines.append(f"• {row['Product Name']} ({row['Total Qty']} pcs)")
-
-        report_lines.extend(["", "💻 _Access the full dashboard at your DEEN-OPS Terminal: https://deen-ops.streamlit.app/_"])
-        report_text = "\n".join(report_lines)
+        report_text = generate_executive_briefing(today_rev, today_qty, today_orders, today_aov, dm, top)
 
         st.markdown("**1. Copy for Quick Briefing:**")
         st.code(report_text, language="markdown")
@@ -263,7 +238,7 @@ def render_dashboard_output(
 
         buf_pbi = BytesIO()
         with pd.ExcelWriter(buf_pbi, engine="xlsxwriter") as wr:
-            pd.DataFrame({"Executive Summary": report_lines}).to_excel(wr, sheet_name="Executive Briefing", index=False)
+            pd.DataFrame({"Executive Summary": report_text.split('\n')}).to_excel(wr, sheet_name="Executive Briefing", index=False)
             if summ is not None and not summ.empty:
                 summ.to_excel(wr, sheet_name="Category Summary", index=False)
             if top is not None and not top.empty:

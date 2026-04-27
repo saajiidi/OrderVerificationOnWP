@@ -77,7 +77,10 @@ class AIDataAgent:
             async for chunk in self.controller.get_response_stream_async(messages):
                 yield chunk
         except Exception:
-            yield self.controller.get_response_sync(messages)
+                try:
+                    yield self.controller.get_response_sync(messages, context="")
+                except TypeError:
+                    yield self.controller.get_response_sync(messages)
 
 # ------------------------------
 # 2. UI COMPONENTS
@@ -105,7 +108,8 @@ def render_sidebar_controls():
             api_key = st.text_input(f"{provider} Key", type="password")
             model_name = "gpt-4o" if provider == "OpenAI" else "gemini-1.5-flash"
         elif provider == "Ollama (Local)":
-            models = init_llm_controller().key_manager.get_local_models()
+            controller = init_llm_controller()
+            models = controller.key_manager.get_local_models() if hasattr(controller.key_manager, "get_local_models") else []
             if models:
                 model_name = st.selectbox("Local Model", models)
             else:

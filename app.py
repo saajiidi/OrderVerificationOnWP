@@ -71,6 +71,33 @@ def run_app():
     init_state()
     inject_base_styles()
 
+    # Automated Log Rotation
+    try:
+        import os
+        import json
+        from datetime import datetime
+        from src.config.constants import ERROR_LOG_FILE
+
+        LOG_MAX_SIZE_BYTES = 1 * 1024 * 1024  # 1 MB
+        LOGS_TO_KEEP = 200
+
+        if os.path.exists(ERROR_LOG_FILE) and os.path.getsize(ERROR_LOG_FILE) > LOG_MAX_SIZE_BYTES:
+            with open(ERROR_LOG_FILE, "r+", encoding="utf-8") as f:
+                logs = json.load(f)
+                if len(logs) > LOGS_TO_KEEP:
+                    truncated_logs = logs[-LOGS_TO_KEEP:]
+                    rotation_log_entry = {
+                        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "context": "LOG_ROTATION",
+                        "error": f"Log file exceeded {LOG_MAX_SIZE_BYTES / 1024 / 1024:.1f}MB; truncated to last {LOGS_TO_KEEP} entries."
+                    }
+                    final_logs = truncated_logs + [rotation_log_entry]
+                    f.seek(0)
+                    json.dump(final_logs, f, indent=4)
+                    f.truncate()
+    except Exception:
+        pass # Non-critical maintenance task, fail silently.
+
     # Clear previous header banner to ensure tool-specific display
     if "header_status_banner" not in st.session_state:
         st.session_state.header_status_banner = ""
@@ -190,7 +217,6 @@ def run_app():
     with header_container:
         def render_header_right():
             from src.components.clock import render_dynamic_clock
-            from src.components.live_banner import render_live_banner
 
             # 1. Live banner — passive stats on all pages
             # Removed as requested
