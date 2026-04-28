@@ -85,6 +85,21 @@ def render_spotlight(
     if top is None or top.empty:
         return
 
+    # Apply size-agnostic grouping (aggregate by Clean_Product)
+    top = top.copy()
+    if "Clean_Product" in top.columns:
+        group_cols = ["Clean_Product", "SKU"] if "SKU" in top.columns else ["Clean_Product"]
+        agg_dict = {"Total Qty": "sum", "Total Amount": "sum", "Category": "first"}
+        if "Sub-Category" in top.columns:
+            agg_dict["Sub-Category"] = "first"
+        
+        top = top.groupby(group_cols, as_index=False).agg(agg_dict)
+        top.rename(columns={"Clean_Product": "Product Name"}, inplace=True)
+        
+        if prev_top is not None and not prev_top.empty and "Clean_Product" in prev_top.columns:
+            prev_top = prev_top.groupby(group_cols, as_index=False).agg(agg_dict)
+            prev_top.rename(columns={"Clean_Product": "Product Name"}, inplace=True)
+
     st.subheader("\U0001f525 Products Spotlight")
     sc1, sc2 = st.columns([1, 1])
     with sc1:
@@ -138,8 +153,8 @@ def render_spotlight(
         if stock_df is not None and not stock_df.empty:
             sku_stock = stock_df[stock_df["SKU"] == row["SKU"]]
             if not sku_stock.empty:
-                stock_qty = sku_stock.iloc[0]["Stock"]
-                # If stock < 2x current shift sales, it's a risk
+                stock_qty = sku_stock["Stock"].sum()
+                # If stock < 1.5x current shift sales, it's a risk
                 if stock_qty < (row["Total Qty"] * 1.5):
                     label = f"⚠️ {label}"
                     
