@@ -1,4 +1,5 @@
 import pandas as pd
+import streamlit as st
 import os
 import json
 from src.utils.product import get_category_from_name
@@ -339,6 +340,7 @@ def process_single_order_group(phone, group, data_cols):
     return record
 
 
+@st.cache_data(show_spinner="Processing orders via Pathao Intelligence Engine...")
 def process_orders_dataframe(df):
     """
     Main Logic: Takes raw DF, returns processed DF

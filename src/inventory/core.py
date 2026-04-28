@@ -1,6 +1,8 @@
 import math
 import io
 import re
+import streamlit as st
+from functools import lru_cache
 from dataclasses import dataclass
 from typing import Dict, Tuple, Optional
 
@@ -8,6 +10,7 @@ import pandas as pd
 from fuzzywuzzy import process
 
 
+@lru_cache(maxsize=4096)
 def normalize_key(val) -> str:
     """Normalize values from Excel/CSV so keys match reliably (e.g., 123.0 -> '123')."""
     if pd.isna(val):
@@ -24,6 +27,7 @@ def normalize_key(val) -> str:
     return s
 
 
+@lru_cache(maxsize=4096)
 def normalize_sku(val) -> str:
     """Corrects typos and extra spaces in SKUs for strict but flexible matching."""
     s = normalize_key(val)
@@ -32,6 +36,7 @@ def normalize_sku(val) -> str:
     return s
 
 
+@lru_cache(maxsize=4096)
 def normalize_size(val) -> str:
     if pd.isna(val) or val == "":
         return "NO_SIZE"
@@ -47,13 +52,14 @@ def normalize_size(val) -> str:
     return s
 
 
+@lru_cache(maxsize=4096)
 def item_name_to_title_size(item_name: str) -> Tuple[str, str]:
     """
     Convert product list 'Item Name' into (title, size).
     Expected common format: "Title - Size" (split on last ' - ').
     If size can't be parsed, returns ("<item_name>", "NO_SIZE").
     """
-    if item_name is None or (isinstance(item_name, float) and pd.isna(item_name)):
+    if item_name is None or (isinstance(item_name, float) and math.isnan(item_name)):
         return "", "NO_SIZE"
     s = normalize_key(item_name)
     if not s:
@@ -69,6 +75,7 @@ def item_name_to_title_size(item_name: str) -> Tuple[str, str]:
     return s.strip(), "NO_SIZE"
 
 
+@lru_cache(maxsize=4096)
 def build_title_size_key(title: str, size: str) -> str:
     title_norm = normalize_key(title).strip()
     size_norm = normalize_size(size)
@@ -242,6 +249,7 @@ def load_inventory_from_uploads(uploaded_files: Dict[str, object]):
     return inventory, warnings, enriched_dfs, sku_to_title_size
 
 
+@st.cache_data(show_spinner="Intelligent Inventory Matching in progress...")
 def add_stock_columns_from_inventory(
     product_df: pd.DataFrame,
     item_name_col: str,

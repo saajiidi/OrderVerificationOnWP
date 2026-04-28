@@ -785,7 +785,7 @@ def get_items_sold_label(last_updated):
 class PredictiveIntelligence:
     """Universal Forecasting Suite: Multi-Family Tournament Engine."""
     @staticmethod
-    def forecast(series: pd.Series, steps: int = 7):
+    def forecast(series: pd.Series, steps: int = 7, force_prophet: bool = False):
         if len(series) < 3:
             return None, "Insufficient Evidence"
             
@@ -848,7 +848,11 @@ class PredictiveIntelligence:
             standings.append({"model": name, "error": error})
         
         standings_df = pd.DataFrame(standings).sort_values("error")
-        top_3 = standings_df.head(3)
+        
+        if force_prophet:
+            top_3 = standings_df[standings_df["model"].str.contains("Prophet", na=False)]
+        else:
+            top_3 = standings_df.head(3)
         
         results = []
         for idx, row in top_3.iterrows():
@@ -889,18 +893,23 @@ def render_performance_analysis(df: pd.DataFrame):
         return
 
     st.divider()
-    c_hdr, c_toggle = st.columns([3, 1])
+    c_hdr, c_gran, c_slider, c_toggle = st.columns([1.5, 1, 1.5, 1])
     with c_hdr:
         st.subheader("📈 Time-Series Performance Analysis")
+    with c_gran:
+        granularity = st.selectbox("Granularity", ["Daily", "Weekly", "Monthly"], label_visibility="collapsed")
     with c_toggle:
         enable_ml = st.checkbox("🚀 Enable ML Forecasting", value=False, help="Apply Predictive Intelligence models to forecast future trends.")
-    
-    # Pre-processing: Aggregating by Day
+        
+    # Pre-processing: Aggregating by Day/Week
     df_day = df.copy()
-    # Normalize dates to avoid timestamp artifacts in grouping
-    df_day["Day"] = pd.to_datetime(df_day["Date"]).dt.date
+    if granularity == "Monthly":
+        df_day["Day"] = pd.to_datetime(df_day["Date"]).dt.to_period("M").apply(lambda r: r.start_time).dt.date
+    elif granularity == "Weekly":
+        df_day["Day"] = pd.to_datetime(df_day["Date"]).dt.to_period("W").apply(lambda r: r.start_time).dt.date
+    else:
+        df_day["Day"] = pd.to_datetime(df_day["Date"]).dt.date
     
-    # Daily Revenue & Items Sold
     daily_stats = df_day.groupby("Day").agg({
         "Total Amount": "sum",
         "Quantity": "sum",
@@ -909,19 +918,53 @@ def render_performance_analysis(df: pd.DataFrame):
     
     daily_stats["Avg Basket Value"] = (daily_stats["Total Amount"] / daily_stats["Order ID"]).fillna(0)
     daily_stats = daily_stats.sort_values("Day")
+    
+    max_periods = len(daily_stats)
+
+    with c_slider:
+        if max_periods > 1:
+            display_days = st.slider(f"Display Window ({granularity})", min_value=1, max_value=max_periods, value=min(7, max_periods))
+        else:
+            display_days = max_periods
+            st.caption(f"Showing all {max_periods} available {granularity.lower()}.")
+    
+    # Add Rolling Averages for better trend visibility
+    if granularity == "Daily":
+        window_size = 7
+        trend_label = "7-Day"
+    elif granularity == "Weekly":
+        window_size = 4
+        trend_label = "4-Week"
+    else:
+        window_size = 3
+        trend_label = "3-Month"
+    
+    daily_stats["Revenue Trend"] = daily_stats["Total Amount"].rolling(window=window_size, min_periods=1).mean()
+    daily_stats["Orders Trend"] = daily_stats["Order ID"].rolling(window=window_size, min_periods=1).mean()
+
+    # Preserve full history for ML models, but restrict display to selected window
+    full_stats = daily_stats.copy()
+    daily_stats = daily_stats.tail(display_days)
+    
+    force_p = granularity in ["Weekly", "Monthly"]
 
     c1, c2 = st.columns(2)
     
     with c1:
         # 1. Daily Revenue Trend + ML Forecast
-        rev_data = daily_stats.set_index("Day")["Total Amount"]
-        fc_res_rev, standings_rev = PredictiveIntelligence.forecast(rev_data) if enable_ml else (None, None)
+        rev_data = full_stats.set_index("Day")["Total Amount"]
+        fc_res_rev, standings_rev = PredictiveIntelligence.forecast(rev_data, force_prophet=force_p) if enable_ml else (None, None)
         
         fig_rev = px.area(daily_stats, x="Day", y="Total Amount", 
-                          title=f"Revenue Outlook {'(Best 3 Strategy Ensemble)' if enable_ml else ''}",
-                          labels={"Total Amount": "Revenue", "Day": ""},
-                          color_discrete_sequence=["#1d4ed8"])
+                          title=f"Revenue Outlook {('(Prophet Forecast)' if force_p else '(Best 3 Strategy Ensemble)') if enable_ml else f'(with {trend_label} Trend)'}",
+                          labels={"Total Amount": f"{granularity} Revenue", "Day": "Date"},
+                          color_discrete_sequence=["#1d4ed8"],
+                          hover_data={"Total Amount": ":,.0f", "Revenue Trend": ":,.0f"})
                           
+        # Add Trendline
+        if not enable_ml:
+            fig_rev.add_scatter(x=daily_stats["Day"], y=daily_stats["Revenue Trend"], mode="lines", name=f"{trend_label} Avg", line=dict(color="#fcd34d", width=3, dash="dot"))
+
         if enable_ml and fc_res_rev:
             fc_dates = [daily_stats["Day"].iloc[-1] + timedelta(days=i+1) for i in range(7)]
             forecast_colors = ["#4f46e5", "#818cf8", "#c7d2fe"]
@@ -934,13 +977,14 @@ def render_performance_analysis(df: pd.DataFrame):
         st.plotly_chart(fig_rev, use_container_width=True, config={"displayModeBar": False})
         
         # 3. Daily Items Sold Trend + ML Forecast
-        qty_data = daily_stats.set_index("Day")["Quantity"]
-        fc_res_qty, _ = PredictiveIntelligence.forecast(qty_data) if enable_ml else (None, None)
+        qty_data = full_stats.set_index("Day")["Quantity"]
+        fc_res_qty, _ = PredictiveIntelligence.forecast(qty_data, force_prophet=force_p) if enable_ml else (None, None)
         
         fig_qty = px.line(daily_stats, x="Day", y="Quantity", 
-                          title=f"Volume Outlook {'(Top Models Displayed)' if enable_ml else ''}",
-                          labels={"Quantity": "Volume", "Day": ""},
-                          color_discrete_sequence=["#10b981"])
+                          title=f"Volume Outlook {('(Prophet Forecast)' if force_p else '(Top Models Displayed)') if enable_ml else ''}",
+                          labels={"Quantity": f"{granularity} Items Sold", "Day": "Date"},
+                          color_discrete_sequence=["#10b981"],
+                          markers=True)
         
         if enable_ml and fc_res_qty:
             fc_dates = [daily_stats["Day"].iloc[-1] + timedelta(days=i+1) for i in range(7)]
@@ -955,13 +999,18 @@ def render_performance_analysis(df: pd.DataFrame):
 
     with c2:
         # 2. Daily Order Count Trend + ML Forecast
-        ord_data = daily_stats.set_index("Day")["Order ID"]
-        fc_res_ord, _ = PredictiveIntelligence.forecast(ord_data) if enable_ml else (None, None)
+        ord_data = full_stats.set_index("Day")["Order ID"]
+        fc_res_ord, _ = PredictiveIntelligence.forecast(ord_data, force_prophet=force_p) if enable_ml else (None, None)
         
         fig_ord = px.bar(daily_stats, x="Day", y="Order ID", 
-                         title=f"Orders Outlook {'(Multi-Model Mode)' if enable_ml else ''}",
-                         labels={"Order ID": "Orders", "Day": ""},
-                         color_discrete_sequence=["#6366f1"])
+                         title=f"Orders Outlook {('(Prophet Forecast)' if force_p else '(Multi-Model Mode)') if enable_ml else f'(with {trend_label} Trend)'}",
+                         labels={"Order ID": f"{granularity} Orders", "Day": "Date"},
+                         color_discrete_sequence=["#6366f1"],
+                         hover_data={"Order ID": ":,.0f", "Orders Trend": ":,.1f"})
+        
+        # Add Trendline
+        if not enable_ml:
+            fig_ord.add_scatter(x=daily_stats["Day"], y=daily_stats["Orders Trend"], mode="lines", name=f"{trend_label} Avg", line=dict(color="#fcd34d", width=3, dash="dot"))
         
         if enable_ml and fc_res_ord:
              fc_dates = [daily_stats["Day"].iloc[-1] + timedelta(days=i+1) for i in range(7)]
@@ -984,8 +1033,9 @@ def render_performance_analysis(df: pd.DataFrame):
         # 4. Daily Basket Value Trend
         fig_bv = px.line(daily_stats, x="Day", y="Avg Basket Value", 
                          title="Market Basket Efficiency (AOV)",
-                         labels={"Avg Basket Value": "Avg Value", "Day": ""},
-                         color_discrete_sequence=["#f59e0b"])
+                         labels={"Avg Basket Value": "AOV (TK)", "Day": "Date"},
+                         color_discrete_sequence=["#f59e0b"],
+                         markers=True)
         fig_bv.update_layout(margin=dict(l=40, r=20, t=50, b=40), height=350)
         st.plotly_chart(fig_bv, use_container_width=True, config={"displayModeBar": False})
 

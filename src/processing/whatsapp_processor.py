@@ -1,4 +1,5 @@
 import pandas as pd
+import polars as pl
 from typing import Dict, Optional
 import urllib.parse
 import re
@@ -201,6 +202,10 @@ class WhatsAppOrderProcessor:
             self.format_name
         )
 
+        # Clean and standardize product names
+        product_col = self.config["product_col"]
+        df[product_col] = df[product_col].astype(str).str.replace("Executive Formal Shirt", "Formal Shirt", regex=False)
+
         # Format address columns
         for col_type in ["address_col", "city_col"]:
             col_name = self.config.get(col_type)
@@ -210,7 +215,6 @@ class WhatsAppOrderProcessor:
                 )
 
         # SKU Integration
-        product_col = self.config["product_col"]
         sku_col = self.config.get("sku_col")
         if sku_col and sku_col in df.columns:
             # Vectorized SKU integration for better performance
@@ -222,38 +226,46 @@ class WhatsAppOrderProcessor:
             df.loc[valid_sku, product_col] = p_series[valid_sku] + " - " + s_series[valid_sku]
             df.loc[~valid_sku, product_col] = p_series[~valid_sku]
 
-        # Aggregation rules
-        agg_funcs = {
-            self.config["name_col"]: "first",
-            self.config["order_id_col"]: lambda x: ", ".join(map(str, x.unique())),
-            self.config["product_col"]: lambda x: "\n- ".join(x),
-            self.config["quantity_col"]: lambda x: "\n- ".join(map(str, x)),
-            self.config["price_col"]: lambda x: "\n- ".join(map(str, x)),
-        }
+        # Convert to Polars LazyFrame for optimized execution
+        lazy_df = pl.from_pandas(df).lazy()
+        
+        name_col = self.config["name_col"]
+        order_id_col = self.config["order_id_col"]
+        product_col = self.config["product_col"]
+        quantity_col = self.config["quantity_col"]
+        price_col = self.config["price_col"]
+
+        agg_exprs = [
+            pl.col(name_col).first(),
+            pl.col(order_id_col).cast(pl.String).drop_nulls().unique().str.join(", "),
+            pl.col(product_col).cast(pl.String).drop_nulls().str.join("\n- "),
+            pl.col(quantity_col).cast(pl.String).drop_nulls().str.join("\n- "),
+            pl.col(price_col).cast(pl.String).drop_nulls().str.join("\n- "),
+        ]
 
         # Add optional columns to aggregation
         for key in ["address_col", "city_col", "payment_method_col"]:
             col = self.config.get(key)
             if col and col in df.columns:
-                agg_funcs[col] = "first"
+                agg_exprs.append(pl.col(col).first())
 
-        grouped_df = df.groupby(phone_col, as_index=False).agg(agg_funcs)
+        grouped_lazy = lazy_df.group_by(phone_col).agg(agg_exprs)
 
         # Calculate correct total amount (sum of unique order totals per phone)
-        # This prevents summing the "Order Total" multiple times for multi-item orders
-        total_col = self.config["order_total_col"]
-        if total_col in df.columns:
+        total_col = self.config.get("order_total_col")
+        if total_col and total_col in df.columns:
             # Get one row per order to capture the Order Total once
-            # We use drop_duplicates on Order ID to ensure we only take the total once per order
-            unique_orders = df[
-                [phone_col, self.config["order_id_col"], total_col]
-            ].drop_duplicates(subset=[self.config["order_id_col"]])
-            # Sum the unique order totals for each phone number
-            phone_totals = unique_orders.groupby(phone_col)[total_col].sum()
-            # Map the calculated totals back to the grouped dataframe
-            grouped_df[total_col] = grouped_df[phone_col].map(phone_totals)
+            totals_lazy = (
+                lazy_df.select([phone_col, order_id_col, total_col])
+                .unique(subset=[order_id_col])
+                .group_by(phone_col)
+                .agg(pl.col(total_col).sum())
+            )
+            # Join the calculated totals back to the grouped dataframe
+            grouped_lazy = grouped_lazy.join(totals_lazy, on=phone_col, how="left")
 
-        return grouped_df
+        # Execute query graph and convert back to Pandas
+        return grouped_lazy.collect().to_pandas()
 
     def create_whatsapp_links(
         self, df: pd.DataFrame, custom_template: str = None

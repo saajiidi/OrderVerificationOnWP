@@ -206,6 +206,14 @@ def inject_base_styles():
             div[data-testid="stMetricLabel"] {{
                 font-size: 0.75rem !important;
             }}
+            /* Force Metrics into a 2x2 Grid on Mobile */
+            div[data-testid="stHorizontalBlock"]:has([data-testid="stMetricValue"]) {
+                flex-wrap: wrap !important;
+            }
+            div[data-testid="stHorizontalBlock"]:has([data-testid="stMetricValue"]) > div[data-testid="column"] {
+                min-width: calc(50% - 1rem) !important;
+                flex: 1 1 calc(50% - 1rem) !important;
+            }
             /* Compact Tabs on Mobile */
             div[data-testid="stTab"] button {{
                 padding: 8px 12px !important;

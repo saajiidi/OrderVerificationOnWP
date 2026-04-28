@@ -1,3 +1,7 @@
+from functools import lru_cache
+
+
+@lru_cache(maxsize=4096)
 def _normalize(name):
     """Normalizes names for matching."""
     if not name: return ""
@@ -7,6 +11,7 @@ def _has_any(keywords, text):
     """Checks if any keyword is in the text."""
     return any(kw in text for kw in keywords)
 
+@lru_cache(maxsize=4096)
 def get_category_for_sales(name) -> str:
     """Categorizes products based on keywords in their names (Unified v16.0 Rules)."""
     name_str = _normalize(name)
@@ -53,6 +58,7 @@ def get_category_for_sales(name) -> str:
 
     return "Others"
 
+@lru_cache(maxsize=4096)
 def get_sub_category_for_sales(name, category) -> str:
     """Extracts sub-category based on Unified v16.0 Hierarchical Rules."""
     name_str = _normalize(name)
@@ -77,7 +83,7 @@ def get_sub_category_for_sales(name, category) -> str:
         if "oxford" in name_str: return "Oxford Shirt"
         if "kaftan" in name_str: return "Kaftan Shirt"
         if "casual" in name_str: return "FS Casual Shirt"
-        if _has_any(["executive", "formal"], name_str): return "Executive Formal Shirt"
+        if _has_any(["executive", "formal"], name_str): return "Formal Shirt"
         return "FS Shirt"
 
     elif category == "HS Shirt":

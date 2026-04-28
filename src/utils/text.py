@@ -1,7 +1,9 @@
 import re
+from functools import lru_cache
 
 
 # --- Address Logic ---
+@lru_cache(maxsize=4096)
 def normalize_city_name(city_name):
     """
     Standardizes city/district names to match Pathao specific formats or correct spelling.
@@ -113,6 +115,7 @@ def normalize_city_name(city_name):
     return c.title()
 
 
+@lru_cache(maxsize=4096)
 def peek_zone_from_address(address: str, current_city: str = "") -> str:
     """
     Scans the address string for common Thanas/Zones to avoid duplication.

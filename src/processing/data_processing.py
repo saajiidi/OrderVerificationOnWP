@@ -1,4 +1,6 @@
 import pandas as pd
+import polars as pl
+import streamlit as st
 from src.processing.column_detection import find_columns, scrub_raw_dataframe
 from src.processing.categorization import get_category_for_sales, get_sub_category_for_sales
 from src.utils.product import get_base_product_name, get_size_from_name
@@ -63,19 +65,35 @@ def prepare_granular_data(df, selected_cols):
             log_system_event("DATA_ISSUE", "Found negative quantities, converted to 0.")
             df.loc[df["Quantity"] < 0, "Quantity"] = 0
 
-        # Optimized Categorization (v14.0)
+        # Optimized Categorization & Extraction (Vectorized Maps)
         unique_names = df["Product Name"].unique()
-        name_cat_map = {name: get_category_for_sales(name) for name in unique_names}
+        total_names = len(unique_names)
+        
+        name_cat_map = {}
+        name_subcat_map = {}
+        name_size_map = {}
+        name_clean_map = {}
+        
+        progress_text = "Analyzing product intelligence..."
+        progress_bar = st.progress(0, text=progress_text) if total_names > 0 else None
+        
+        for i, name in enumerate(unique_names):
+            cat = get_category_for_sales(name)
+            name_cat_map[name] = cat
+            name_subcat_map[name] = get_sub_category_for_sales(name, cat)
+            name_size_map[name] = get_size_from_name(name)
+            name_clean_map[name] = get_base_product_name(name)
+            
+            if progress_bar and (i % max(1, total_names // 20) == 0 or i == total_names - 1):
+                progress_bar.progress((i + 1) / total_names, text=f"{progress_text} ({i + 1}/{total_names})")
+                
+        if progress_bar:
+            progress_bar.empty()
+            
         df["Category"] = df["Product Name"].map(name_cat_map)
-
-        # v11.7 Sub-Category Extraction
-        df["Sub-Category"] = df.apply(lambda r: get_sub_category_for_sales(r["Product Name"], r["Category"]), axis=1)
-
-        # v10.6 Size Extraction
-        df["Size"] = df["Product Name"].apply(get_size_from_name)
-
-        # v11.4 High-Density Filter Intelligence
-        df["Clean_Product"] = df["Product Name"].apply(get_base_product_name)
+        df["Sub-Category"] = df["Product Name"].map(name_subcat_map)
+        df["Size"] = df["Product Name"].map(name_size_map)
+        df["Clean_Product"] = df["Product Name"].map(name_clean_map)
         df["Filter_Identity"] = df["Clean_Product"] + " [" + df["SKU"].astype(str) + "]"
 
         df["Total Amount"] = df["Item Cost"] * df["Quantity"]
@@ -96,22 +114,24 @@ def prepare_granular_data(df, selected_cols):
         return pd.DataFrame(), ""
 
 def aggregate_data(df, selected_cols):
-    """Generates dashboard aggregates from granular standardized data."""
+    """Generates dashboard aggregates from granular standardized data using Polars."""
     try:
-        # v11.7 Grouping by Category + Sub-Category for granular reports
+        lazy_df = pl.from_pandas(df).lazy()
+        
+        # 1. Summary
         group_keys = ["Category"]
         if "Sub-Category" in df.columns:
             group_keys.append("Sub-Category")
 
         summary = (
-            df.groupby(group_keys)
-            .agg({"Quantity": "sum", "Total Amount": "sum"})
-            .reset_index()
+            lazy_df.group_by(group_keys)
+            .agg([
+                pl.col("Quantity").sum().alias("Total Qty"),
+                pl.col("Total Amount").sum().alias("Total Amount")
+            ])
+            .collect()
+            .to_pandas()
         )
-        if "Sub-Category" in summary.columns:
-            summary.columns = ["Category", "Sub-Category", "Total Qty", "Total Amount"]
-        else:
-            summary.columns = ["Category", "Total Qty", "Total Amount"]
 
         total_rev = summary["Total Amount"].sum()
         total_qty = summary["Total Qty"].sum()
@@ -120,22 +140,41 @@ def aggregate_data(df, selected_cols):
         if total_qty > 0:
             summary["Quantity Share (%)"] = (summary["Total Qty"] / total_qty * 100).round(2)
 
+        # 2. Drilldown
+        drill_keys = group_keys + ["Item Cost"]
         drilldown = (
-            df.groupby(["Category", "Sub-Category", "Item Cost"])
-            .agg({"Quantity": "sum", "Total Amount": "sum"})
-            .reset_index()
+            lazy_df.group_by(drill_keys)
+            .agg([
+                pl.col("Quantity").sum().alias("Total Qty"),
+                pl.col("Total Amount").sum().alias("Total Amount")
+            ])
+            .collect()
+            .to_pandas()
         )
-        drilldown.columns = ["Category", "Sub-Category", "Price (TK)", "Total Qty", "Total Amount"]
+        if "Sub-Category" in drilldown.columns:
+            drilldown.columns = ["Category", "Sub-Category", "Price (TK)", "Total Qty", "Total Amount"]
+        else:
+            drilldown.columns = ["Category", "Price (TK)", "Total Qty", "Total Amount"]
+
+        # 3. Top Items
+        top_aggs = [
+            pl.col("Quantity").sum().alias("Total Qty"),
+            pl.col("Total Amount").sum().alias("Total Amount"),
+            pl.col("Category").first().alias("Category")
+        ]
+        if "Sub-Category" in df.columns:
+            top_aggs.append(pl.col("Sub-Category").first().alias("Sub-Category"))
 
         top_items = (
-            df.groupby(["Product Name", "SKU"])
-            .agg({"Quantity": "sum", "Total Amount": "sum", "Category": "first", "Sub-Category": "first"})
-            .reset_index()
+            lazy_df.group_by(["Product Name", "SKU"])
+            .agg(top_aggs)
+            .collect()
+            .to_pandas()
         )
-        top_items.columns = ["Product Name", "SKU", "Total Qty", "Total Amount", "Category", "Sub-Category"]
         top_items = top_items.sort_values("Total Amount", ascending=False)
 
-        basket_metrics = {"avg_basket_qty": 0, "avg_basket_value": 0, "total_orders": 0}
+        # 4. Basket Metrics
+        basket_metrics = {"avg_basket_qty": 0, "avg_basket_value": 0, "total_orders": 0, "attachment_rate": 0}
         group_cols = []
         if "order_id" in selected_cols and selected_cols["order_id"] in df.columns:
             group_cols.append(selected_cols["order_id"])
@@ -148,18 +187,22 @@ def aggregate_data(df, selected_cols):
             group_cols.append("Phone (Billing)")
 
         if group_cols:
-            order_groups = df.groupby(group_cols).agg({
-                "Quantity": "sum",
-                "Total Amount": "sum",
-                "Product Name": "count" # Items per order
-            })
+            order_groups = (
+                lazy_df.group_by(group_cols)
+                .agg([
+                    pl.col("Quantity").sum().alias("Quantity"),
+                    pl.col("Total Amount").sum().alias("Total Amount"),
+                    pl.col("Product Name").count().alias("Item Count")
+                ])
+                .collect()
+                .to_pandas()
+            )
+            
             basket_metrics["avg_basket_qty"] = order_groups["Quantity"].mean()
             basket_metrics["avg_basket_value"] = order_groups["Total Amount"].mean()
             basket_metrics["total_orders"] = len(order_groups)
 
-            # 专业 DA: Attachment Rate Calculation
-            # % of orders with more than 1 unique item
-            multi_item_orders = len(order_groups[order_groups["Product Name"] > 1])
+            multi_item_orders = len(order_groups[order_groups["Item Count"] > 1])
             basket_metrics["attachment_rate"] = (multi_item_orders / len(order_groups) * 100) if len(order_groups) > 0 else 0
 
         return drilldown, summary, top_items, basket_metrics
