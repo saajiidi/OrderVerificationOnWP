@@ -237,6 +237,22 @@ def render_stock_analytics_tab():
             cat_summ.to_excel(wr, sheet_name="Category Summary", index=False)
             filtered_df.to_excel(wr, sheet_name="Granular Stock Details", index=False)
 
+            workbook = wr.book
+            header_format = workbook.add_format({'bold': True, 'bg_color': '#4F81BD', 'font_color': 'white', 'border': 1})
+
+            # Auto-format column widths & apply header styles
+            for sheet_name, df_ref in [
+                ("Stock Metrics", stock_metrics),
+                ("Category Summary", cat_summ),
+                ("Granular Stock Details", filtered_df)
+            ]:
+                if sheet_name in wr.sheets and not df_ref.empty:
+                    ws = wr.sheets[sheet_name]
+                    for idx, col in enumerate(df_ref.columns):
+                        ws.write(0, idx, str(col), header_format)
+                        max_len = max(df_ref[col].astype(str).map(len).max(), len(str(col))) + 2
+                        ws.set_column(idx, idx, min(max_len, 50))
+
         st.download_button(
             label="💾 Download Comprehensive Stock Report (Excel)",
             data=buf_stock.getvalue(),

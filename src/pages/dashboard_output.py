@@ -266,7 +266,8 @@ def render_dashboard_output(
 
     buf_pbi = BytesIO()
     with pd.ExcelWriter(buf_pbi, engine="xlsxwriter") as wr:
-        pd.DataFrame({"Executive Summary": report_text.split('\n')}).to_excel(wr, sheet_name="Executive Briefing", index=False)
+        df_exec = pd.DataFrame({"Executive Summary": report_text.split('\n')})
+        df_exec.to_excel(wr, sheet_name="Executive Briefing", index=False)
         
         # Inject Core Metrics Sheet
         metrics_data = [
@@ -281,7 +282,8 @@ def render_dashboard_output(
                 {"Metric": "Dispatched", "Value": dm.get("dispatched", 0)},
                 {"Metric": "Dispatch Rate (%)", "Value": dm.get("dispatch_rate", 0)}
             ])
-        pd.DataFrame(metrics_data).to_excel(wr, sheet_name="Core Metrics", index=False)
+        df_metrics = pd.DataFrame(metrics_data)
+        df_metrics.to_excel(wr, sheet_name="Core Metrics", index=False)
 
         if summ is not None and not summ.empty:
             summ.to_excel(wr, sheet_name="Category Summary", index=False)
@@ -289,6 +291,24 @@ def render_dashboard_output(
             top.to_excel(wr, sheet_name="Top Products", index=False)
         if active_df is not None and not active_df.empty:
             active_df.to_excel(wr, sheet_name="Raw Shift Data", index=False)
+
+        workbook = wr.book
+        header_format = workbook.add_format({'bold': True, 'bg_color': '#4F81BD', 'font_color': 'white', 'border': 1})
+
+        # Auto-format column widths & apply header styles
+        for sheet_name, df_ref in [
+            ("Executive Briefing", df_exec),
+            ("Core Metrics", df_metrics),
+            ("Category Summary", summ if summ is not None else pd.DataFrame()),
+            ("Top Products", top if top is not None else pd.DataFrame()),
+            ("Raw Shift Data", active_df if active_df is not None else pd.DataFrame())
+        ]:
+            if sheet_name in wr.sheets and not df_ref.empty:
+                ws = wr.sheets[sheet_name]
+                for idx, col in enumerate(df_ref.columns):
+                    ws.write(0, idx, str(col), header_format)
+                    max_len = max(df_ref[col].astype(str).map(len).max(), len(str(col))) + 2
+                    ws.set_column(idx, idx, min(max_len, 80))
 
     exp1, exp2 = st.columns(2)
     with exp1:

@@ -211,9 +211,26 @@ def render_distribution_tab(search_q):
             for loc in active_locations:
                 if loc in df.columns:
                     loc_totals.append({"Metric": f"Total Units ({loc})", "Value": pd.to_numeric(df[loc], errors='coerce').sum()})
-            pd.DataFrame(loc_totals).to_excel(writer, index=False, sheet_name="Distribution Metrics")
+            df_metrics = pd.DataFrame(loc_totals)
+            df_metrics.to_excel(writer, index=False, sheet_name="Distribution Metrics")
             
             df.to_excel(writer, index=False, sheet_name="Granular Distribution")
+
+            workbook = writer.book
+            header_format = workbook.add_format({'bold': True, 'bg_color': '#4F81BD', 'font_color': 'white', 'border': 1})
+
+            # Auto-format column widths & apply header styles
+            for sheet_name, df_ref in [
+                ("Distribution Metrics", df_metrics),
+                ("Granular Distribution", df)
+            ]:
+                if sheet_name in writer.sheets and not df_ref.empty:
+                    ws = writer.sheets[sheet_name]
+                    for idx, col in enumerate(df_ref.columns):
+                        ws.write(0, idx, str(col), header_format)
+                        max_len = max(df_ref[col].astype(str).map(len).max(), len(str(col))) + 2
+                        ws.set_column(idx, idx, min(max_len, 50))
+                        
         st.download_button(
             "Download distribution report",
             output.getvalue(),

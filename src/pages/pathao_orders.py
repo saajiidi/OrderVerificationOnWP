@@ -2,6 +2,7 @@ import pandas as pd
 import streamlit as st
 import os
 import json
+from io import BytesIO
 
 from src.utils.logging import log_error
 from src.state.persistence import clear_state_keys, save_state
@@ -189,9 +190,22 @@ def render_pathao_tab():
 
         c1, c2 = st.columns(2)
         with c1:
+            buf_pathao = BytesIO()
+            with pd.ExcelWriter(buf_pathao, engine="xlsxwriter") as writer:
+                result_df.to_excel(writer, sheet_name="Pathao", index=False)
+                workbook = writer.book
+                header_format = workbook.add_format({'bold': True, 'bg_color': '#4F81BD', 'font_color': 'white', 'border': 1})
+                
+                ws = writer.sheets["Pathao"]
+                for idx, col in enumerate(result_df.columns):
+                    ws.write(0, idx, str(col), header_format)
+                    # Auto-format column widths
+                    max_len = max(result_df[col].astype(str).map(len).max(), len(str(col))) + 2
+                    ws.set_column(idx, idx, min(max_len, 50))
+
             st.download_button(
                 "Download repaired file",
-                to_excel_bytes(result_df, sheet_name="Pathao"),
+                buf_pathao.getvalue(),
                 "Pathao_Final.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 type="primary",
@@ -224,9 +238,22 @@ def render_pathao_tab():
 
             vlink_df = st.session_state.get("pathao_vlink_df")
             if vlink_df is not None:
+                buf_vlink = BytesIO()
+                with pd.ExcelWriter(buf_vlink, engine="xlsxwriter") as writer:
+                    vlink_df.to_excel(writer, sheet_name="Verification", index=False)
+                    workbook = writer.book
+                    header_format = workbook.add_format({'bold': True, 'bg_color': '#4F81BD', 'font_color': 'white', 'border': 1})
+                    
+                    ws = writer.sheets["Verification"]
+                    for idx, col in enumerate(vlink_df.columns):
+                        ws.write(0, idx, str(col), header_format)
+                        # Auto-format column widths
+                        max_len = max(vlink_df[col].astype(str).map(len).max(), len(str(col))) + 2
+                        ws.set_column(idx, idx, min(max_len, 80))
+
                 st.download_button(
                     "Download Verification Report",
-                    to_excel_bytes(vlink_df, sheet_name="Verification"),
+                    buf_vlink.getvalue(),
                     "Deliveries_Verification.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     use_container_width=True,
