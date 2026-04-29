@@ -207,7 +207,13 @@ def render_distribution_tab(search_q):
 
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
-            df.to_excel(writer, index=False, sheet_name="Distribution")
+            loc_totals = [{"Metric": "Total SKUs Analyzed", "Value": len(df)}]
+            for loc in active_locations:
+                if loc in df.columns:
+                    loc_totals.append({"Metric": f"Total Units ({loc})", "Value": pd.to_numeric(df[loc], errors='coerce').sum()})
+            pd.DataFrame(loc_totals).to_excel(writer, index=False, sheet_name="Distribution Metrics")
+            
+            df.to_excel(writer, index=False, sheet_name="Granular Distribution")
         st.download_button(
             "Download distribution report",
             output.getvalue(),

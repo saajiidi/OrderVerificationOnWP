@@ -267,6 +267,22 @@ def render_dashboard_output(
     buf_pbi = BytesIO()
     with pd.ExcelWriter(buf_pbi, engine="xlsxwriter") as wr:
         pd.DataFrame({"Executive Summary": report_text.split('\n')}).to_excel(wr, sheet_name="Executive Briefing", index=False)
+        
+        # Inject Core Metrics Sheet
+        metrics_data = [
+            {"Metric": "Total Revenue (TK)", "Value": today_rev},
+            {"Metric": "Total Items Sold", "Value": today_qty},
+            {"Metric": "Total Orders", "Value": today_orders},
+            {"Metric": "Average Order Value (TK)", "Value": today_aov},
+        ]
+        if dm:
+            metrics_data.extend([
+                {"Metric": "Pending Dispatch", "Value": dm.get("pending", 0)},
+                {"Metric": "Dispatched", "Value": dm.get("dispatched", 0)},
+                {"Metric": "Dispatch Rate (%)", "Value": dm.get("dispatch_rate", 0)}
+            ])
+        pd.DataFrame(metrics_data).to_excel(wr, sheet_name="Core Metrics", index=False)
+
         if summ is not None and not summ.empty:
             summ.to_excel(wr, sheet_name="Category Summary", index=False)
         if top is not None and not top.empty:

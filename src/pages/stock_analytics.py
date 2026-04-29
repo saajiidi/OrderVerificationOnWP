@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from datetime import datetime
+from io import BytesIO
 from itertools import combinations
 from collections import Counter
 
@@ -223,6 +224,26 @@ def render_stock_analytics_tab():
             ]
 
         st.dataframe(filtered_df, use_container_width=True, hide_index=True)
+
+        st.divider()
+        buf_stock = BytesIO()
+        with pd.ExcelWriter(buf_stock, engine="xlsxwriter") as wr:
+            stock_metrics = pd.DataFrame([
+                {"Metric": "Total Warehouse Units", "Value": total_qty},
+                {"Metric": "Low Stock SKUs (<10)", "Value": low_stock},
+                {"Metric": "Total Inventory Value (TK)", "Value": val_stock}
+            ])
+            stock_metrics.to_excel(wr, sheet_name="Stock Metrics", index=False)
+            cat_summ.to_excel(wr, sheet_name="Category Summary", index=False)
+            filtered_df.to_excel(wr, sheet_name="Granular Stock Details", index=False)
+
+        st.download_button(
+            label="💾 Download Comprehensive Stock Report (Excel)",
+            data=buf_stock.getvalue(),
+            file_name=f"DEEN_Stock_Report_{datetime.now().strftime('%Y%m%d')}.xlsx",
+            type="primary",
+            use_container_width=True
+        )
 
     safe_render(_render_stock_body, fallback_msg="Stock analytics rendering failed.")
     st.caption(f"Database last refreshed: {st.session_state.get('stock_sync_time', datetime.now()).strftime('%I:%M %p')}")
