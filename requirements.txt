@@ -1,6 +1,6 @@
 streamlit
 pandas
-polars
+polars[rtcompat]
 numpy
 plotly
 requests

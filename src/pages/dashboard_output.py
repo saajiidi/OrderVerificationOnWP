@@ -253,26 +253,7 @@ def render_dashboard_output(
     render_category_charts(summ, display_col, color_map)
     st.divider()
 
-    # v15.0: Calculate comparison top items for velocity indicators
-    prev_top = None
-    if st.session_state.get("wc_sync_mode") == "Operational Cycle":
-        nav_mode = st.session_state.get("wc_nav_mode", "Today")
-        comp_df = None
-        if nav_mode == "Today":
-            comp_df = st.session_state.get("wc_prev_df")
-        elif nav_mode == "Prev":
-            # Comparison for yesterday is today (passive)
-            comp_df = st.session_state.get("wc_curr_df")
-        
-        if comp_df is not None and not comp_df.empty:
-            from src.processing.data_processing import aggregate_data
-            _, _, prev_top, _ = aggregate_data(comp_df, wc_raw_mapping)
-
-    from src.pages.dashboard_charts import render_spotlight
-    render_spotlight(top, color_map, prev_top=prev_top)
-
     # ── Executive Briefing & Power BI Export ──
-    st.divider()
     st.subheader("📱 Executive Briefing & Analytics Export")
     with st.expander("Generate Power BI Report", expanded=False):
         today_rev = summ['Total Amount'].sum() if summ is not None else 0
@@ -302,80 +283,25 @@ def render_dashboard_output(
         st.download_button(
             label="💾 Download Multi-Sheet Excel",
             data=buf_pbi.getvalue(),
-            file_name=f"DEEN_OPS_Daily_Report_{datetime.now(timezone(timedelta(hours=6))).strftime('%Y-%m-%d')}.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            type="primary",
-            use_container_width=True
-        )
-
-    # ── Data tables ──
-    st.subheader("Deep Dive Data")
-    tabs = st.tabs(["Summary", "Rankings", "Drilldown"])
-    with tabs[0]:
-        st.dataframe(summ.sort_values("Total Amount", ascending=False), use_container_width=True, hide_index=True)
-    with tabs[1]:
-        st.dataframe(top.sort_values("Total Amount", ascending=False).head(20), use_container_width=True, hide_index=True)
-    with tabs[2]:
-        st.dataframe(drill.sort_values("Total Amount", ascending=False), use_container_width=True, hide_index=True)
-
-    buf = BytesIO()
-    with pd.ExcelWriter(buf, engine="xlsxwriter") as wr:
-        summ.to_excel(wr, sheet_name="Summary", index=False)
-        top.to_excel(wr, sheet_name="Rankings", index=False)
-        drill.to_excel(wr, sheet_name="Details", index=False)
-
-    base_name = os.path.splitext(os.path.basename(source_name))[0]
-    st.download_button("Export filtered Report", data=buf.getvalue(), file_name=f"Report_{base_name}.xlsx")
-
-    # ── Intelligence sections ──
-    st.divider()
-
-    def _render_basket_intelligence():
-        st.subheader("\U0001f916 Intelligence: Market Basket & Association Rules")
-        with st.expander("Explore Association Rules (Support / Confidence / Lift)", expanded=True):
-            st.info("\U0001f4a1 **Machine Learning Insight**: Association Rule Learning finds 'If-Then' rules in your data (e.g., 'If they buy Hoodies, they buy Pants 80% of the time').")
-            if active_df is not None and not active_df.empty:
-                order_col = "Order ID" if "Order ID" in active_df.columns else "Order Number"
-                if order_col in active_df.columns:
-                    basket_df = active_df.groupby(order_col)["Clean_Product"].apply(list).reset_index()
-                    basket_df = basket_df[basket_df["Clean_Product"].apply(len) > 1]
-                    if not basket_df.empty:
-                        all_combinations = []
-                        for products in basket_df["Clean_Product"]:
-                            all_combinations.extend(list(combinations(set(products), 2)))
-                        if all_combinations:
-                            pairs_df = pd.DataFrame(all_combinations, columns=["Product A", "Product B"])
-                            combo_counts = pairs_df.value_counts().reset_index(name="Frequency")
-                            combo_counts = combo_counts.sort_values("Frequency", ascending=False)
-                            total_orders_ref = basket.get("total_orders", 1) if basket else (basket_df[order_col].nunique() if not basket_df.empty else 1)
-                            combo_counts["Support (%)"] = (combo_counts["Frequency"] / total_orders_ref * 100).round(2)
-                            product_freq = {}
-                            for products in basket_df["Clean_Product"]:
-                                for p in set(products):
-                                    product_freq[p] = product_freq.get(p, 0) + 1
-                            total_baskets = len(basket_df)
-                            combo_counts["Confidence (%)"] = combo_counts.apply(
-                                lambda r: round(r["Frequency"] / max(product_freq.get(r["Product A"], 1), 1) * 100, 2), axis=1
-                            )
-                            combo_counts["Lift Index"] = combo_counts.apply(
-                                lambda r: round(
-                                    (r["Frequency"] / total_baskets) /
-                                    max((product_freq.get(r["Product A"], 1) / total_baskets) * (product_freq.get(r["Product B"], 1) / total_baskets), 0.001),
-                                    2
-                                ), axis=1
-                            )
-                            st.write("\U0001f527 **Top Bundle Affinities**: Optimized for Cross-Sell & Up-Sell Strategy")
-                            st.dataframe(combo_counts.head(10), use_container_width=True, hide_index=True)
-                            st.caption("Attachment Rate: The percentage of orders with complementary items.")
-                    else:
-                        st.write("No significant bundle behaviors identified in this range.")
-
-    safe_render(_render_basket_intelligence, fallback_msg="Market Basket Intelligence section unavailable.")
-
-    if active_df is not None and "Date" in active_df.columns:
-        safe_render(
-            lambda: render_performance_analysis(active_df),
-            fallback_msg="Performance analysis section unavailable.",
+            file_name="Executive_Briefing.xlsx"
         )
 
     st.divider()
+
+    # v15.0: Calculate comparison top items for velocity indicators
+    prev_top = None
+    if st.session_state.get("wc_sync_mode") == "Operational Cycle":
+        nav_mode = st.session_state.get("wc_nav_mode", "Today")
+        comp_df = None
+        if nav_mode == "Today":
+            comp_df = st.session_state.get("wc_prev_df")
+        elif nav_mode == "Prev":
+            # Comparison for yesterday is today (passive)
+            comp_df = st.session_state.get("wc_curr_df")
+        
+        if comp_df is not None and not comp_df.empty:
+            from src.processing.data_processing import aggregate_data
+            _, _, prev_top, _ = aggregate_data(comp_df, wc_raw_mapping)
+
+    from src.pages.dashboard_charts import render_spotlight
+    render_spotlight(top, color_map, prev_top=prev_top)
