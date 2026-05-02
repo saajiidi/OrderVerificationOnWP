@@ -23,58 +23,120 @@ def render_category_charts(
         color_map: Mapping of category values to hex colours.
     """
     summ_display = summ.copy()
-    summ_display["Display_Label"] = summ_display[display_col].apply(truncate_label)
+    summ_display["Display_Label"] = summ_display[display_col].apply(lambda x: truncate_label(x, max_len=15))
 
     v1, v2 = st.columns(2)
     with v1:
+        pie_display = summ_display.copy()
+        pie_display["Pie_Name"] = pie_display[display_col]
+        
+        if display_col == "Sub-Category" and len(pie_display) > 12 and "Category" in pie_display.columns:
+            jeans_mask = pie_display["Category"] == "Jeans"
+            pie_display.loc[jeans_mask, "Pie_Name"] = "Jeans"
+            
+        name_totals = pie_display.groupby("Pie_Name")["Total Amount"].sum().sort_values(ascending=False)
+        total_amt = name_totals.sum()
+        
+        top_p = name_totals[name_totals >= 0.03 * total_amt].index.tolist()
+        
+        max_pie = 12
+        if len(top_p) > max_pie - 1:
+            top_p = top_p[:max_pie - 1]
+            
+        if len(top_p) < len(name_totals):
+            others_mask = ~pie_display["Pie_Name"].isin(top_p)
+            
+            others_row = pd.DataFrame([{
+                "Pie_Name": "Others",
+                display_col: "Others",
+                "Total Amount": pie_display.loc[others_mask, "Total Amount"].sum(),
+                "Total Qty": pie_display.loc[others_mask, "Total Qty"].sum(),
+            }])
+            pie_display = pd.concat([pie_display[~others_mask], others_row], ignore_index=True)
+            
+            if "Others" not in color_map:
+                color_map = color_map.copy()
+                color_map["Others"] = "#94a3b8"
+                
+            name_totals = pie_display.groupby("Pie_Name")["Total Amount"].sum().sort_values(ascending=False)
+
+        pie_display["_Name_Total"] = pie_display["Pie_Name"].map(name_totals)
+        pie_display = pie_display.sort_values(["_Name_Total", "Total Amount"], ascending=[False, False])
+        pie_display["Display_Label"] = pie_display[display_col].apply(lambda x: truncate_label(x, max_len=15))
+        pie_display["Unique_ID"] = pie_display.index.astype(str)
+
         fig_pie = px.pie(
-            summ_display,
+            pie_display,
             values="Total Amount",
-            names="Display_Label",
+            names="Unique_ID",
             color=display_col,
             hole=0.6,
             title="Revenue Share (TK)",
             color_discrete_map=color_map,
-            hover_data=["Total Qty"],
+            hover_data=["Total Qty", "Display_Label", "Pie_Name"],
         )
         fig_pie.update_layout(margin=dict(t=50, b=20, l=10, r=10), showlegend=False)
         fig_pie.update_traces(
+            sort=False,
             textposition="inside",
-            textinfo="label+percent",
+            texttemplate="%{customdata[1]}<br>%{percent:.0%}",
             textfont_size=11,
-            hovertemplate="<b>%{label}</b><br>Revenue: %{value:,.0f} TK (%{percent})<br>Volume: %{customdata[0]:,.0f} Units",
+            hovertemplate="<b>%{customdata[2]}</b><br>Revenue: %{value:,.0f} TK (%{percent:.0%})<br>Volume: %{customdata[0]:,.0f} Units",
         )
         st.plotly_chart(fig_pie, use_container_width=True, config={"displayModeBar": False})
 
     with v2:
         bar_axis = "Sub-Category" if "Sub-Category" in summ.columns else display_col
-        bar_display = summ_display.sort_values("Total Qty", ascending=False).copy()
-        bar_display["Bar_Label"] = bar_display[bar_axis].apply(truncate_label)
-        sorted_bars = bar_display["Bar_Label"].tolist()
+        bar_display = summ_display.copy()
+        
+        bar_display["Bar_X"] = bar_display[bar_axis]
+        
+        if display_col == "Sub-Category" and len(bar_display) > 12 and "Category" in bar_display.columns:
+            jeans_mask = bar_display["Category"] == "Jeans"
+            bar_display.loc[jeans_mask, "Bar_X"] = "Jeans"
+            
+        x_totals = bar_display.groupby("Bar_X")["Total Qty"].sum().sort_values(ascending=False)
+        
+        max_bars = 12
+        if len(x_totals) > max_bars:
+            top_x = x_totals.index[:max_bars - 1].tolist()
+            bar_display.loc[~bar_display["Bar_X"].isin(top_x), "Bar_X"] = "Others"
+            
+            x_totals = bar_display.groupby("Bar_X")["Total Qty"].sum().sort_values(ascending=False)
+            sorted_bars = [x for x in x_totals.index if x != "Others"] + ["Others"]
+        else:
+            sorted_bars = x_totals.index.tolist()
+        
+        bar_display = bar_display.sort_values("Total Qty", ascending=False)
+        
+        unique_bars = pd.DataFrame({"Bar_X": sorted_bars})
+        unique_bars["Bar_Label"] = unique_bars["Bar_X"].apply(lambda x: truncate_label(x, max_len=15))
+        
         fig_bar = px.bar(
             bar_display,
-            x="Bar_Label",
+            x="Bar_X",
             y="Total Qty",
             color=display_col,
             title="Volume by Category",
             text_auto=".0f",
             color_discrete_map=color_map,
-            category_orders={"Bar_Label": sorted_bars},
+            category_orders={"Bar_X": sorted_bars},
             hover_data={
-                "Bar_Label": False,
+                "Bar_X": False,
                 display_col: True,
                 "Total Qty": ":,.0f",
                 "Total Amount": ":,.0f",
             },
         )
         fig_bar.update_layout(
-            margin=dict(t=50, b=20, l=10, r=10),
+            margin=dict(t=50, b=20, l=10, r=20),
             xaxis_title="",
             yaxis_title="Quantity Sold",
             showlegend=False,
         )
-        fig_bar.update_xaxes(automargin=True)
+        fig_bar.update_xaxes(automargin=True, tickmode="array", tickvals=unique_bars["Bar_X"], ticktext=unique_bars["Bar_Label"], tickangle=-45)
         fig_bar.update_yaxes(automargin=True)
+        fig_bar.update_traces(cliponaxis=False)
         st.plotly_chart(fig_bar, use_container_width=True, config={"displayModeBar": False})
 
 
@@ -150,7 +212,8 @@ def render_spotlight(
     
     def get_velocity_and_stock_label(row):
         has_sku = "SKU" in row and pd.notna(row["SKU"])
-        label = f"{row['Product Name']} [{row['SKU']}]" if has_sku else f"{row['Product Name']}"
+        product_name = truncate_label(row['Product Name'], max_len=15)
+        label = f"{product_name} [{row['SKU']}]" if has_sku else f"{product_name}"
         
         # 🟢 Velocity Logic
         if prev_top is not None and not prev_top.empty:

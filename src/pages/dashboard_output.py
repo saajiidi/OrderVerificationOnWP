@@ -23,9 +23,9 @@ def render_performance_analysis(df: pd.DataFrame):
         return
 
     st.divider()
-    c_hdr, c_window, c_toggle = st.columns([2, 1, 1])
-    with c_hdr:
-        st.subheader("\U0001f4c8 Time-Series Performance Analysis")
+    st.subheader("\U0001f4c8 Time-Series Performance Analysis")
+    
+    c_window, c_toggle = st.columns(2)
     with c_window:
         if "perf_zoom_window" not in st.session_state:
             st.session_state.perf_zoom_window = "14 Days"
@@ -371,9 +371,14 @@ def render_dashboard_output(
                 pass
 
     if is_operational:
-        with st.expander("📋 View/Copy Executive Briefing Text", expanded=False):
-            st.markdown("**Copy for Quick Briefing:**")
-            st.code(report_text, language="markdown")
+        with st.expander("📋 View/Copy Executive Briefing", expanded=False):
+            from src.components.clipboard import render_copy_button
+            c1, c2 = st.columns([3, 1])
+            with c1:
+                st.markdown("##### 🤖 AI Executive Narrative")
+            with c2:
+                render_copy_button(report_text, label="📋 Copy Briefing")
+            st.info(report_text)
 
     st.divider()
 

@@ -339,7 +339,14 @@ def inject_base_styles():
         .delta-down {{ background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }}
         
         @media (max-width: 1200px) {{ .metric-container {{ grid-template-columns: repeat(2, 1fr); }} }}
-        @media (max-width: 600px) {{ .metric-container {{ grid-template-columns: 1fr; }} .metric-value {{ font-size: 1.4rem; }} }}
+        @media (max-width: 600px) {{ 
+            .metric-container {{ grid-template-columns: repeat(2, 1fr); gap: 10px; }} 
+            .metric-card {{ padding: 12px; }}
+            .metric-value {{ font-size: 1.2rem; }} 
+            .metric-label {{ font-size: 0.65rem; white-space: normal; }}
+            .metric-icon {{ width: 36px; height: 36px; font-size: 18px; margin-left: 6px; }}
+            .metric-delta {{ font-size: 0.6rem; padding: 2px 6px; margin-top: 6px; }}
+        }}
 
         /* --- TABLES & CHARTS GLOW EFFECT --- */
         div[data-testid="stPlotlyChart"],
@@ -401,6 +408,14 @@ def inject_base_styles():
             .banner-controls-shelf {{ margin-top: 10px; margin-bottom: 25px; margin-left: 0; justify-content: center; }}
         }}
         
+        /* --- RESPONSIVE WIDGET STACKING (Tablet to Mobile Flow) --- */
+        @media (max-width: 800px) {{
+            div[data-testid="column"] {{
+                min-width: 100% !important;
+                width: 100% !important;
+            }}
+        }}
+
         @media (max-width: 600px) {{
             .footer-inner {{ display: flex; flex-direction: column; align-items: center; gap: 8px; }}
             .footer-separator {{ display: none; }}
