@@ -27,14 +27,39 @@ def render_live_tab():
     # Force Operational Cycle in live dashboard
     st.session_state["wc_sync_mode"] = "Operational Cycle"
 
+    st.markdown("### 🎛️ Shift View Filter")
+    order_view_mode = st.radio(
+        "Filter orders in current slot:",
+        ["All Orders", "Shipped / Completed Only"],
+        horizontal=True,
+        key="live_order_filter"
+    )
+
     # Standardize autorefresh for Live Dashboard
 
     try:
-        df_live, source_name, modified_at = load_live_source()
+        try:
+            df_live, source_name, modified_at = load_live_source()
+        except Exception as api_err:
+            log_system_event("LIVE_API_ERROR", f"Live sync failed, attempting fallback: {api_err}")
+            from src.utils.snapshots import load_sales_snapshot
+            df_snap = load_sales_snapshot()
+            
+            if df_snap is not None and not df_snap.empty:
+                st.error("📡 **WooCommerce API Unreachable**")
+                st.warning("⚠️ **Offline Mode:** Operating on the last locally saved snapshot. Data will not reflect live changes.")
+                df_live = df_snap
+                source_name = "LOCAL_SNAPSHOT_FALLBACK"
+                modified_at = "OFFLINE_MODE"
+                st.session_state.wc_nav_mode = "Offline"
+            else:
+                raise api_err # Bubble up if no snapshot exists
 
         # Handle v9.5 Multi-Mode Shift Navigation
         nav_mode = st.session_state.get("wc_nav_mode", "Today")
-        if nav_mode == "Prev" and "wc_prev_df" in st.session_state:
+        if nav_mode == "Offline":
+            pass # Bypass slot navigation, just use the fallback snapshot df
+        elif nav_mode == "Prev" and "wc_prev_df" in st.session_state:
             df_live = st.session_state.wc_prev_df
             p_s, p_e = st.session_state.get("wc_prev_slot", (datetime.now(), datetime.now()))
             source_name = f"PREV_SLOT_{p_s.strftime('%a_%d%b')}"
@@ -51,9 +76,19 @@ def render_live_tab():
         if df_live is None or df_live.empty:
             st.warning(f"No data found for the {nav_mode} slot.")
             # Fallback to Today if we were in another mode
-            if nav_mode != "Today":
+            if nav_mode != "Today" and nav_mode != "Offline":
                 st.session_state.wc_nav_mode = "Today"
                 st.rerun()
+
+        # Apply Shipped/Completed Filter
+        if order_view_mode == "Shipped / Completed Only":
+            if "Status" in df_live.columns:
+                df_live = df_live[df_live["Status"].astype(str).str.lower().isin(["shipped", "completed"])]
+                if df_live.empty:
+                    st.info(f"📦 No shipped or completed orders found in the {nav_mode} slot.")
+                    return
+            else:
+                st.warning("⚠️ 'Status' column not found in data. Cannot apply filter.")
 
         try:
             auto_cols = find_columns(df_live)

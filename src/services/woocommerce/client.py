@@ -293,7 +293,15 @@ def load_live_source():
         # 3. Update Sync Metadata
         st.session_state.live_sync_time = datetime.now()
 
-        # 4. Return tuple for legacy unpacking
+        # 4. Silent Autosave for Offline Mode Fallback
+        try:
+            from src.utils.snapshots import save_sales_snapshot
+            if not results["df_to_return"].empty:
+                save_sales_snapshot(results["df_to_return"])
+        except Exception:
+            pass
+
+        # 5. Return tuple for legacy unpacking
         return results["df_to_return"], results["sync_desc"], results["modified_at"]
 
     # Handle legacy return if any (for safety)
