@@ -217,8 +217,12 @@ def render_dashboard_output(
  
              # Apply Live Dashboard order filter to metrics if applicable
              order_view_mode = st.session_state.get("live_order_filter", "All Orders")
+             status_col_m = "Order Status" if "Order Status" in m_df.columns else "Status" if "Status" in m_df.columns else None
+             status_col_c = None
+             if c_df is not None:
+                 status_col_c = "Order Status" if "Order Status" in c_df.columns else "Status" if "Status" in c_df.columns else None
+
              if order_view_mode == "Shipped Only":
-                 status_col_m = "Order Status" if "Order Status" in m_df.columns else "Status" if "Status" in m_df.columns else None
                  if status_col_m:
                      # Modification-aware operational filtering for "Shift Sales"
                      m_slot_key = "wc_curr_slot" if nav_mode == "Today" else "wc_prev_slot" if nav_mode == "Prev" else None
