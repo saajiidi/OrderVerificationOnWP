@@ -23,8 +23,6 @@ def render_live_tab():
     st.session_state.manual_tab_active = False # v11.3 Flag Reset
 
     # Use global imports
-    tz_bd = timezone(timedelta(hours=6))
-
     # Force Operational Cycle in live dashboard
     st.session_state["wc_sync_mode"] = "Operational Cycle"
 
@@ -76,11 +74,11 @@ def render_live_tab():
                 st.session_state.wc_nav_mode = "Today"
                 st.rerun()
 
-        # Apply Shipped Filter
-        if order_view_mode == "Shipped Only":
-            status_col = "Order Status" if "Order Status" in df_live.columns else "Status" if "Status" in df_live.columns else None
-            
-            if status_col:
+        # Apply Workspace Sub-Filters
+        status_col = "Order Status" if "Order Status" in df_live.columns else "Status" if "Status" in df_live.columns else None
+        
+        if status_col:
+            if order_view_mode == "Shipped Only":
                 # Filter by modification date within the slot boundaries
                 slot_key = "wc_curr_slot" if nav_mode == "Today" else "wc_prev_slot" if nav_mode == "Prev" else None
                 slot = st.session_state.get(slot_key)
@@ -98,8 +96,13 @@ def render_live_tab():
                 if df_live.empty:
                     st.info(f"📦 No shipped orders found in the {nav_mode} slot.")
                     return
-            else:
-                st.warning("⚠️ 'Order Status' column not found in data. Cannot apply filter.")
+            elif order_view_mode == "Processing Only":
+                df_live = df_live[df_live[status_col].astype(str).str.lower() == "processing"]
+                if df_live.empty:
+                    st.info(f"📋 No processing orders found in the {nav_mode} slot.")
+                    return
+        elif order_view_mode != "All Orders":
+            st.warning("⚠️ 'Order Status' column not found in data. Cannot apply filter.")
 
         try:
             auto_cols = find_columns(df_live)

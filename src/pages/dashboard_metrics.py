@@ -131,7 +131,7 @@ def render_operational_metrics(
     # v16.0 Efficiency Tag
     lead_time_html = ""
     if nav_mode != "Backlog" and avg_proc_time > 0:
-        color = "#10b981" if avg_proc_time < 6 else "#f59e0b" if avg_proc_time < 24 else "#ef4444" # avg_proc_time is already a float or 0
+        color = "#10b981" if avg_proc_time < 6 else "#f59e0b" if avg_proc_time < 24 else "#ef4444"
         lead_time_html = f'<div class="metric-delta" style="background: rgba(16, 185, 129, 0.1); color: {color};">Avg Lead: {avg_proc_time:.1f}h</div>'
 
     v_fc = f"TK {forecast_val:,.0f}"

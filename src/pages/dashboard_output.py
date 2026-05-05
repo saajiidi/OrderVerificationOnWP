@@ -234,9 +234,7 @@ def render_dashboard_output(
                      else:
                          m_df = m_df[m_df[status_col_m].astype(str).str.lower().isin(SHIPPED_STATUSES)]
                      
-                 if c_df is not None:
-                     status_col_c = "Order Status" if "Order Status" in c_df.columns else "Status" if "Status" in c_df.columns else None
-                     if status_col_c:
+                 if c_df is not None and status_col_c:
                          # Comparison slot boundaries
                          c_slot_key = "wc_prev_slot" if nav_mode == "Today" else "wc_curr_slot" if nav_mode == "Prev" else None
                          c_slot = st.session_state.get(c_slot_key)
@@ -249,6 +247,11 @@ def render_dashboard_output(
                              ]
                          else:
                              c_df = c_df[c_df[status_col_c].astype(str).str.lower().isin(SHIPPED_STATUSES)]
+             elif order_view_mode == "Processing Only":
+                 if status_col_m:
+                     m_df = m_df[m_df[status_col_m].astype(str).str.lower() == "processing"]
+                 if c_df is not None and status_col_c:
+                     c_df = c_df[c_df[status_col_c].astype(str).str.lower() == "processing"]
 
              # v16.0: Predictive & Lead Time Intelligence
              forecast_val = 0
@@ -271,7 +274,7 @@ def render_dashboard_output(
                  ship_conf_df["dt_created"] = pd.to_datetime(ship_conf_df[wc_raw_mapping["date"]], errors="coerce").dt.tz_localize(None)
                  # Calculate hours
                  ship_conf_df["lead_h"] = (ship_conf_df["mod_dt_parsed"] - ship_conf_df["dt_created"]).dt.total_seconds() / 3600
-                 # Filter out negative or extreme outliers (e.g. status changes before creation which is an API quirk) and ensure non-NaN
+                 # Filter out negative or extreme outliers (e.g. status changes before creation which is an API quirk)
                  valid_leads = ship_conf_df[(ship_conf_df["lead_h"] >= 0) & (ship_conf_df["lead_h"] < 168)]["lead_h"]
                  avg_proc_time = valid_leads.mean() if not valid_leads.empty else 0.0
                  if pd.isna(avg_proc_time): avg_proc_time = 0.0
