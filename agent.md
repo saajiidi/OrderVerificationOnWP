@@ -98,8 +98,8 @@ The operational dashboard has behavior that should not drift accidentally.
 
 Current KPI behavior:
 - `Gross Items` must keep its previous-slot delta when comparison data exists.
-- `Avg Lead` is shown on the `NEXT DAY FORECAST` card, not on `Gross Items`.
-- `NEXT DAY FORECAST` remains in the fifth slot of the KPI strip.
+- The operational KPI strip currently shows 4 cards: `Gross Items`, `Revenue`, `Orders`, and `Avg Basket` / `Oldest Order`.
+- `NEXT DAY FORECAST` is not currently shown as a KPI card.
 
 If you touch metric-card ordering or badge placement, verify that deltas still appear on the intended cards.
 
@@ -168,7 +168,7 @@ If you extend parsing, keep it backward compatible and route all output through 
 
 ## 9. Recent Stability Improvements
 - Fixed the operational dashboard crash caused by unbound `status_col_m` / `status_col_c` in `dashboard_output.py`.
-- Restored `Gross Items` comparison delta visibility by moving `Avg Lead` off that card.
+- Restored `Gross Items` comparison delta visibility and removed the `NEXT DAY FORECAST` KPI card.
 - Added explicit Pathao source selection between WooCommerce processing data and upload/URL input.
 - Added the `Item Description Helper` tab to the Pathao page.
 - Centralized Pathao item-description normalization so manual and grouped-order flows use the same formatter.

@@ -85,7 +85,6 @@ def render_operational_metrics(
     v_rev = f"TK {m_rev:,.0f}"
     v_ord = f"{m_ord:,.0f}"
     v_bv = f"TK {m_bv:,.0f}"
-    v_fc = f"TK {forecast_val:,.0f}"
 
     html_dq = format_delta(dq_str)
     html_dr = format_delta(dr_str)
@@ -124,29 +123,6 @@ def render_operational_metrics(
     l2 = "Backlog Rev" if nav_mode == "Backlog" else "Revenue"
     l3 = "Backlog Orders" if nav_mode == "Backlog" else "Orders"
 
-    lead_time_html = ""
-    if nav_mode != "Backlog" and avg_proc_time > 0:
-        color = "#10b981" if avg_proc_time < 6 else "#f59e0b" if avg_proc_time < 24 else "#ef4444"
-        lead_time_html = (
-            '<div class="metric-delta" '
-            f'style="background: rgba(16, 185, 129, 0.1); color: {color};">'
-            f"Avg Lead: {avg_proc_time:.1f}h</div>"
-        )
-
-    forecast_detail_html = (
-        lead_time_html
-        if lead_time_html
-        else '<div class="metric-delta" style="color: #a7f3d0;">ML PREDICTION</div>'
-    )
-    forecast_card = (
-        '<div class="metric-card" '
-        'style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, '
-        'rgba(168, 85, 247, 0.1) 100%); border: 1px solid rgba(99, 102, 241, 0.2);">'
-        '<div class="metric-content"><div class="metric-label">NEXT DAY FORECAST</div>'
-        f'<div class="metric-value" style="color: #818cf8;">{v_fc}</div>'
-        f'{forecast_detail_html}</div>'
-        '<div class="metric-icon">🔮</div></div>'
-    )
     gross_items_card = (
         f'<div class="metric-card"><div class="metric-content"><div class="metric-label">{l1}</div>'
         f'<div class="metric-value">{v_qty}</div>{html_dq}</div>'
@@ -154,7 +130,7 @@ def render_operational_metrics(
     )
 
     card_html = (
-        '<div class="metric-container" style="grid-template-columns: repeat(5, 1fr);">'
+        '<div class="metric-container" style="grid-template-columns: repeat(4, 1fr);">'
         f"{gross_items_card}"
         f'<div class="metric-card"><div class="metric-content"><div class="metric-label">{l2}</div>'
         f'<div class="metric-value">{v_rev}</div>{html_dr}</div><div class="metric-icon">৳</div></div>'
@@ -163,7 +139,6 @@ def render_operational_metrics(
         f'<div class="metric-card"><div class="metric-content"><div class="metric-label">{extra_metric_label}</div>'
         f'<div class="metric-value">{extra_metric_value}</div>{extra_metric_delta}</div>'
         f'<div class="metric-icon">{extra_metric_icon}</div></div>'
-        f"{forecast_card}"
         "</div>"
     )
 
