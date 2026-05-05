@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 from io import BytesIO
 
+from src.config.constants import SHIPPED_STATUSES
 from src.components.widgets import render_action_bar, render_reset_confirm, section_card
 from src.processing.column_detection import find_columns
 from src.processing.data_processing import prepare_granular_data, aggregate_data
@@ -125,8 +126,7 @@ def render_manual_tab():
             if only_shipped:
                 status_col = "Order Status" if "Order Status" in df.columns else "Status" if "Status" in df.columns else None
                 if status_col:
-                    df = df[df[status_col].astype(str).str.lower().isin(["shipped"])]
-                    
+                    df = df[df[status_col].astype(str).str.lower().isin(SHIPPED_STATUSES)]
             st.info(f"Rows matching criteria: {len(df)}")
             
             buf = BytesIO()

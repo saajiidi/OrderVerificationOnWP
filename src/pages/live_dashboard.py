@@ -2,6 +2,7 @@ import streamlit as st
 from datetime import datetime, timedelta, timezone
 
 from src.components.widgets import render_reset_confirm
+from src.config.constants import SHIPPED_STATUSES
 from src.processing.column_detection import find_columns
 from src.processing.data_processing import prepare_granular_data, aggregate_data
 from src.pages.dashboard_output import render_dashboard_output
@@ -80,7 +81,20 @@ def render_live_tab():
             status_col = "Order Status" if "Order Status" in df_live.columns else "Status" if "Status" in df_live.columns else None
             
             if status_col:
-                df_live = df_live[df_live[status_col].astype(str).str.lower().isin(["shipped"])]
+                # Filter by modification date within the slot boundaries
+                slot_key = "wc_curr_slot" if nav_mode == "Today" else "wc_prev_slot" if nav_mode == "Prev" else None
+                slot = st.session_state.get(slot_key)
+                
+                if slot and "mod_dt_parsed" in df_live.columns:
+                    s_start, s_end = slot
+                    df_live = df_live[
+                        (df_live[status_col].astype(str).str.lower().isin(SHIPPED_STATUSES)) &
+                        (df_live["mod_dt_parsed"] >= s_start) &
+                        (df_live["mod_dt_parsed"] <= (s_end + timedelta(minutes=30)))
+                    ]
+                else:
+                    df_live = df_live[df_live[status_col].astype(str).str.lower().isin(SHIPPED_STATUSES)]
+
                 if df_live.empty:
                     st.info(f"📦 No shipped orders found in the {nav_mode} slot.")
                     return

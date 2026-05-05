@@ -23,6 +23,7 @@ import streamlit as st
 if "wc_sync_mode" not in st.session_state:
     st.session_state["wc_sync_mode"] = "Operational Cycle"
 
+from src.config.constants import SHIPPED_STATUSES
 from src.services.woocommerce.client import load_from_woocommerce
 from src.processing.data_processing import prepare_granular_data, aggregate_data
 from src.processing.data_processing import get_dispatch_metrics, generate_executive_briefing
@@ -36,20 +37,40 @@ def generate_report_data():
         return f"⚠️ *DEEN-OPS Daily Briefing*\n\nCould not generate report: API connection failed.\nError: {e}", None, None, None
 
     partitions = wc_res.get("partitions", {})
+    slots = wc_res.get("slots", {})
     df_live_raw = partitions.get("wc_curr_df")
     df_prev_raw = partitions.get("wc_prev_df")
     df_full_raw = wc_res.get("df_to_return")
 
+    # Determine cutoff for modification tracking
+    curr_slot = slots.get("wc_curr_slot")
+    if curr_slot:
+        slot_start, slot_end = curr_slot
+    else:
+        now_bd = datetime.now(timezone(timedelta(hours=6))).replace(tzinfo=None)
+        slot_end = now_bd.replace(hour=17, minute=30, second=0, microsecond=0)
+        slot_start = slot_end - timedelta(days=1)
+
     # Enforce strict "Shipped Only" filter for the operational briefing
     if df_live_raw is not None and not df_live_raw.empty:
-        status_col = "Order Status" if "Order Status" in df_live_raw.columns else "Status" if "Status" in df_live_raw.columns else None
-        if status_col:
-            df_live_raw = df_live_raw[df_live_raw[status_col].astype(str).str.lower().isin(["shipped"])]
+        # Filter for orders modified to shipped during the active slot
+        df_live_raw["mod_dt"] = pd.to_datetime(df_live_raw["Order Date Modified"], errors="coerce").dt.tz_localize(None)
+        df_live_raw = df_live_raw[
+            (df_live_raw["Order Status"].isin(SHIPPED_STATUSES)) & 
+            (df_live_raw["mod_dt"] >= slot_start) &
+            (df_live_raw["mod_dt"] <= (slot_end + timedelta(minutes=30)))
+        ]
             
     if df_prev_raw is not None and not df_prev_raw.empty:
-        status_col_prev = "Order Status" if "Order Status" in df_prev_raw.columns else "Status" if "Status" in df_prev_raw.columns else None
-        if status_col_prev:
-            df_prev_raw = df_prev_raw[df_prev_raw[status_col_prev].astype(str).str.lower().isin(["shipped"])]
+        prev_slot = slots.get("wc_prev_slot")
+        if prev_slot:
+            p_start, p_end = prev_slot
+            df_prev_raw["mod_dt"] = pd.to_datetime(df_prev_raw["Order Date Modified"], errors="coerce").dt.tz_localize(None)
+            df_prev_raw = df_prev_raw[
+                (df_prev_raw["Order Status"].isin(SHIPPED_STATUSES)) &
+                (df_prev_raw["mod_dt"] >= p_start) &
+                (df_prev_raw["mod_dt"] <= p_end)
+            ]
 
     if df_live_raw is None or df_live_raw.empty:
         return "⚠️ *DEEN-OPS Daily Briefing*\n\nNo shipped orders found for today's operational shift.", None, None, None

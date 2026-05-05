@@ -8,6 +8,7 @@ from datetime import datetime, timedelta, timezone
 from io import BytesIO
 from itertools import combinations
 
+from src.config.constants import SHIPPED_STATUSES
 from src.processing.data_processing import get_dispatch_metrics, generate_executive_briefing
 from src.pages.dashboard_charts import render_category_charts, render_spotlight
 from src.pages.dashboard_filters import render_ingestion_filters
@@ -219,12 +220,35 @@ def render_dashboard_output(
              if order_view_mode == "Shipped Only":
                  status_col_m = "Order Status" if "Order Status" in m_df.columns else "Status" if "Status" in m_df.columns else None
                  if status_col_m:
-                     m_df = m_df[m_df[status_col_m].astype(str).str.lower().isin(["shipped"])]
+                     # Modification-aware operational filtering for "Shift Sales"
+                     m_slot_key = "wc_curr_slot" if nav_mode == "Today" else "wc_prev_slot" if nav_mode == "Prev" else None
+                     m_slot = st.session_state.get(m_slot_key)
+                     
+                     if m_slot and "mod_dt_parsed" in m_df.columns:
+                         ms, me = m_slot
+                         m_df = m_df[
+                             (m_df[status_col_m].astype(str).str.lower().isin(SHIPPED_STATUSES)) &
+                             (m_df["mod_dt_parsed"] >= ms) &
+                             (m_df["mod_dt_parsed"] <= (me + timedelta(minutes=30)))
+                         ]
+                     else:
+                         m_df = m_df[m_df[status_col_m].astype(str).str.lower().isin(SHIPPED_STATUSES)]
                      
                  if c_df is not None:
                      status_col_c = "Order Status" if "Order Status" in c_df.columns else "Status" if "Status" in c_df.columns else None
                      if status_col_c:
-                         c_df = c_df[c_df[status_col_c].astype(str).str.lower().isin(["shipped"])]
+                         # Comparison slot boundaries
+                         c_slot_key = "wc_prev_slot" if nav_mode == "Today" else "wc_curr_slot" if nav_mode == "Prev" else None
+                         c_slot = st.session_state.get(c_slot_key)
+                         if c_slot and "mod_dt_parsed" in c_df.columns:
+                             cs, ce = c_slot
+                             c_df = c_df[
+                                 (c_df[status_col_c].astype(str).str.lower().isin(SHIPPED_STATUSES)) &
+                                 (c_df["mod_dt_parsed"] >= cs) &
+                                 (c_df["mod_dt_parsed"] <= (ce + timedelta(minutes=30)))
+                             ]
+                         else:
+                             c_df = c_df[c_df[status_col_c].astype(str).str.lower().isin(SHIPPED_STATUSES)]
 
              drill, summ, top, basket, active_df = render_operational_metrics(
                 m_df, c_df, nav_mode, dummy_mapping, wc_raw_mapping

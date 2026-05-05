@@ -60,7 +60,7 @@ def load_from_woocommerce():
 
         def fetch_batch(p):
             # Optimize payload size by requesting only necessary fields
-            fields = "id,date_created,status,billing,shipping,payment_method_title,line_items,total"
+            fields = "id,date_created,date_modified,status,billing,shipping,payment_method_title,line_items,total"
             p["_fields"] = fields
             
             b_rows = []
@@ -75,7 +75,7 @@ def load_from_woocommerce():
                 def process_batch(data):
                     processed = []
                     for order in data:
-                        oid, d_val, status = order.get("id"), order.get("date_created"), order.get("status")
+                        oid, d_val, status, m_val = order.get("id"), order.get("date_created"), order.get("status"), order.get("date_modified")
                         bill = order.get("billing", {})
                         ship = order.get("shipping", {})
                         c_name = f"{bill.get('first_name','')} {bill.get('last_name','')}".strip()
@@ -84,6 +84,7 @@ def load_from_woocommerce():
                             processed.append({
                                 "Order ID": oid,
                                 "Order Date": d_val,
+                                "Order Date Modified": m_val,
                                 "Order Status": status,
                                 "Full Name (Billing)": c_name,
                                 "Phone (Billing)": bill.get("phone",""),
@@ -175,6 +176,7 @@ def load_from_woocommerce():
         # Local partitioning for Operational Cycles (v9.8 Refined Rules)
         if sync_mode == "Operational Cycle":
             df_full["dt_parsed"] = pd.to_datetime(df_full["Order Date"], errors="coerce").dt.tz_localize(None)
+            df_full["mod_dt_parsed"] = pd.to_datetime(df_full["Order Date Modified"], errors="coerce").dt.tz_localize(None)
 
             now_bd = datetime.now(tz_bd)
             ref_now = now_bd.replace(tzinfo=None)
@@ -203,26 +205,34 @@ def load_from_woocommerce():
             if st.session_state.get("override_merge_previous") or is_holiday_date(day_ending_prev):
                 day_before_prev = prev_cutoff - timedelta(days=2)
 
+            from src.config.constants import SHIPPED_STATUSES
             # Define Status Categories
             is_confirmed = df_full["Order Status"] == "confirmed"
-            is_shipped = df_full["Order Status"].isin(["completed", "shipped"])
+            is_shipped = df_full["Order Status"].isin(SHIPPED_STATUSES)
             is_processing = df_full["Order Status"] == "processing"
             is_hold = df_full["Order Status"] == "on-hold"
             is_waiting = df_full["Order Status"] == "pending"
 
-            # REFINED CUTOFFS
+            # REFINED CUTOFFS (Allow 30 min buffer for sync latency)
             shipped_limit = cutoff_today + timedelta(minutes=30)
-            proc_limit = cutoff_today + timedelta(minutes=15)
 
             # SNAPSHOT 1: TODAY (Active Shift Pool)
+            # Includes: 
+            # 1. Orders created within the shift window
+            # 2. Orders MODIFIED to a shipped status within the shift window
+            # 3. Any currently confirmed or processing orders (Active workload)
             df_live = df_full[
-                ( (df_full["dt_parsed"] >= prev_cutoff) & (df_full["dt_parsed"] <= shipped_limit) & (is_shipped | is_confirmed | is_processing) ) |
+                ((df_full["dt_parsed"] >= prev_cutoff) & (df_full["dt_parsed"] <= shipped_limit)) |
+                ((df_full["mod_dt_parsed"] >= prev_cutoff) & (df_full["mod_dt_parsed"] <= shipped_limit) & is_shipped) |
                 is_confirmed | is_processing
             ].copy()
 
             # SNAPSHOT 2: PREV (Historical Performance - Only Shipped)
             df_prev = df_full[
-                (df_full["dt_parsed"] >= day_before_prev) & (df_full["dt_parsed"] < prev_cutoff) & is_shipped
+                (
+                    ((df_full["dt_parsed"] >= day_before_prev) & (df_full["dt_parsed"] < prev_cutoff)) |
+                    ((df_full["mod_dt_parsed"] >= day_before_prev) & (df_full["mod_dt_parsed"] < prev_cutoff))
+                ) & is_shipped
             ].copy()
 
             # SNAPSHOT 3: BACKLOG (Queue - Only Hold + Waiting)

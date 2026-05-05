@@ -11,6 +11,9 @@ STOCK_SNAPSHOT_PATH = os.path.join(RESOURCES_DIR, "last_stock.csv")
 SALES_SNAPSHOT_PATH = os.path.join(RESOURCES_DIR, "sales_snapshot.csv")
 METRIC_SNAPSHOT_DIR = os.path.join(RESOURCES_DIR, "metric_snapshots")
 
+# Unified Shipped Statuses
+SHIPPED_STATUSES = ["shipped", "completed", "confirmed"]
+
 # Error log path
 ERROR_LOG_FILE = os.path.join(DATA_DIR, "error_logs.json")
 
