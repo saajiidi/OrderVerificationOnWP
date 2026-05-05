@@ -1,10 +1,26 @@
 import os
 import sys
+import types
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import pandas as pd
 import pytest
+
+
+def _identity_decorator(*args, **kwargs):
+    def decorator(func):
+        return func
+
+    return decorator
+
+
+fake_streamlit = types.ModuleType("streamlit")
+fake_streamlit.session_state = {}
+fake_streamlit.secrets = {}
+fake_streamlit.cache_data = _identity_decorator
+fake_streamlit.cache_resource = _identity_decorator
+sys.modules["streamlit"] = fake_streamlit
 
 from src.pages import dashboard_output
 

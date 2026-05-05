@@ -2,9 +2,79 @@ import pandas as pd
 import streamlit as st
 import os
 import json
+from functools import lru_cache
 from src.utils.product import get_category_from_name
 from src.utils.text import normalize_city_name, peek_zone_from_address
 from fuzzywuzzy import process
+
+
+def _clean_text_part(value):
+    text = str(value or "").replace("\n", " ").strip()
+    if not text or text.lower() == "nan":
+        return ""
+    return " ".join(text.split())
+
+
+def _title_text_part(value):
+    cleaned = _clean_text_part(value)
+    return cleaned.title() if cleaned else ""
+
+
+def _dedupe_address_parts(parts):
+    deduped = []
+    seen = set()
+    for part in parts:
+        cleaned = _clean_text_part(part)
+        if not cleaned:
+            continue
+        key = cleaned.casefold()
+        if key in seen:
+            continue
+        deduped.append(cleaned)
+        seen.add(key)
+    return deduped
+
+
+@lru_cache(maxsize=1)
+def _load_pathao_map():
+    pathao_map_path = "resources/pathao_map.json"
+    if not os.path.exists(pathao_map_path):
+        return {}
+
+    try:
+        with open(pathao_map_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def _find_city_for_zone(zone_text, pathao_map):
+    zone_name = _title_text_part(zone_text)
+    if not zone_name or not pathao_map:
+        return "", ""
+
+    best_city = ""
+    best_zone = ""
+    best_score = 0
+
+    for city_name, city_data in pathao_map.items():
+        zones = city_data.get("zones", {})
+        if zone_name in zones:
+            return city_name, zone_name
+
+        if not zones:
+            continue
+
+        zone_match = process.extractOne(zone_name, list(zones.keys()))
+        if zone_match and zone_match[1] > best_score:
+            best_city = city_name
+            best_zone = zone_match[0]
+            best_score = zone_match[1]
+
+    if best_score >= 85:
+        return best_city, best_zone
+    return "", ""
 
 
 def clean_dataframe(df):
@@ -238,34 +308,41 @@ def process_single_order_group(phone, group, data_cols):
 
     # Address Processing
     addr_col = data_cols["addr_col"]
-    raw_address = str(first_row.get(addr_col, "")).strip()
-    if not raw_address or raw_address.lower() == "nan":
-        raw_address = str(first_row.get("State Name (Billing)", "")).strip()
+    raw_address = _clean_text_part(first_row.get(addr_col, ""))
+    if not raw_address:
+        raw_address = _clean_text_part(first_row.get("State Name (Billing)", ""))
 
-    # Normalize City & Address (Pathao RecipientCity is the District/State)
-    raw_state = str(first_row.get(data_cols["state_col"], "")).strip()
+    raw_state = _clean_text_part(first_row.get(data_cols["state_col"], ""))
+    raw_city_or_zone = _clean_text_part(first_row.get(data_cols["city_col"], ""))
     recipient_city = normalize_city_name(raw_state)
-    address_val = " ".join(raw_address.split()).title()
+    if recipient_city.lower() in ["nan", "unknown"]:
+        recipient_city = ""
 
     # RecipientZone & Area: Smart Matching from Pathao Database
     recipient_area = ""
-    extracted_zone = str(first_row.get(data_cols["city_col"], "")).strip().title()
-    if extracted_zone.lower() == "nan":
-        extracted_zone = ""
+    extracted_zone = _title_text_part(raw_city_or_zone)
+    inferred_zone = peek_zone_from_address(" ".join([raw_address, raw_city_or_zone]))
+    if not extracted_zone:
+        extracted_zone = inferred_zone
 
     # Load Pathao Map for intelligent correction
-    pathao_map_path = "resources/pathao_map.json"
-    if os.path.exists(pathao_map_path):
+    pathao_map = _load_pathao_map()
+    if pathao_map:
         try:
-            with open(pathao_map_path, "r") as f:
-                pathao_map = json.load(f)
+            if not recipient_city:
+                inferred_city, official_zone = _find_city_for_zone(extracted_zone or inferred_zone, pathao_map)
+                if inferred_city:
+                    recipient_city = inferred_city
+                    if official_zone:
+                        extracted_zone = official_zone
 
             # 1. Match City
             city_data = pathao_map.get(recipient_city)
-            if not city_data:
+            if not city_data and recipient_city:
                 # Try fuzzy matching city name if direct lookup fails
                 match = process.extractOne(recipient_city, pathao_map.keys())
                 if match and match[1] > 85:
+                    recipient_city = match[0]
                     city_data = pathao_map[match[0]]
 
             if city_data:
@@ -282,7 +359,7 @@ def process_single_order_group(phone, group, data_cols):
                         if areas_list:
                             # Try to find area name in the Address since it's rarely a separate column in WooCommerce
                             area_names = [a["area_name"] for a in areas_list]
-                            area_match = process.extractOne(address_val, area_names)
+                            area_match = process.extractOne(raw_address or extracted_zone, area_names)
                             if area_match and area_match[1] > 90:
                                 recipient_area = area_match[0]
         except:
@@ -307,18 +384,30 @@ def process_single_order_group(phone, group, data_cols):
     if not recipient_city or recipient_city.lower() in ["unknown", "nan", ""]:
         # Try to find city in address as last resort
         for city_name in ["Dhaka", "Chittagong", "Chattogram", "Sylhet", "Khulna", "Rajshahi", "Barisal", "Rangpur"]:
-            if city_name.lower() in address_val.lower():
+            if city_name.lower() in raw_address.lower():
                 recipient_city = city_name
                 break
         if not recipient_city: recipient_city = "Dhaka" # Default to capital
 
     # If extracted_zone is just the city name again, try to peek into the address
     if not extracted_zone or extracted_zone.lower() in ["unknown", "nan", "", recipient_city.lower(), "dhaka", "chattogram"]:
-        peeked = peek_zone_from_address(address_val)
+        peeked = inferred_zone or peek_zone_from_address(
+            " ".join([raw_address, raw_city_or_zone, recipient_city])
+        )
         if peeked:
             extracted_zone = peeked
         else:
             extracted_zone = recipient_city # Final fallback
+
+    address_parts = _dedupe_address_parts(
+        [
+            _title_text_part(raw_address),
+            recipient_area,
+            extracted_zone,
+            recipient_city,
+        ]
+    )
+    address_val = ", ".join(address_parts) if address_parts else "Address Missing"
 
     # --- Build Record ---
     record = {

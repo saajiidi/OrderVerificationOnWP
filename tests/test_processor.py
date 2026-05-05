@@ -1,5 +1,28 @@
+import os
+import sys
+import types
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import pandas as pd
 import pytest
+
+fake_streamlit = types.ModuleType("streamlit")
+
+
+def _identity_decorator(*args, **kwargs):
+    def decorator(func):
+        return func
+
+    return decorator
+
+
+fake_streamlit.cache_data = _identity_decorator
+fake_streamlit.cache_resource = _identity_decorator
+fake_streamlit.session_state = {}
+fake_streamlit.secrets = {}
+sys.modules["streamlit"] = fake_streamlit
+
 from src.processing import order_processor as processor
 
 
@@ -41,3 +64,27 @@ def test_missing_address_column():
     res = processor.process_orders_dataframe(df)
     assert len(res) == 1
     assert "RecipientName(*)" in res.columns
+
+
+def test_recipient_address_includes_normalized_zone_and_district():
+    df = pd.DataFrame(
+        {
+            "Order Number": ["O1"],
+            "Recipient Name": ["John Doe"],
+            "Shipping Address 1": ["House 10, Road 4"],
+            "Shipping City": ["Mirpur 12"],
+            "State Name (Billing)": ["BD-13"],
+            "Phone (Billing)": ["01711223344"],
+            "Item Name": ["Shirt"],
+            "SKU": ["SKU-1"],
+            "Quantity": [1],
+            "Order Total Amount": [500],
+            "Payment Method Title": ["Cash on delivery"],
+        }
+    )
+
+    res = processor.process_orders_dataframe(df)
+
+    assert res.loc[0, "RecipientAddress(*)"] == "House 10, Road 4, Mirpur 12, Dhaka"
+    assert res.loc[0, "RecipientCity(*)"] == "Dhaka"
+    assert res.loc[0, "RecipientZone(*)"] == "Mirpur 12"
