@@ -23,7 +23,7 @@ def _reset_inventory_state():
 
 def _render_upload_summary(master_df, title_col):
     c1, c2 = st.columns(2)
-    c1.metric("Master rows", 0 if master_df is None else len(master_df))
+    c1.metric("Master rows", 0 if master_df is None else (master_df.shape[0] if hasattr(master_df, 'shape') else len(master_df)))
     c2.metric("Title column", title_col if title_col else "Not detected")
 
 
@@ -98,7 +98,7 @@ def render_distribution_tab(search_q):
                     "Could not detect an item title/name column."
                 )
             else:
-                st.success(f"Successfully pulled {len(df_live)} records.")
+                st.success(f"Successfully pulled {df_live.shape[0] if hasattr(df_live, 'shape') else len(df_live)} records.")
         except Exception as exc:
             log_error(exc, context="Inventory WooCommerce Pull")
             st.error(f"Failed to fetch data: {exc}")
@@ -161,7 +161,7 @@ def render_distribution_tab(search_q):
 
                         if wocom_df is not None:
                             loc_files["Ecom"] = wocom_df
-                            sync_status.update(label=f"Done: Ecom stock synced for {len(wocom_df)} relevant items.", state="complete")
+                            sync_status.update(label=f"Done: Ecom stock synced for {wocom_df.shape[0] if hasattr(wocom_df, 'shape') else len(wocom_df)} relevant items.", state="complete")
                         else:
                             st.warning("⚠️ WooCommerce sync failed. Analysis will proceed using other locations.")
 
@@ -207,7 +207,7 @@ def render_distribution_tab(search_q):
 
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
-            loc_totals = [{"Metric": "Total SKUs Analyzed", "Value": len(df)}]
+            loc_totals = [{"Metric": "Total SKUs Analyzed", "Value": df.shape[0] if hasattr(df, 'shape') else len(df)}]
             for loc in active_locations:
                 if loc in df.columns:
                     loc_totals.append({"Metric": f"Total Units ({loc})", "Value": pd.to_numeric(df[loc], errors='coerce').sum()})
@@ -228,8 +228,15 @@ def render_distribution_tab(search_q):
                     ws = writer.sheets[sheet_name]
                     for idx, col in enumerate(df_ref.columns):
                         ws.write(0, idx, str(col), header_format)
-                        max_len = max(df_ref[col].astype(str).map(len).max(), len(str(col))) + 2
-                        ws.set_column(idx, idx, min(max_len, 50))
+                        try:
+                            max_len = max(df_ref[col].astype(str).map(lambda x: len(str(x))).max(), len(str(col))) + 2
+                            ws.set_column(idx, idx, min(max_len, 50))
+                        except Exception as e:
+                            import traceback
+                            with open("h:\\DEEN-OPS\\excel_format_error.log", "a", encoding="utf-8") as f:
+                                f.write(traceback.format_exc())
+                            max_len = len(str(col)) + 2
+                            ws.set_column(idx, idx, min(max_len, 50))
                         
         st.download_button(
             "Download distribution report",

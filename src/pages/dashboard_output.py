@@ -266,6 +266,7 @@ def render_dashboard_output(
              if full_df is not None and not full_df.empty:
                  temp_full = full_df.copy()
                  temp_full['Day'] = pd.to_datetime(temp_full[wc_raw_mapping["date"]]).dt.date
+                 temp_full['Order Total Amount'] = pd.to_numeric(temp_full['Order Total Amount'], errors='coerce').fillna(0)
                  daily_rev = temp_full.groupby('Day')['Order Total Amount'].sum()
                  if len(daily_rev) >= 3:
                      fc_res, _ = PredictiveIntelligence.forecast(daily_rev, steps=1)

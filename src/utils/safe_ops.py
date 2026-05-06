@@ -78,5 +78,9 @@ def safe_render(
     try:
         return render_fn()
     except Exception as e:
+        import traceback
+        with open("h:\\DEEN-OPS\\safe_render_error_2.log", "a", encoding="utf-8") as f:
+            f.write(f"Exception: {e}\n")
+            f.write(traceback.format_exc() + "\n")
         st.warning(f"{fallback_msg} Error: {e}")
         return None

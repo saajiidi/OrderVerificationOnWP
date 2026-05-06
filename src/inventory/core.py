@@ -405,12 +405,12 @@ def add_stock_columns_from_inventory(
         df[loc] = vals
 
     # 5. Intelligent Dispatch Suggestion
-    dispatch_suggestions = ["N/A"] * len(df)
+    dispatch_suggestions = ["N/A"] * (df.shape[0] if hasattr(df, 'shape') else len(df))
     group_col = get_group_by_column(df)
 
     if group_col:
         # Create a helper for quantities
-        qty_needed = [1] * len(df)
+        qty_needed = [1] * (df.shape[0] if hasattr(df, 'shape') else len(df))
         if qty_to_buy_col and qty_to_buy_col in df.columns:
             qty_needed = [
                 int(float(x)) if pd.notna(x) else 1 for x in df[qty_to_buy_col]
