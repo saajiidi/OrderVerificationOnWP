@@ -49,7 +49,7 @@ def normalize_size(val) -> str:
     s_cf = s.casefold()
     if s_cf in {"no_size", "no size", "nosize", "no-size"}:
         return "NO_SIZE"
-    return s
+    return s.upper()
 
 
 @lru_cache(maxsize=4096)
@@ -245,8 +245,13 @@ def load_inventory_from_uploads(uploaded_files: Dict[str, object]):
                         )
                         
                         # Master SKU + Size Key
-                        size_val = row.get(size_col, "") if size_col and size_col in df.columns else "NO_SIZE"
-                        norm_sz = normalize_size(size_val)
+                        if size_col and size_col in df.columns and pd.notna(row.get(size_col, "")) and str(row.get(size_col, "")).strip():
+                            size_val = row.get(size_col, "")
+                            norm_sz = normalize_size(size_val)
+                        else:
+                            _, extracted_size = item_name_to_title_size(row.get(title_col, ""))
+                            norm_sz = normalize_size(extracted_size)
+                            
                         sku_size_key = f"SKU:{sku_key}_SZ:{norm_sz}"
                         if sku_size_key not in inventory:
                             inventory[sku_size_key] = {loc: 0 for loc in all_locations}
@@ -288,10 +293,18 @@ def add_stock_columns_from_inventory(
                 return normalize_sku(val)
         return ""
 
+    size_col, _, _, _ = identify_columns(df)
+
     for i, row in df.iterrows():
         # 1. Get Product List SKU and Item Name Key
         pl_sku = get_sku(row)
         title, size = item_name_to_title_size(row.get(item_name_col, ""))
+        
+        if size_col and size_col in df.columns:
+            val = row.get(size_col, "")
+            if pd.notna(val) and str(val).strip():
+                size = normalize_size(val)
+
         pl_key = build_title_size_key(title, size)
 
         inv_key = None

@@ -121,6 +121,9 @@ def render_distribution_tab(search_q):
         master_df = st.session_state.inv_master_df_live
         _, _, title_col, sku_col = inv_core.identify_columns(master_df)
 
+    st.markdown("---")
+    sync_live_web_stock = st.toggle("Sync Live Web Stock (Ecom)", value=True, help="Turn on to automatically fetch real-time web stock for Ecom location if a file is not manually uploaded.")
+
     analyze_clicked, clear_clicked = render_action_bar(
         primary_label="Analyze distribution",
         primary_key="inv_analyze_btn",
@@ -145,7 +148,7 @@ def render_distribution_tab(search_q):
             try:
                 # 1. INTEGRATED REAL-TIME ECOM SYNC:
                 # Only sync if "Ecom" wasn't manually uploaded for this analysis
-                if "Ecom" not in loc_files:
+                if "Ecom" not in loc_files and sync_live_web_stock:
                     with st.status("🔗 Reconciling Live Web Stock...", expanded=False) as sync_status:
                         t_skus = set(master_df[sku_col].dropna().astype(str).unique()) if sku_col and sku_col in master_df.columns else None
                         t_titles = set()
